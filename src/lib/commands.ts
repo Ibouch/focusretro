@@ -1,0 +1,172 @@
+import { invoke } from "@tauri-apps/api/core";
+
+export interface GameWindow {
+  character_name: string;
+  window_id: number;
+  pid: number;
+  title: string;
+}
+
+export interface AccountView {
+  character_name: string;
+  window_id: number;
+  pid: number;
+  title: string;
+  color: string | null;
+  icon_path: string | null;
+  is_principal: boolean;
+  position: number;
+}
+
+export interface PermissionStatus {
+  accessibility: boolean;
+  screen_recording: boolean;
+}
+
+export interface StoredMessage {
+  receiver: string;
+  sender: string;
+  message: string;
+  timestamp: number;
+}
+
+export function listAccounts(): Promise<AccountView[]> {
+  return invoke("list_accounts");
+}
+
+export function refreshAccounts(): Promise<AccountView[]> {
+  return invoke("refresh_accounts");
+}
+
+export function toggleAutoswitch(): Promise<boolean> {
+  return invoke("toggle_autoswitch");
+}
+
+export function getAutoswitchState(): Promise<boolean> {
+  return invoke("get_autoswitch_state");
+}
+
+export function focusAccount(name: string): Promise<void> {
+  return invoke("focus_account", { name });
+}
+
+export function focusNextAccount(): Promise<string | null> {
+  return invoke("focus_next_account");
+}
+
+export function focusPrevAccount(): Promise<string | null> {
+  return invoke("focus_prev_account");
+}
+
+export function focusPrincipal(): Promise<string | null> {
+  return invoke("focus_principal");
+}
+
+export function checkPermissions(): Promise<PermissionStatus> {
+  return invoke("check_permissions");
+}
+
+export function requestScreenRecording(): Promise<void> {
+  return invoke("request_screen_recording");
+}
+
+export function openSettings(section: "accessibility" | "screen_recording"): Promise<void> {
+  return invoke("open_settings", { section });
+}
+
+export function toggleGroupInvite(): Promise<boolean> {
+  return invoke("toggle_group_invite");
+}
+
+export function getGroupInviteState(): Promise<boolean> {
+  return invoke("get_group_invite_state");
+}
+
+export function toggleTrade(): Promise<boolean> {
+  return invoke("toggle_trade");
+}
+
+export function getTradeState(): Promise<boolean> {
+  return invoke("get_trade_state");
+}
+
+export function togglePm(): Promise<boolean> {
+  return invoke("toggle_pm");
+}
+
+export function getPmState(): Promise<boolean> {
+  return invoke("get_pm_state");
+}
+
+export function getMessages(): Promise<StoredMessage[]> {
+  return invoke("get_messages");
+}
+
+export function clearMessages(): Promise<void> {
+  return invoke("clear_messages");
+}
+
+export function toggleAutoAccept(): Promise<boolean> {
+  return invoke("toggle_auto_accept");
+}
+
+export function getAutoAcceptState(): Promise<boolean> {
+  return invoke("get_auto_accept_state");
+}
+
+
+export function reorderAccount(name: string, newPosition: number): Promise<AccountView[]> {
+  return invoke("reorder_account", { name, newPosition });
+}
+
+export function setPrincipal(name: string): Promise<AccountView[]> {
+  return invoke("set_principal", { name });
+}
+
+export function updateAccountProfile(
+  name: string,
+  color: string | null,
+  iconPath: string | null
+): Promise<AccountView[]> {
+  return invoke("update_account_profile", {
+    name,
+    color,
+    iconPath,
+  });
+}
+
+export function getProfiles(): Promise<AccountView[]> {
+  return invoke("get_profiles");
+}
+
+export interface HotkeyBinding {
+  action: string;
+  key: string;
+  cmd: boolean;
+  alt: boolean;
+  shift: boolean;
+  ctrl: boolean;
+}
+
+export function getHotkeys(): Promise<HotkeyBinding[]> {
+  return invoke("get_hotkeys");
+}
+
+export function setHotkey(
+  action: string,
+  key: string,
+  cmd: boolean,
+  alt: boolean,
+  shift: boolean,
+  ctrl: boolean
+): Promise<HotkeyBinding[]> {
+  return invoke("set_hotkey", { action, key, cmd, alt, shift, ctrl });
+}
+
+export function getLanguage(): Promise<string> {
+  return invoke("get_language");
+}
+
+export function setLanguage(lang: string): Promise<void> {
+  return invoke("set_language", { lang });
+}

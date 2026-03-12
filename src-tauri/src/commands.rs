@@ -1,0 +1,215 @@
+use crate::core::accounts;
+use crate::platform::{self, PermissionStatus};
+use crate::state::{AccountView, AppState, HotkeyBinding, StoredMessage};
+use std::sync::Arc;
+
+#[tauri::command]
+pub fn list_accounts(state: tauri::State<'_, Arc<AppState>>) -> Vec<AccountView> {
+    state.get_account_views()
+}
+
+#[tauri::command]
+pub fn refresh_accounts(state: tauri::State<'_, Arc<AppState>>) -> Vec<AccountView> {
+    let windows = accounts::detect_accounts();
+    state.update_accounts(windows);
+    state.get_account_views()
+}
+
+#[tauri::command]
+pub fn toggle_autoswitch(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    let new_state = !state.is_autoswitch_enabled();
+    state.set_autoswitch(new_state);
+    new_state
+}
+
+#[tauri::command]
+pub fn get_autoswitch_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    state.is_autoswitch_enabled()
+}
+
+#[tauri::command]
+pub fn focus_account(name: String) -> Result<(), String> {
+    let wm = platform::create_window_manager();
+    let windows = wm.list_dofus_windows();
+    let win = windows
+        .iter()
+        .find(|w| w.character_name.eq_ignore_ascii_case(&name))
+        .ok_or_else(|| format!("Window not found for '{}'", name))?;
+    wm.focus_window(win).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn focus_next_account(state: tauri::State<'_, Arc<AppState>>) -> Option<String> {
+    let win = state.cycle_next()?;
+    let wm = platform::create_window_manager();
+    wm.focus_window(&win).ok()?;
+    Some(win.character_name)
+}
+
+#[tauri::command]
+pub fn focus_prev_account(state: tauri::State<'_, Arc<AppState>>) -> Option<String> {
+    let win = state.cycle_prev()?;
+    let wm = platform::create_window_manager();
+    wm.focus_window(&win).ok()?;
+    Some(win.character_name)
+}
+
+#[tauri::command]
+pub fn toggle_group_invite(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    let new_state = !state.is_group_invite_enabled();
+    state.set_group_invite(new_state);
+    new_state
+}
+
+#[tauri::command]
+pub fn get_group_invite_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    state.is_group_invite_enabled()
+}
+
+#[tauri::command]
+pub fn toggle_trade(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    let new_state = !state.is_trade_enabled();
+    state.set_trade(new_state);
+    new_state
+}
+
+#[tauri::command]
+pub fn get_trade_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    state.is_trade_enabled()
+}
+
+#[tauri::command]
+pub fn toggle_pm(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    let new_state = !state.is_pm_enabled();
+    state.set_pm(new_state);
+    new_state
+}
+
+#[tauri::command]
+pub fn get_pm_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    state.is_pm_enabled()
+}
+
+#[tauri::command]
+pub fn get_messages(state: tauri::State<'_, Arc<AppState>>) -> Vec<StoredMessage> {
+    state.get_messages()
+}
+
+#[tauri::command]
+pub fn clear_messages(state: tauri::State<'_, Arc<AppState>>) {
+    state.clear_messages();
+}
+
+#[tauri::command]
+pub fn toggle_auto_accept(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    let new_state = !state.is_auto_accept_enabled();
+    state.set_auto_accept(new_state);
+    new_state
+}
+
+#[tauri::command]
+pub fn get_auto_accept_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    state.is_auto_accept_enabled()
+}
+
+#[tauri::command]
+pub fn reorder_account(
+    name: String,
+    new_position: usize,
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Vec<AccountView> {
+    state.reorder_account(&name, new_position);
+    state.get_account_views()
+}
+
+#[tauri::command]
+pub fn set_principal(
+    name: String,
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Vec<AccountView> {
+    state.set_principal(&name);
+    state.get_account_views()
+}
+
+#[tauri::command]
+pub fn update_account_profile(
+    name: String,
+    color: Option<String>,
+    icon_path: Option<String>,
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Vec<AccountView> {
+    state.update_profile(&name, color, icon_path);
+    state.get_account_views()
+}
+
+#[tauri::command]
+pub fn get_profiles(state: tauri::State<'_, Arc<AppState>>) -> Vec<AccountView> {
+    state.get_account_views()
+}
+
+#[tauri::command]
+pub fn focus_principal(state: tauri::State<'_, Arc<AppState>>) -> Option<String> {
+    let win = state.get_principal()?;
+    let wm = platform::create_window_manager();
+    wm.focus_window(&win).ok()?;
+    Some(win.character_name)
+}
+
+#[tauri::command]
+pub fn check_permissions() -> PermissionStatus {
+    PermissionStatus {
+        accessibility: platform::check_accessibility_permission(),
+        screen_recording: platform::check_screen_recording_permission(),
+    }
+}
+
+#[tauri::command]
+pub fn request_screen_recording() {
+    platform::request_screen_recording_permission();
+}
+
+#[tauri::command]
+pub fn open_settings(section: String) {
+    let url = match section.as_str() {
+        "accessibility" => {
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
+        }
+        "screen_recording" => {
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
+        }
+        _ => return,
+    };
+    #[cfg(target_os = "macos")]
+    let _ = std::process::Command::new("open").arg(url).spawn();
+    #[cfg(not(target_os = "macos"))]
+    let _ = url;
+}
+
+#[tauri::command]
+pub fn get_hotkeys(state: tauri::State<'_, Arc<AppState>>) -> Vec<HotkeyBinding> {
+    state.get_hotkeys()
+}
+
+#[tauri::command]
+pub fn set_hotkey(
+    action: String,
+    key: String,
+    cmd: bool,
+    alt: bool,
+    shift: bool,
+    ctrl: bool,
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Vec<HotkeyBinding> {
+    state.set_hotkey(&action, key, cmd, alt, shift, ctrl);
+    state.get_hotkeys()
+}
+
+#[tauri::command]
+pub fn get_language(state: tauri::State<'_, Arc<AppState>>) -> String {
+    state.get_language()
+}
+
+#[tauri::command]
+pub fn set_language(lang: String, state: tauri::State<'_, Arc<AppState>>) {
+    state.set_language(lang);
+}
