@@ -2,10 +2,10 @@ use crate::platform::{GameWindow, WindowManager};
 use log::info;
 use std::mem;
 use windows::Win32::Foundation::{BOOL, HWND, LPARAM, TRUE};
-use windows::Win32::System::Threading::AttachThreadInput;
+use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    SendInput, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS, KEYBDINPUT, KEYEVENTF_KEYUP,
-    VK_RETURN,
+    SendInput, SetActiveWindow, SetFocus, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS,
+    KEYBDINPUT, KEYEVENTF_KEYUP, VK_RETURN,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     BringWindowToTop, EnumWindows, GetForegroundWindow, GetWindowTextW, GetWindowThreadProcessId,
@@ -77,10 +77,8 @@ impl WindowManager for WinWindowManager {
     }
 
     fn focus_window(&self, window: &GameWindow) -> anyhow::Result<()> {
-        let hwnd = enum_all_windows()
-            .into_iter()
-            .find(|&h| get_window_text(h) == window.title)
-            .ok_or_else(|| anyhow::anyhow!("Window not found: {}", window.title))?;
+        // window_id is the HWND captured at enumeration time — use it directly.
+        let hwnd = HWND(window.window_id as usize as *mut _);
 
         unsafe {
             // Unminimize only if actually minimized — calling SW_RESTORE on a
@@ -89,20 +87,24 @@ impl WindowManager for WinWindowManager {
                 let _ = ShowWindow(hwnd, SW_RESTORE);
             }
 
-            // AttachThreadInput trick to bypass Windows focus-stealing prevention
-            let fg_hwnd = GetForegroundWindow();
-            let fg_tid = GetWindowThreadProcessId(fg_hwnd, None);
-            let mut target_pid = 0u32;
-            let target_tid = GetWindowThreadProcessId(hwnd, Some(&mut target_pid));
+            // Attach our thread to both the foreground and target threads:
+            //   cur → fg_tid  : makes SetForegroundWindow bypass focus-stealing prevention
+            //   cur → target  : makes SetFocus effective (SetFocus only works within the
+            //                   calling thread's input queue)
+            let cur_tid = GetCurrentThreadId();
+            let fg_tid = GetWindowThreadProcessId(GetForegroundWindow(), None);
+            let target_tid = GetWindowThreadProcessId(hwnd, None);
 
-            if fg_tid != target_tid {
-                let _ = AttachThreadInput(fg_tid, target_tid, TRUE);
-            }
+            if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, TRUE); }
+            if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, TRUE); }
+
             let _ = BringWindowToTop(hwnd);
             let _ = SetForegroundWindow(hwnd);
-            if fg_tid != target_tid {
-                let _ = AttachThreadInput(fg_tid, target_tid, BOOL::from(false));
-            }
+            let _ = SetActiveWindow(hwnd);
+            let _ = SetFocus(hwnd);
+
+            if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, BOOL::from(false)); }
+            if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, BOOL::from(false)); }
         }
 
         info!("[WinWindow] Focused window: {}", window.character_name);
