@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Retro - Le multicompte, sans la prise de tête</title>
+  <meta name="description" content="Focus Retro bascule automatiquement sur la bonne fenêtre Dofus Retro à votre tour, sur invitation de groupe ou demande d'échange. Remplace Organizer, fonctionne sur macOS et Windows." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            indigo: {
+              50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe',
+              300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1',
+              600: '#4f46e5', 700: '#4338ca', 800: '#3730a3', 900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    .lang-btn.active { background: #4f46e5; color: white; }
+    .tab-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .screenshot-placeholder {
+      background: linear-gradient(135deg, #f0f0f0 25%, #e8e8e8 25%, #e8e8e8 50%, #f0f0f0 50%, #f0f0f0 75%, #e8e8e8 75%);
+      background-size: 20px 20px;
+      border: 2px dashed #cbd5e1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body class="bg-white text-gray-900 font-sans">
+
+<!-- NAVBAR -->
+<nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+  <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+    <a href="#" class="flex items-center gap-2 font-bold text-lg text-indigo-700 no-underline">
+      <img src="icon.png" alt="Focus Retro" class="w-6 h-6 rounded" />
+      Focus Retro
+    </a>
+    <div class="flex items-center gap-4 text-sm">
+      <a href="#features" class="text-gray-600 hover:text-indigo-700" data-i18n="nav.features">Fonctionnalités</a>
+      <a href="#install" class="text-gray-600 hover:text-indigo-700" data-i18n="nav.install">Installation</a>
+      <a href="#faq" class="text-gray-600 hover:text-indigo-700">FAQ</a>
+      <div class="flex gap-1 ml-2">
+        <button onclick="setLang('fr')" class="lang-btn px-2 py-0.5 rounded text-xs font-semibold border border-gray-300 transition-colors">FR</button>
+        <button onclick="setLang('en')" class="lang-btn px-2 py-0.5 rounded text-xs font-semibold border border-gray-300 transition-colors">EN</button>
+        <button onclick="setLang('es')" class="lang-btn px-2 py-0.5 rounded text-xs font-semibold border border-gray-300 transition-colors">ES</button>
+      </div>
+      <!-- Discord -->
+      <a href="https://discord.gg/YKWw6CvCA7" target="_blank" rel="noopener" class="text-gray-500 hover:text-indigo-700" title="Discord">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
+        </svg>
+      </a>
+      <!-- GitHub -->
+      <a href="https://github.com/alacroix/focusretro" target="_blank" rel="noopener" class="text-gray-500 hover:text-indigo-700" title="GitHub">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z" />
+        </svg>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="bg-gradient-to-br from-indigo-50 to-white py-20 px-4 text-center">
+  <img src="icon.png"
+       alt="Focus Retro" class="w-28 h-28 mx-auto mb-6" />
+  <h1 class="text-4xl md:text-5xl font-extrabold text-indigo-900 mb-4" data-i18n="hero.headline">
+    Le multicompte, sans la prise de tête.
+  </h1>
+  <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8" data-i18n="hero.subline">
+    Focus Retro bascule automatiquement sur votre fenêtre Dofus Retro quand c'est votre tour, quand vous recevez une invitation de groupe ou une demande d'échange.
+  </p>
+  <div class="flex flex-col sm:flex-row gap-3 justify-center mb-3">
+    <a id="hero-btn-windows" href="https://github.com/alacroix/focusretro/releases/download/v0.1.0/Focus.Retro_0.1.0_x64-setup.exe"
+       class="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white font-semibold px-6 py-3 rounded-xl shadow transition-colors">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+      <span data-i18n="hero.downloadWin">Télécharger pour Windows</span>
+    </a>
+    <a id="hero-btn-macos" href="https://github.com/alacroix/focusretro/releases/download/v0.1.0/Focus.Retro_0.1.0_aarch64.dmg"
+       class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl shadow transition-colors">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      <span data-i18n="hero.downloadMac">Télécharger pour macOS</span>
+    </a>
+  </div>
+  <div class="flex flex-col items-center gap-5 text-sm text-gray-500">
+    <a href="https://github.com/alacroix/focusretro/releases/tag/v0.1.0" target="_blank" rel="noopener"
+       class="text-xs text-gray-400 hover:text-indigo-500" data-i18n="hero.allDownloads">Voir tous les téléchargements</a>
+    <span data-i18n="hero.badges">Open source · Gratuit · Ne modifie pas le jeu</span>
+  </div>
+</section>
+
+<!-- IS IT ALLOWED BANNER -->
+<section id="allowed" class="bg-amber-50 border-y border-amber-200 py-10 px-4">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-2xl font-bold text-amber-900 text-center mb-6" data-i18n="allowed.title">C'est autorisé par Ankama ?</h2>
+    <a href="https://x.com/DOFUSRetro_FR/status/2031323028072681799" target="_blank" rel="noopener"
+       class="block max-w-xl mx-auto mb-6 bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow no-underline text-gray-900">
+      <!-- Header -->
+      <div class="flex items-center gap-3 mb-3">
+        <img src="https://pbs.twimg.com/profile_images/1970772866221195264/BpptPLpE_x96.jpg"
+             alt="DOFUSRetro_FR" class="w-10 h-10 rounded-full" />
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-gray-900 text-sm leading-tight">DOFUSRetro_FR</div>
+          <div class="text-gray-500 text-sm">@DOFUSRetro_FR</div>
+        </div>
+        <!-- X logo -->
+        <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.748l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+        </svg>
+      </div>
+      <!-- Body -->
+      <p class="text-gray-900 text-sm leading-relaxed mb-3">
+        Bonjour, l'utilisation d'un logiciel tiers est tolérée <strong>UNIQUEMENT</strong> s'il ne modifie/n'interagit pas avec les fichiers du jeu ou le jeu en lui-même.
+        <br /><br />
+        Ne s'agissant pas d'un outil officiellement pris en charge par Ankama, nous vous rappelons que nous ne pouvons pas garantir la sécurité du logiciel et que son utilisation peut comporter des risques. En cas d'éventuelles violations de données ou de logs, le joueur sera tenu responsable.
+        <br /><br />
+        Il est également important de distinguer un outil de gestion de fenêtre d'autres outils tiers comme les macros, ces dernières sont strictement interdites.
+      </p>
+      <!-- Footer -->
+      <div class="text-gray-400 text-xs">10 mars 2026 · X (Twitter)</div>
+    </a>
+    <p class="text-gray-700 text-center mt-4" data-i18n="allowed.caption">
+      Focus Retro est un <strong>outil de gestion de fenêtre</strong>, conçu avec une seule priorité : rester propre et transparent pour la communauté. Pas de modification du jeu, pas de contournement, pas de zone grise. Il lit uniquement les notifications système de votre OS - rien de plus. Le code source est entièrement public et auditable.
+    </p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="py-16 px-4 bg-white">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl font-bold text-center text-gray-900 mb-2" data-i18n="features.title">Fonctionnalités</h2>
+    <p class="text-center text-gray-500 mb-10" data-i18n="features.subtitle">Tout ce dont vous avez besoin pour jouer plusieurs personnages sans stress.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div class="bg-indigo-50 rounded-2xl p-6">
+        <div class="text-3xl mb-3">🎯</div>
+        <h3 class="font-bold text-gray-900 mb-1" data-i18n="feat.turn.title">Focus automatique à votre tour</h3>
+        <p class="text-sm text-gray-600" data-i18n="feat.turn.desc">Dès que c'est votre tour, la bonne fenêtre de jeu passe au premier plan. Aucune manipulation manuelle.</p>
+      </div>
+      <div class="bg-indigo-50 rounded-2xl p-6">
+        <div class="text-3xl mb-3">🤝</div>
+        <h3 class="font-bold text-gray-900 mb-1" data-i18n="feat.invite.title">Invitations &amp; échanges</h3>
+        <p class="text-sm text-gray-600" data-i18n="feat.invite.desc">Alerte visuelle et focus automatique quand un de vos personnages reçoit une invitation de groupe ou une demande d'échange.</p>
+      </div>
+      <div class="bg-indigo-50 rounded-2xl p-6">
+        <div class="text-3xl mb-3">💬</div>
+        <h3 class="font-bold text-gray-900 mb-1" data-i18n="feat.pm.title">Messages privés</h3>
+        <p class="text-sm text-gray-600" data-i18n="feat.pm.desc">Tous vos MP reçus sur n'importe quel personnage sont regroupés dans un onglet dédié.</p>
+      </div>
+      <div class="bg-indigo-50 rounded-2xl p-6">
+        <div class="text-3xl mb-3">⌨️</div>
+        <h3 class="font-bold text-gray-900 mb-1" data-i18n="feat.hotkeys.title">Raccourcis globaux</h3>
+        <p class="text-sm text-gray-600" data-i18n="feat.hotkeys.desc">F1 / F2 / F3 pour passer d'un personnage à l'autre - fonctionnent même quand Dofus est au premier plan.</p>
+      </div>
+      <div class="bg-indigo-50 rounded-2xl p-6">
+        <div class="text-3xl mb-3">🌍</div>
+        <h3 class="font-bold text-gray-900 mb-1" data-i18n="feat.langs.title">Français · English · Español</h3>
+        <p class="text-sm text-gray-600" data-i18n="feat.langs.desc">L'interface s'adapte automatiquement à la langue de votre système.</p>
+      </div>
+      <div class="bg-indigo-50 rounded-2xl p-6">
+        <div class="text-3xl mb-3">🔒</div>
+        <h3 class="font-bold text-gray-900 mb-1" data-i18n="feat.safe.title">100 % non-intrusif</h3>
+        <p class="text-sm text-gray-600" data-i18n="feat.safe.desc">Focus Retro lit uniquement les notifications OS. Zéro interaction avec les fichiers ou le code du jeu.</p>
+      </div>
+    </div>
+
+    <!-- Account customization showcase -->
+    <div class="mt-14 flex flex-col md:flex-row items-center gap-8">
+      <img src="screenshots/perso.png" alt="Account customization"
+           class="w-56 rounded-2xl shadow-lg flex-shrink-0 mx-auto md:mx-0" />
+      <div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2" data-i18n="feat.accounts.title">Chaque personnage, à votre image</h3>
+        <p class="text-gray-600" data-i18n="feat.accounts.desc">Assignez une couleur et une icône à chaque compte pour les identifier d'un coup d'oeil. Réorganisez l'ordre par glisser-déposer - Focus Retro s'en souvient.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTALLATION GUIDE -->
+<section id="install" class="py-16 px-4 bg-gray-50">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-3xl font-bold text-center text-gray-900 mb-2" data-i18n="install.title">Installation</h2>
+    <p class="text-center text-gray-500 mb-10" data-i18n="install.subtitle">Prêt en moins de 2 minutes.</p>
+
+    <!-- OS Tabs -->
+    <div class="flex gap-2 mb-8 justify-center">
+      <button id="tab-windows-btn" onclick="showTab('windows')"
+        class="tab-btn px-5 py-2 rounded-lg border border-gray-300 font-semibold text-sm transition-colors">
+        🪟 Windows
+      </button>
+      <button id="tab-macos-btn" onclick="showTab('macos')"
+        class="tab-btn px-5 py-2 rounded-lg border border-gray-300 font-semibold text-sm transition-colors">
+        🍎 macOS
+      </button>
+    </div>
+
+    <!-- macOS Tab -->
+    <div id="tab-macos" class="tab-content">
+
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-8">
+        <div class="flex items-start gap-3 mb-4">
+          <span class="text-xl">⚙️</span>
+          <h3 class="font-bold text-blue-900" data-i18n="prereq.mac.title">Avant tout : deux réglages à faire</h3>
+        </div>
+        <div class="flex flex-col gap-6">
+          <div>
+            <p class="text-sm text-blue-800 font-semibold mb-1" data-i18n="prereq.win.step1">Activer les notifications sur Dofus Retro</p>
+            <p class="text-sm text-blue-700 mb-3" data-i18n="prereq.desc">Dans Dofus Retro, allez dans <strong>Options → Général</strong> et activez l'option <strong>« Notifications en arrière-plan »</strong>. À faire pour <strong>chaque fenêtre Dofus ouverte</strong>. Sans ça, Focus Retro ne recevra aucun événement.</p>
+            <img id="dofus-notif-screenshot"
+                 src="screenshots/dofus-notif-fr.png"
+                 alt="Dofus Options - Notifications en arrière-plan"
+                 class="max-w-xs w-full rounded-xl border border-blue-200 shadow-sm mx-auto block"
+                 onerror="this.style.display='none';" />
+          </div>
+          <div>
+            <p class="text-sm text-blue-800 font-semibold mb-1" data-i18n="prereq.mac.step2">Autoriser « Dofus Retro » dans macOS</p>
+            <p class="text-sm text-blue-700 mb-3" data-i18n="prereq.mac.desc">Dans Réglages Système → Notifications, trouvez <strong>« Dofus Retro »</strong> et activez les notifications. Sélectionnez <strong>« Bannières »</strong>.</p>
+            <img src="screenshots/mac-notif-settings.png"
+                 alt="macOS Notifications - Dofus Retro"
+                 class="max-w-xs w-full rounded-xl border border-blue-200 shadow-sm mx-auto block" />
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mb-8">
+        <a href="https://github.com/alacroix/focusretro/releases/download/v0.1.0/Focus.Retro_0.1.0_aarch64.dmg"
+           class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl shadow transition-colors mb-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          <span data-i18n="install.mac.downloadBtn">Télécharger le .dmg (Apple Silicon)</span>
+        </a>
+        <br />
+        <a href="https://github.com/alacroix/focusretro/releases/download/v0.1.0/Focus.Retro_0.1.0_x64.dmg"
+           class="text-sm text-indigo-600 hover:underline" data-i18n="install.mac.intelLink">Version Intel Mac</a>
+      </div>
+
+      <ol class="space-y-6">
+        <li class="flex gap-4">
+          <span class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+          <div>
+            <p class="font-semibold text-gray-900" data-i18n="install.mac.s1.title">Ouvrez le fichier .dmg</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="install.mac.s1.desc">Double-cliquez sur le fichier téléchargé pour monter le disque.</p>
+          </div>
+        </li>
+
+        <li class="flex gap-4">
+          <span class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+          <div>
+            <p class="font-semibold text-gray-900" data-i18n="install.mac.s2.title">Glissez Focus Retro dans Applications</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="install.mac.s2.desc">Faites glisser l'icône Focus Retro vers le dossier Applications dans la fenêtre du dmg.</p>
+          </div>
+        </li>
+
+
+        <li class="flex gap-4">
+          <span class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm">3</span>
+          <div>
+            <p class="font-semibold text-gray-900" data-i18n="install.mac.s3.title">macOS bloque l'application ?</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="install.mac.s3.desc">Faites un clic droit sur Focus Retro → « Ouvrir » → cliquez à nouveau sur « Ouvrir ». C'est normal pour les apps non signées.</p>
+          </div>
+        </li>
+
+        <li class="flex gap-4">
+          <span class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm">4</span>
+          <div>
+            <p class="font-semibold text-gray-900" data-i18n="install.mac.s4.title">Accordez la permission Accessibilité</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="install.mac.s4.desc">Au premier lancement, une fenêtre vous demande la permission. Allez dans Réglages Système → Confidentialité et sécurité → Accessibilité → activez Focus Retro.</p>
+          </div>
+        </li>
+
+
+        <li class="flex gap-4">
+          <span class="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-sm">✓</span>
+          <div>
+            <p class="font-semibold text-gray-900" data-i18n="install.mac.s5.title">C'est prêt !</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="install.mac.s5.desc">Focus Retro apparaît dans la barre de menus. Lancez Dofus Retro et jouez normalement.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <!-- Windows Tab -->
+    <div id="tab-windows" class="tab-content">
+
+      <!-- Windows prereqs merged -->
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-8">
+        <div class="flex items-start gap-3 mb-4">
+          <span class="text-xl">⚙️</span>
+          <h3 class="font-bold text-blue-900" data-i18n="prereq.win.title">Avant tout : deux réglages à faire</h3>
+        </div>
+        <div class="flex flex-col gap-6">
+          <div>
+            <p class="text-sm text-blue-800 font-semibold mb-1" data-i18n="prereq.win.step1">Activer les notifications sur Dofus Retro</p>
+            <p class="text-sm text-blue-700 mb-3" data-i18n="prereq.desc">Dans Dofus Retro, allez dans <strong>Options → Général</strong> et activez l'option <strong>« Notifications en arrière-plan »</strong>. À faire pour <strong>chaque fenêtre Dofus ouverte</strong>.</p>
+            <img src="screenshots/dofus-notif-fr.png" id="dofus-notif-screenshot-win"
+                 alt="Dofus Options - Notifications en arrière-plan"
+                 class="max-w-xs w-full rounded-xl border border-blue-200 shadow-sm mx-auto block"
+                 onerror="this.style.display='none';" />
+          </div>
+          <div>
+            <p class="text-sm text-blue-800 font-semibold mb-1" data-i18n="prereq.win.step2">Autoriser « Dofus 1 » dans Windows</p>
+            <p class="text-sm text-blue-700 mb-3" data-i18n="prereq.win.desc">Allez dans <strong>Paramètres → Système → Actions et notifications</strong>, trouvez « Dofus 1 » dans la liste et activez-le. Activer les bannières est optionnel.</p>
+            <img src="screenshots/win-dofus-global.png" alt="Dofus dans la liste des notifications"
+                 class="max-w-xs w-full rounded-xl border border-blue-200 shadow-sm mx-auto block" />
+            <img src="screenshots/win-dofus-settings.png" alt="Paramètres notifications Dofus"
+                 class="max-w-xs w-full rounded-xl border border-blue-200 shadow-sm mx-auto block mt-3" />
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mb-8">
+        <a href="https://github.com/alacroix/focusretro/releases/download/v0.1.0/Focus.Retro_0.1.0_x64-setup.exe"
+           class="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white font-semibold px-6 py-3 rounded-xl shadow transition-colors mb-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          <span data-i18n="install.win.downloadBtn">Télécharger l'installeur .exe</span>
+        </a>
+        <br />
+        <a href="https://github.com/alacroix/focusretro/releases/download/v0.1.0/Focus.Retro_0.1.0_x64_en-US.msi"
+           class="text-sm text-indigo-600 hover:underline" data-i18n="install.win.msiLink">Version MSI</a>
+      </div>
+
+      <ol class="space-y-6">
+        <li class="flex gap-4">
+          <span class="flex-shrink-0 w-8 h-8 bg-gray-800 text-white rounded-full flex items-center justify-center font-bold text-sm">1</span>
+          <div>
+            <p class="font-semibold text-gray-900" data-i18n="install.win.s1.title">Lancez l'installeur</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="install.win.s1.desc">Double-cliquez sur le fichier .exe téléchargé.</p>
+          </div>
+        </li>
+
+        <li class="flex gap-4">
+          <span class="flex-shrink-0 w-8 h-8 bg-gray-800 text-white rounded-full flex items-center justify-center font-bold text-sm">2</span>
+          <div>
+            <p class="font-semibold text-gray-900" data-i18n="install.win.s2.title">Windows SmartScreen vous avertit ?</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="install.win.s2.desc">C'est normal pour les apps sans signature. Cliquez sur « Informations complémentaires » puis sur « Exécuter quand même ».</p>
+          </div>
+        </li>
+
+
+        <li class="flex gap-4">
+          <span class="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-sm">✓</span>
+          <div>
+            <p class="font-semibold text-gray-900" data-i18n="install.win.s4.title">C'est prêt !</p>
+            <p class="text-sm text-gray-600 mt-1" data-i18n="install.win.s4.desc">Focus Retro apparaît dans la barre des tâches. Lancez Dofus Retro et jouez normalement.</p>
+          </div>
+        </li>
+      </ol>
+    </div>
+
+    <p class="text-center mt-8 text-sm text-gray-500">
+      <a href="https://github.com/alacroix/focusretro/releases/tag/v0.1.0" target="_blank" rel="noopener"
+         class="text-indigo-600 hover:underline" data-i18n="install.allReleases">Voir tous les fichiers de la release v0.1.0</a>
+    </p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq" class="py-16 px-4 bg-white">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-3xl font-bold text-center text-gray-900 mb-10">FAQ</h2>
+    <div class="space-y-4">
+
+      <details class="bg-gray-50 rounded-2xl p-6 cursor-pointer group">
+        <summary class="font-semibold text-gray-900 list-none flex justify-between items-center">
+          <span data-i18n="faq.ban.q">Est-ce que je risque d'être banni ?</span>
+          <span class="text-indigo-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="mt-3 text-gray-700 text-sm" data-i18n="faq.ban.a">
+          Non. Ankama tolère officiellement les outils de gestion de fenêtre qui n'interagissent pas avec les fichiers du jeu. Focus Retro lit uniquement les notifications système de votre OS - il ne touche jamais au jeu lui-même.
+          <a href="https://x.com/DOFUSRetro_FR" target="_blank" rel="noopener" class="text-indigo-600 hover:underline ml-1">Source : @DOFUSRetro_FR</a>
+        </p>
+      </details>
+
+      <details class="bg-gray-50 rounded-2xl p-6 cursor-pointer group">
+        <summary class="font-semibold text-gray-900 list-none flex justify-between items-center">
+          <span data-i18n="faq.bot.q">C'est un bot ou une macro ?</span>
+          <span class="text-indigo-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="mt-3 text-gray-700 text-sm" data-i18n="faq.bot.a">
+          Non. Les bots et les macros sont interdits, et Focus Retro n'est ni l'un ni l'autre. Il se contente de mettre votre fenêtre au premier plan - exactement comme si vous cliquiez dessus. Vous jouez toujours vous-même.
+        </p>
+      </details>
+
+      <details class="bg-gray-50 rounded-2xl p-6 cursor-pointer group">
+        <summary class="font-semibold text-gray-900 list-none flex justify-between items-center">
+          <span data-i18n="faq.auto.q">Est-ce qu'il joue à ma place ?</span>
+          <span class="text-indigo-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="mt-3 text-gray-700 text-sm" data-i18n="faq.auto.a">
+          Non. Focus Retro bascule uniquement la fenêtre au premier plan. Vous devez toujours jouer votre tour vous-même.
+        </p>
+      </details>
+
+      <details class="bg-gray-50 rounded-2xl p-6 cursor-pointer group">
+        <summary class="font-semibold text-gray-900 list-none flex justify-between items-center">
+          <span data-i18n="faq.privacy.q">Est-ce qu'il collecte mes données ?</span>
+          <span class="text-indigo-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <div class="mt-3 text-gray-700 text-sm space-y-2" data-i18n="faq.privacy.a">
+          <p>Non. Focus Retro ne collecte, n'envoie et ne stocke aucune donnée personnelle. Tout reste sur votre machine.</p>
+          <p>La seule connexion réseau est la <strong>vérification de mise à jour</strong> au lancement, qui interroge uniquement GitHub Releases pour comparer les numéros de version. Aucune information sur vous ou votre usage n'est transmise.</p>
+          <p>Le code source complet est disponible sur GitHub - vous pouvez l'auditer, le compiler vous-même et vérifier chaque ligne.</p>
+        </div>
+      </details>
+
+      <details class="bg-gray-50 rounded-2xl p-6 cursor-pointer group">
+        <summary class="font-semibold text-gray-900 list-none flex justify-between items-center">
+          <span data-i18n="faq.free.q">C'est gratuit ?</span>
+          <span class="text-indigo-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="mt-3 text-gray-700 text-sm" data-i18n="faq.free.a">
+          Oui, entièrement gratuit et open source (licence MIT). Aucun compte, aucun abonnement, aucune donnée collectée.
+        </p>
+      </details>
+
+      <details class="bg-gray-50 rounded-2xl p-6 cursor-pointer group">
+        <summary class="font-semibold text-gray-900 list-none flex justify-between items-center">
+          <span data-i18n="faq.multi.q">Ça apporte quoi de plus qu'Organizer ?</span>
+          <span class="text-indigo-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="mt-3 text-gray-700 text-sm" data-i18n="faq.multi.a">
+          Oui. Focus Retro détecte toutes vos fenêtres Dofus Retro ouvertes et bascule automatiquement sur la bonne.
+        </p>
+      </details>
+
+      <details class="bg-gray-50 rounded-2xl p-6 cursor-pointer group">
+        <summary class="font-semibold text-gray-900 list-none flex justify-between items-center">
+          <span data-i18n="faq.support.q">J'ai un problème, où demander de l'aide ?</span>
+          <span class="text-indigo-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="mt-3 text-gray-700 text-sm" data-i18n="faq.support.a">
+          Rejoignez le serveur Discord - c'est l'endroit le plus rapide pour obtenir de l'aide.
+          <a href="https://discord.gg/YKWw6CvCA7" target="_blank" rel="noopener" class="text-indigo-600 hover:underline ml-1">discord.gg/YKWw6CvCA7</a>
+        </p>
+      </details>
+
+      <details class="bg-gray-50 rounded-2xl p-6 cursor-pointer group">
+        <summary class="font-semibold text-gray-900 list-none flex justify-between items-center">
+          <span data-i18n="faq.compat.q">Quels systèmes sont supportés ?</span>
+          <span class="text-indigo-500 group-open:rotate-180 transition-transform">▼</span>
+        </summary>
+        <p class="mt-3 text-gray-700 text-sm" data-i18n="faq.compat.a">
+          macOS 12 (Monterey) ou plus récent - Intel et Apple Silicon. Windows 10 version 1903 ou plus récent, Windows 11.
+        </p>
+      </details>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="bg-gray-900 text-gray-400 py-10 px-4 text-center text-sm">
+  <div class="max-w-3xl mx-auto space-y-3">
+    <div class="flex justify-center gap-4 flex-wrap">
+      <a href="https://github.com/alacroix/focusretro" target="_blank" rel="noopener" class="hover:text-white">GitHub</a>
+      <span>·</span>
+      <a href="https://discord.gg/YKWw6CvCA7" target="_blank" rel="noopener" class="hover:text-white" data-i18n="footer.discord">Discord</a>
+      <span>·</span>
+      <a href="https://github.com/alacroix/focusretro/releases" target="_blank" rel="noopener" class="hover:text-white" data-i18n="footer.releases">Releases</a>
+    </div>
+    <p data-i18n="footer.legal">Licence MIT · Non affilié à Ankama · Dofus est une marque déposée d'Ankama</p>
+  </div>
+</footer>
+
+<script>
+  // ── TRANSLATIONS ──────────────────────────────────────────────────────────
+  const translations = {
+    fr: {
+      "nav.features": "Fonctionnalités",
+      "nav.install": "Installation",
+      "hero.headline": "Le multicompte, sans la prise de tête.",
+      "hero.subline": "Focus Retro bascule automatiquement sur votre fenêtre Dofus Retro quand c'est votre tour, quand vous recevez une invitation de groupe ou une demande d'échange.",
+      "hero.downloadMac": "Télécharger pour macOS",
+      "hero.downloadWin": "Télécharger pour Windows",
+      "hero.allDownloads": "Tous les téléchargements",
+      "hero.badges": "Open source · Gratuit · Ne modifie pas le jeu",
+      "allowed.title": "C'est autorisé par Ankama ?",
+      "allowed.caption": "Focus Retro est un <strong>outil de gestion de fenêtre</strong>, conçu avec une seule priorité : rester propre et transparent pour la communauté. Pas de modification du jeu, pas de contournement, pas de zone grise. Il lit uniquement les notifications système de votre OS - rien de plus. Le code source est entièrement public et auditable.",
+      "features.title": "Fonctionnalités",
+      "features.subtitle": "Tout ce dont vous avez besoin pour jouer plusieurs personnages sans stress.",
+      "feat.turn.title": "Focus automatique à votre tour",
+      "feat.turn.desc": "Dès que c'est votre tour, la bonne fenêtre de jeu passe au premier plan. Aucune manipulation manuelle.",
+      "feat.invite.title": "Invitations & échanges",
+      "feat.invite.desc": "Alerte visuelle et focus automatique quand un de vos personnages reçoit une invitation de groupe ou une demande d'échange.",
+      "feat.pm.title": "Messages privés",
+      "feat.pm.desc": "Tous vos MP reçus sur n'importe quel personnage sont regroupés dans un onglet dédié.",
+      "feat.hotkeys.title": "Raccourcis globaux",
+      "feat.hotkeys.desc": "F1 / F2 / F3 pour passer d'un personnage à l'autre - fonctionnent même quand Dofus est au premier plan. Entièrement personnalisables dans les réglages.",
+      "feat.langs.title": "Français · English · Español",
+      "feat.langs.desc": "L'interface s'adapte automatiquement à la langue de votre système.",
+      "feat.safe.title": "100 % non-intrusif",
+      "feat.safe.desc": "Focus Retro lit uniquement les notifications OS. Zéro interaction avec les fichiers ou le code du jeu.",
+      "feat.accounts.title": "Chaque personnage, à votre image",
+      "feat.accounts.desc": "Assignez une couleur et une icône à chaque compte pour les identifier d'un coup d'oeil. Réorganisez l'ordre par glisser-déposer - Focus Retro s'en souvient.",
+      "prereq.mac.title": "Avant tout : deux réglages à faire",
+      "prereq.mac.step2": "Autoriser « Dofus Retro » dans macOS",
+      "prereq.mac.desc": "Dans Réglages Système → Notifications, trouvez <strong>« Dofus Retro »</strong> et activez les notifications. Sélectionnez <strong>« Bannières »</strong>.",
+      "prereq.win.title": "Avant tout : deux réglages à faire",
+      "prereq.win.desc": "Allez dans <strong>Paramètres Windows → Système → Actions et notifications</strong>, trouvez « Dofus 1 » dans la liste et activez-le. Activer les bannières est optionnel - Focus Retro fonctionne dans les deux cas.",
+      "prereq.win.step1": "Activer les notifications sur Dofus Retro",
+      "prereq.win.step2": "Autoriser « Dofus 1 » dans Windows",
+      "prereq.title": "Avant tout : activez les notifications en arrière-plan dans Dofus",
+      "prereq.desc": "Dans Dofus Retro, allez dans <strong>Options → Général</strong> et activez l'option <strong>« Notifications en arrière-plan »</strong>. À faire pour <strong>chaque fenêtre Dofus ouverte</strong>. Sans ça, Focus Retro ne recevra aucun événement.",
+      "install.title": "Installation",
+      "install.subtitle": "Prêt en moins de 2 minutes.",
+      "install.mac.downloadBtn": "Télécharger le .dmg (Apple Silicon)",
+      "install.mac.intelLink": "Version Intel Mac",
+      "install.mac.s1.title": "Ouvrez le fichier .dmg",
+      "install.mac.s1.desc": "Double-cliquez sur le fichier téléchargé pour monter le disque.",
+      "install.mac.s2.title": "Glissez Focus Retro dans Applications",
+      "install.mac.s2.desc": "Faites glisser l'icône Focus Retro vers le dossier Applications dans la fenêtre du dmg.",
+      "install.mac.s3.title": "macOS bloque l'application ?",
+      "install.mac.s3.desc": "Faites un clic droit sur Focus Retro → « Ouvrir » → cliquez à nouveau sur « Ouvrir ». C'est normal pour les apps non signées.",
+      "install.mac.s4.title": "Accordez la permission Accessibilité",
+      "install.mac.s4.desc": "Au premier lancement, une fenêtre vous demande la permission. Allez dans Réglages Système → Confidentialité et sécurité → Accessibilité → activez Focus Retro.",
+      "install.mac.s5.title": "C'est prêt !",
+      "install.mac.s5.desc": "Focus Retro apparaît dans la barre de menus. Lancez Dofus Retro et jouez normalement.",
+      "install.win.downloadBtn": "Télécharger l'installeur .exe",
+      "install.win.msiLink": "Version MSI",
+      "install.win.s1.title": "Lancez l'installeur",
+      "install.win.s1.desc": "Double-cliquez sur le fichier .exe téléchargé.",
+      "install.win.s2.title": "Windows SmartScreen vous avertit ?",
+      "install.win.s2.desc": "C'est normal pour les apps sans signature. Cliquez sur « Informations complémentaires » puis sur « Exécuter quand même ».",
+      "install.win.s3.title": "Autorisez l'accès aux notifications",
+      "install.win.s3.desc": "Au premier lancement, Windows vous demande d'autoriser Focus Retro à lire les notifications. Acceptez.",
+      "install.win.s4.title": "C'est prêt !",
+      "install.win.s4.desc": "Focus Retro apparaît dans la barre des tâches. Lancez Dofus Retro et jouez normalement.",
+      "install.allReleases": "Voir tous les fichiers de la release v0.1.0",
+      "screenshot.soon": "Capture d'écran à venir",
+      "faq.ban.q": "Est-ce que je risque d'être banni ?",
+      "faq.ban.a": "Non. Ankama tolère officiellement les outils de gestion de fenêtre qui n'interagissent pas avec les fichiers du jeu. Focus Retro lit uniquement les notifications système de votre OS - il ne touche jamais au jeu lui-même.",
+      "faq.bot.q": "C'est un bot ou une macro ?",
+      "faq.bot.a": "Non. Les bots et les macros sont interdits, et Focus Retro n'est ni l'un ni l'autre. Il se contente de mettre votre fenêtre au premier plan - exactement comme si vous cliquiez dessus. Vous jouez toujours vous-même.",
+      "faq.auto.q": "Est-ce qu'il joue à ma place ?",
+      "faq.auto.a": "Non. Focus Retro bascule uniquement la fenêtre au premier plan. Vous devez toujours jouer votre tour vous-même.",
+      "faq.privacy.q": "Est-ce qu'il collecte mes données ?",
+      "faq.privacy.a": "<p>Non. Focus Retro ne collecte, n'envoie et ne stocke aucune donnée personnelle. Tout reste sur votre machine.</p><p class=\"mt-2\">La seule connexion réseau est la <strong>vérification de mise à jour</strong> au lancement, qui interroge uniquement GitHub Releases pour comparer les numéros de version. Aucune information sur vous ou votre usage n'est transmise.</p><p class=\"mt-2\">Le code source complet est disponible sur GitHub - vous pouvez l'auditer, le compiler vous-même et vérifier chaque ligne.</p>",
+      "faq.free.q": "C'est gratuit ?",
+      "faq.free.a": "Oui, entièrement gratuit et open source (licence MIT). Aucun compte, aucun abonnement, aucune donnée collectée.",
+      "faq.multi.q": "Ça apporte quoi de plus qu'Organizer ?",
+      "faq.multi.a": "Focus Retro fait tout ce que fait Organizer - détecter vos fenêtres Dofus et basculer entre elles avec des raccourcis clavier - et y ajoute l'automatisme en combat : la bonne fenêtre vient toute seule quand c'est votre tour, sur invitation de groupe ou demande d'échange. C'est un remplacement complet, pas un outil en plus. Et il tourne sur macOS.",
+      "faq.support.q": "J'ai un problème, où demander de l'aide ?",
+      "faq.support.a": "Rejoignez le serveur Discord - c'est l'endroit le plus rapide pour obtenir de l'aide. <a href=\"https://discord.gg/YKWw6CvCA7\" target=\"_blank\" rel=\"noopener\" class=\"text-indigo-600 hover:underline ml-1\">discord.gg/YKWw6CvCA7</a>",
+      "faq.compat.q": "Quels systèmes sont supportés ?",
+      "faq.compat.a": "macOS 12 (Monterey) ou plus récent - Intel et Apple Silicon. Windows 10 version 1903 ou plus récent, Windows 11.",
+      "footer.discord": "Discord",
+      "footer.releases": "Releases",
+      "footer.tweet": "Source Ankama",
+      "footer.legal": "Licence MIT · Non affilié à Ankama · Dofus est une marque déposée d'Ankama"
+    },
+    en: {
+      "nav.features": "Features",
+      "nav.install": "Install",
+      "hero.headline": "Multi-account play, without the hassle.",
+      "hero.subline": "Focus Retro automatically brings your Dofus Retro window to the front when it's your turn, when you receive a group invite, or when someone wants to trade.",
+      "hero.downloadMac": "Download for macOS",
+      "hero.downloadWin": "Download for Windows",
+      "hero.allDownloads": "All downloads",
+      "hero.badges": "Open source · Free · No game modification",
+      "allowed.title": "Is it allowed by Ankama?",
+      "allowed.caption": "Focus Retro is a <strong>window management tool</strong>, built with one priority: stay clean and transparent for the community. No game modification, no workarounds, no grey areas. It only reads your OS system notifications - nothing more. The full source code is public and auditable.",
+      "features.title": "Features",
+      "features.subtitle": "Everything you need to play multiple characters without stress.",
+      "feat.turn.title": "Auto-focus on your turn",
+      "feat.turn.desc": "As soon as it's your turn, the right game window comes to the front. No manual action needed.",
+      "feat.invite.title": "Group invites & trades",
+      "feat.invite.desc": "Visual alert and auto-focus when one of your characters receives a group invite or trade request.",
+      "feat.pm.title": "Private messages",
+      "feat.pm.desc": "All your PMs received on any character are gathered in a dedicated tab.",
+      "feat.hotkeys.title": "Global hotkeys",
+      "feat.hotkeys.desc": "F1 / F2 / F3 to switch between characters - works even when Dofus is in the foreground. Fully customizable in settings.",
+      "feat.langs.title": "French · English · Spanish",
+      "feat.langs.desc": "The interface automatically adapts to your system language.",
+      "feat.safe.title": "100% non-intrusive",
+      "feat.safe.desc": "Focus Retro only reads OS notifications. Zero interaction with game files or code.",
+      "feat.accounts.title": "Each character, your way",
+      "feat.accounts.desc": "Assign a color and icon to each account to identify them at a glance. Drag and drop to reorder - Focus Retro remembers.",
+      "prereq.mac.title": "Before you start: two settings to configure",
+      "prereq.mac.step2": "Allow \"Dofus Retro\" in macOS",
+      "prereq.mac.desc": "In System Settings → Notifications, find <strong>\"Dofus Retro\"</strong> and enable notifications. Select <strong>\"Banners\"</strong>.",
+      "prereq.win.title": "Before you start: two settings to configure",
+      "prereq.win.desc": "Go to <strong>Windows Settings → System → Notifications & actions</strong>, find &quot;Dofus 1&quot; in the list and enable it. Enabling banners is optional - Focus Retro works either way.",
+      "prereq.win.step1": "Enable notifications in Dofus Retro",
+      "prereq.win.step2": "Allow \"Dofus 1\" in Windows",
+      "prereq.title": "Before you start: enable background notifications in Dofus",
+      "prereq.desc": "In Dofus Retro, go to <strong>Options → General</strong> and enable <strong>\"Background notifications\"</strong>. Do this for <strong>every open Dofus window</strong>. Without this, Focus Retro won't receive any events.",
+      "install.title": "Installation",
+      "install.subtitle": "Ready in under 2 minutes.",
+      "install.mac.downloadBtn": "Download .dmg (Apple Silicon)",
+      "install.mac.intelLink": "Intel Mac version",
+      "install.mac.s1.title": "Open the .dmg file",
+      "install.mac.s1.desc": "Double-click the downloaded file to mount the disk.",
+      "install.mac.s2.title": "Drag Focus Retro to Applications",
+      "install.mac.s2.desc": "Drag the Focus Retro icon to the Applications folder in the dmg window.",
+      "install.mac.s3.title": "macOS blocking the app?",
+      "install.mac.s3.desc": "Right-click Focus Retro → \"Open\" → click \"Open\" again. This is normal for unsigned apps.",
+      "install.mac.s4.title": "Grant Accessibility permission",
+      "install.mac.s4.desc": "On first launch, a window asks for permission. Go to System Settings → Privacy & Security → Accessibility → enable Focus Retro.",
+      "install.mac.s5.title": "You're all set!",
+      "install.mac.s5.desc": "Focus Retro appears in your menu bar. Launch Dofus Retro and play normally.",
+      "install.win.downloadBtn": "Download .exe installer",
+      "install.win.msiLink": "MSI version",
+      "install.win.s1.title": "Run the installer",
+      "install.win.s1.desc": "Double-click the downloaded .exe file.",
+      "install.win.s2.title": "Windows SmartScreen warning?",
+      "install.win.s2.desc": "This is normal for unsigned apps. Click \"More info\" then \"Run anyway\".",
+      "install.win.s3.title": "Allow notification access",
+      "install.win.s3.desc": "On first launch, Windows asks you to allow Focus Retro to read notifications. Accept.",
+      "install.win.s4.title": "You're all set!",
+      "install.win.s4.desc": "Focus Retro appears in your system tray. Launch Dofus Retro and play normally.",
+      "install.allReleases": "See all v0.1.0 release assets",
+      "screenshot.soon": "Screenshot coming soon",
+      "faq.ban.q": "Can I get banned?",
+      "faq.ban.a": "No. Ankama officially tolerates window management tools that don't interact with game files. Focus Retro only reads your OS system notifications - it never touches the game itself.",
+      "faq.bot.q": "Is it a bot or a macro?",
+      "faq.bot.a": "No. Bots and macros are forbidden, and Focus Retro is neither. It simply brings your window to the front - exactly like clicking on it yourself. You still play your turn.",
+      "faq.auto.q": "Does it play the game for me?",
+      "faq.auto.a": "No. Focus Retro only focuses the window. You still need to play your turn yourself.",
+      "faq.privacy.q": "Does it collect my data?",
+      "faq.privacy.a": "<p>No. Focus Retro collects, sends, and stores no personal data. Everything stays on your machine.</p><p class=\"mt-2\">The only network connection is the <strong>update check</strong> on launch, which queries GitHub Releases to compare version numbers. No information about you or your usage is ever transmitted.</p><p class=\"mt-2\">The full source code is available on GitHub - you can audit it, build it yourself, and verify every line.</p>",
+      "faq.free.q": "Is it free?",
+      "faq.free.a": "Yes, completely free and open source (MIT license). No account, no subscription, no data collected.",
+      "faq.multi.q": "What does it offer over Organizer?",
+      "faq.multi.a": "Focus Retro does everything Organizer does - detect your Dofus windows and switch between them with hotkeys - and adds combat automation on top: the right window comes forward by itself on your turn, on a group invite, or a trade request. It's a full replacement, not an extra tool. And it runs on macOS.",
+      "faq.support.q": "I have a problem - where do I get help?",
+      "faq.support.a": "Join the Discord server - it's the fastest way to get help. <a href=\"https://discord.gg/YKWw6CvCA7\" target=\"_blank\" rel=\"noopener\" class=\"text-indigo-600 hover:underline ml-1\">discord.gg/YKWw6CvCA7</a>",
+      "faq.compat.q": "Which systems are supported?",
+      "faq.compat.a": "macOS 12 (Monterey) or later - Intel and Apple Silicon. Windows 10 version 1903 or later, Windows 11.",
+      "footer.discord": "Discord",
+      "footer.releases": "Releases",
+      "footer.tweet": "Ankama source",
+      "footer.legal": "MIT License · Not affiliated with Ankama · Dofus is a trademark of Ankama"
+    },
+    es: {
+      "nav.features": "Características",
+      "nav.install": "Instalación",
+      "hero.headline": "Multicuenta, sin complicaciones.",
+      "hero.subline": "Focus Retro lleva automáticamente tu ventana de Dofus Retro al frente cuando es tu turno, cuando recibes una invitación de grupo o una solicitud de intercambio.",
+      "hero.downloadMac": "Descargar para macOS",
+      "hero.downloadWin": "Descargar para Windows",
+      "hero.allDownloads": "Todas las descargas",
+      "hero.badges": "Código abierto · Gratis · Sin modificar el juego",
+      "allowed.title": "¿Lo permite Ankama?",
+      "allowed.caption": "Focus Retro es una <strong>herramienta de gestión de ventanas</strong>, creada con una sola prioridad: ser limpia y transparente para la comunidad. Sin modificación del juego, sin atajos, sin zonas grises. Solo lee las notificaciones del sistema operativo - nada más. El código fuente completo es público y auditable.",
+      "features.title": "Características",
+      "features.subtitle": "Todo lo que necesitas para jugar varios personajes sin estrés.",
+      "feat.turn.title": "Foco automático en tu turno",
+      "feat.turn.desc": "En cuanto es tu turno, la ventana correcta pasa al frente. Sin ninguna acción manual.",
+      "feat.invite.title": "Invitaciones y comercios",
+      "feat.invite.desc": "Alerta visual y foco automático cuando uno de tus personajes recibe una invitación de grupo o solicitud de intercambio.",
+      "feat.pm.title": "Mensajes privados",
+      "feat.pm.desc": "Todos tus MP recibidos en cualquier personaje se agrupan en una pestaña dedicada.",
+      "feat.hotkeys.title": "Atajos globales",
+      "feat.hotkeys.desc": "F1 / F2 / F3 para cambiar entre personajes - funcionan incluso cuando Dofus está en primer plano. Totalmente personalizables en los ajustes.",
+      "feat.langs.title": "Francés · Inglés · Español",
+      "feat.langs.desc": "La interfaz se adapta automáticamente al idioma de tu sistema.",
+      "feat.safe.title": "100% no intrusivo",
+      "feat.safe.desc": "Focus Retro solo lee notificaciones del SO. Cero interacción con archivos o código del juego.",
+      "feat.accounts.title": "Cada personaje, a tu manera",
+      "feat.accounts.desc": "Asigna un color e icono a cada cuenta para identificarlos de un vistazo. Reordénalos arrastrando y soltando - Focus Retro lo recuerda.",
+      "prereq.mac.title": "Antes de empezar: dos ajustes que configurar",
+      "prereq.mac.step2": "Permitir «Dofus Retro» en macOS",
+      "prereq.mac.desc": "En Configuración del Sistema → Notificaciones, busca <strong>«Dofus Retro»</strong> y activa las notificaciones. Selecciona <strong>«Banners»</strong>.",
+      "prereq.win.title": "Antes de empezar: dos ajustes que configurar",
+      "prereq.win.desc": "Ve a <strong>Configuración de Windows → Sistema → Notificaciones y acciones</strong>, busca «Dofus 1» en la lista y actívalo. Activar los banners es opcional - Focus Retro funciona de las dos formas.",
+      "prereq.win.step1": "Activar las notificaciones en Dofus Retro",
+      "prereq.win.step2": "Permitir «Dofus 1» en Windows",
+      "prereq.title": "Antes de empezar: activa las notificaciones en segundo plano en Dofus",
+      "prereq.desc": "En Dofus Retro, ve a <strong>Opciones → General</strong> y activa la opción <strong>«Notificaciones en segundo plano»</strong>. Hazlo en <strong>cada ventana de Dofus abierta</strong>. Sin esto, Focus Retro no recibirá ningún evento.",
+      "install.title": "Instalación",
+      "install.subtitle": "Listo en menos de 2 minutos.",
+      "install.mac.downloadBtn": "Descargar .dmg (Apple Silicon)",
+      "install.mac.intelLink": "Versión Intel Mac",
+      "install.mac.s1.title": "Abre el archivo .dmg",
+      "install.mac.s1.desc": "Haz doble clic en el archivo descargado para montar el disco.",
+      "install.mac.s2.title": "Arrastra Focus Retro a Aplicaciones",
+      "install.mac.s2.desc": "Arrastra el icono de Focus Retro a la carpeta Aplicaciones en la ventana del dmg.",
+      "install.mac.s3.title": "¿macOS bloquea la aplicación?",
+      "install.mac.s3.desc": "Haz clic derecho en Focus Retro → «Abrir» → vuelve a hacer clic en «Abrir». Esto es normal para apps no firmadas.",
+      "install.mac.s4.title": "Concede permiso de Accesibilidad",
+      "install.mac.s4.desc": "En el primer inicio, una ventana pide permiso. Ve a Configuración del Sistema → Privacidad y seguridad → Accesibilidad → activa Focus Retro.",
+      "install.mac.s5.title": "¡Todo listo!",
+      "install.mac.s5.desc": "Focus Retro aparece en la barra de menú. Inicia Dofus Retro y juega normalmente.",
+      "install.win.downloadBtn": "Descargar instalador .exe",
+      "install.win.msiLink": "Versión MSI",
+      "install.win.s1.title": "Ejecuta el instalador",
+      "install.win.s1.desc": "Haz doble clic en el archivo .exe descargado.",
+      "install.win.s2.title": "¿Advertencia de Windows SmartScreen?",
+      "install.win.s2.desc": "Es normal para apps sin firma. Haz clic en «Más información» y luego en «Ejecutar de todas formas».",
+      "install.win.s3.title": "Permite el acceso a notificaciones",
+      "install.win.s3.desc": "En el primer inicio, Windows pide que autorices a Focus Retro a leer notificaciones. Acepta.",
+      "install.win.s4.title": "¡Todo listo!",
+      "install.win.s4.desc": "Focus Retro aparece en la bandeja del sistema. Inicia Dofus Retro y juega normalmente.",
+      "install.allReleases": "Ver todos los archivos de la versión v0.1.0",
+      "screenshot.soon": "Captura de pantalla próximamente",
+      "faq.ban.q": "¿Puedo ser baneado?",
+      "faq.ban.a": "No. Ankama tolera oficialmente las herramientas de gestión de ventanas que no interactúan con los archivos del juego. Focus Retro solo lee las notificaciones del sistema - nunca toca el juego en sí.",
+      "faq.bot.q": "¿Es un bot o una macro?",
+      "faq.bot.a": "No. Los bots y las macros están prohibidos, y Focus Retro no es ninguno de los dos. Simplemente trae tu ventana al frente - exactamente como si hicieras clic tú mismo. Tú sigues jugando.",
+      "faq.auto.q": "¿Juega por mí?",
+      "faq.auto.a": "No. Focus Retro solo enfoca la ventana. Tú sigues teniendo que jugar tu turno.",
+      "faq.privacy.q": "¿Recopila mis datos?",
+      "faq.privacy.a": "<p>No. Focus Retro no recopila, envía ni almacena ningún dato personal. Todo permanece en tu máquina.</p><p class=\"mt-2\">La única conexión de red es la <strong>verificación de actualizaciones</strong> al iniciar, que consulta únicamente GitHub Releases para comparar números de versión. No se transmite ninguna información sobre ti ni sobre tu uso.</p><p class=\"mt-2\">El código fuente completo está disponible en GitHub - puedes auditarlo, compilarlo tú mismo y verificar cada línea.</p>",
+      "faq.free.q": "¿Es gratuito?",
+      "faq.free.a": "Sí, completamente gratuito y de código abierto (licencia MIT). Sin cuenta, sin suscripción, sin datos recopilados.",
+      "faq.multi.q": "¿Qué aporta respecto a Organizer?",
+      "faq.multi.a": "Focus Retro hace todo lo que hace Organizer - detectar tus ventanas de Dofus y cambiar entre ellas con atajos de teclado - y añade la automatización en combate: la ventana correcta aparece sola en tu turno, en una invitación de grupo o solicitud de intercambio. Es un reemplazo completo, no una herramienta extra. Y funciona en macOS.",
+      "faq.support.q": "Tengo un problema - ¿dónde pido ayuda?",
+      "faq.support.a": "Únete al servidor de Discord - es la forma más rápida de obtener ayuda. <a href=\"https://discord.gg/YKWw6CvCA7\" target=\"_blank\" rel=\"noopener\" class=\"text-indigo-600 hover:underline ml-1\">discord.gg/YKWw6CvCA7</a>",
+      "faq.compat.q": "¿Qué sistemas son compatibles?",
+      "faq.compat.a": "macOS 12 (Monterey) o posterior - Intel y Apple Silicon. Windows 10 versión 1903 o posterior, Windows 11.",
+      "footer.discord": "Discord",
+      "footer.releases": "Releases",
+      "footer.tweet": "Fuente Ankama",
+      "footer.legal": "Licencia MIT · No afiliado a Ankama · Dofus es una marca registrada de Ankama"
+    }
+  };
+
+  // ── LANGUAGE ──────────────────────────────────────────────────────────────
+  function setLang(lang) {
+    if (!translations[lang]) return;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (translations[lang][key] !== undefined) {
+        el.innerHTML = translations[lang][key];
+      }
+    });
+    // Update Dofus prereq screenshots to match current language
+    ['dofus-notif-screenshot', 'dofus-notif-screenshot-win'].forEach(id => {
+      const img = document.getElementById(id);
+      if (img) { img.src = 'screenshots/dofus-notif-' + lang + '.png'; img.style.display = ''; }
+    });
+    const placeholder = document.querySelector('#dofus-notif-screenshot + div');
+    if (placeholder) placeholder.style.display = 'none';
+    localStorage.setItem('lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+    const btns = document.querySelectorAll('.lang-btn');
+    const langOrder = ['fr', 'en', 'es'];
+    const idx = langOrder.indexOf(lang);
+    if (btns[idx]) btns[idx].classList.add('active');
+  }
+
+  // ── OS TABS ───────────────────────────────────────────────────────────────
+  function showTab(os) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + os).classList.add('active');
+    document.getElementById('tab-' + os + '-btn').classList.add('active');
+  }
+
+  // ── INIT ──────────────────────────────────────────────────────────────────
+  (function init() {
+    // Language
+    const stored = localStorage.getItem('lang');
+    const browser = (navigator.language || 'fr').slice(0, 2);
+    const lang = (stored && translations[stored]) ? stored
+                 : (translations[browser] ? browser : 'fr');
+    setLang(lang);
+
+    // OS tab + hero button
+    const isWindows = navigator.platform.startsWith('Win')
+      || navigator.userAgent.includes('Windows');
+    showTab(isWindows ? 'windows' : 'macos');
+    document.getElementById('hero-btn-windows').style.display = isWindows ? '' : 'none';
+    document.getElementById('hero-btn-macos').style.display = isWindows ? 'none' : '';
+  })();
+</script>
+
+</body>
+</html>
