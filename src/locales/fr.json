@@ -77,6 +77,13 @@
   "setup.screen_recording_name": "Enregistrement d'écran",
   "setup.screen_recording_why": "Nécessaire pour lire les titres des fenêtres et détecter les personnages Dofus Retro actifs.",
 
+  "layout.maximize": "Maximiser tout",
+  "layout.split_h": "Partage horizontal",
+  "layout.split_v": "Partage vertical",
+  "layout.grid_2x2": "Grille 2×2",
+  "layout.grid_3x2": "Grille 3×2",
+  "layout.grid_4x2": "Grille 4×2",
+
   "update.available": "Mise à jour {{version}} disponible",
   "update.install": "Installer",
   "update.downloading": "Téléchargement de la mise à jour…",

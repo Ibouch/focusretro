@@ -56,6 +56,8 @@ pub fn run() {
             commands::get_show_debug,
             commands::get_theme,
             commands::set_theme,
+            commands::get_available_layouts,
+            commands::apply_layout,
         ])
         .setup(|app| {
             setup_tray(app)?;

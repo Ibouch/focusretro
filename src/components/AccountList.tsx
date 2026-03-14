@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import {
   AccountView,
+  applyLayout,
   focusAccount,
   reorderAccount,
   setPrincipal,
@@ -25,6 +26,72 @@ const AVAILABLE_ICONS = [
   "50", "51", "60", "61", "70", "71", "80", "81",
   "90", "91", "100", "101", "110", "111", "120", "121",
 ];
+
+const LAYOUTS: { id: "maximize" | "split-h" | "split-v" | "grid-2x2" | "grid-3x2" | "grid-4x2"; show: (n: number) => boolean; i18nKey: string }[] = [
+  { id: "maximize",  show: (n) => n >= 2,  i18nKey: "layout.maximize" },
+  { id: "split-h",   show: (n) => n === 2, i18nKey: "layout.split_h" },
+  { id: "split-v",   show: (n) => n === 2, i18nKey: "layout.split_v" },
+  { id: "grid-2x2",  show: (n) => n === 4, i18nKey: "layout.grid_2x2" },
+  { id: "grid-3x2",  show: (n) => n === 6, i18nKey: "layout.grid_3x2" },
+  { id: "grid-4x2",  show: (n) => n === 8, i18nKey: "layout.grid_4x2" },
+];
+type Layout = "maximize" | "split-h" | "split-v" | "grid-2x2" | "grid-3x2" | "grid-4x2";
+
+function LayoutIcon({ type }: { type: Layout }) {
+  // 14×14 SVG diagrams showing the tiling pattern
+  switch (type) {
+    case "maximize":
+      return (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+          {/* Back square (top-right): only draw the parts not hidden by the front square */}
+          <path d="M4 4 L4 1 L13 1 L13 10 L10 10" />
+          {/* Front square (bottom-left): fully visible on top */}
+          <rect x="1" y="4" width="9" height="9" rx="1" />
+        </svg>
+      );
+    case "split-h":
+      return (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <rect x="1" y="1" width="12" height="12" rx="1" />
+          <line x1="7" y1="1" x2="7" y2="13" />
+        </svg>
+      );
+    case "split-v":
+      return (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <rect x="1" y="1" width="12" height="12" rx="1" />
+          <line x1="1" y1="7" x2="13" y2="7" />
+        </svg>
+      );
+    case "grid-2x2":
+      return (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <rect x="1" y="1" width="12" height="12" rx="1" />
+          <line x1="7" y1="1" x2="7" y2="13" />
+          <line x1="1" y1="7" x2="13" y2="7" />
+        </svg>
+      );
+    case "grid-3x2":
+      return (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <rect x="1" y="1" width="12" height="12" rx="1" />
+          <line x1="5" y1="1" x2="5" y2="13" />
+          <line x1="9" y1="1" x2="9" y2="13" />
+          <line x1="1" y1="7" x2="13" y2="7" />
+        </svg>
+      );
+    case "grid-4x2":
+      return (
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <rect x="1" y="1" width="12" height="12" rx="1" />
+          <line x1="4" y1="1" x2="4" y2="13" />
+          <line x1="7" y1="1" x2="7" y2="13" />
+          <line x1="10" y1="1" x2="10" y2="13" />
+          <line x1="1" y1="7" x2="13" y2="7" />
+        </svg>
+      );
+  }
+}
 
 interface Props {
   accounts: AccountView[];
@@ -270,6 +337,22 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
           </svg>
         </button>
       </div>
+
+      {/* Layout toolbar */}
+      {accounts.length >= 2 && (
+        <div className="flex items-center gap-1 mb-2">
+          {LAYOUTS.filter((l) => l.show(accounts.length)).map(({ id, i18nKey }) => (
+            <button
+              key={id}
+              onClick={() => applyLayout(id)}
+              className="w-7 h-7 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title={t(i18nKey)}
+            >
+              <LayoutIcon type={id} />
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Empty state */}
       {accounts.length === 0 ? (

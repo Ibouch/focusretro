@@ -131,6 +131,10 @@ impl WindowManager for MacWindowManager {
         info!("[WindowManager] Sent Enter keypress");
         Ok(())
     }
+
+    fn arrange_windows(&self, _windows: &[GameWindow], _layout: &str) -> anyhow::Result<()> {
+        Ok(())
+    }
 }
 
 fn activate_app(pid: i32) -> anyhow::Result<()> {

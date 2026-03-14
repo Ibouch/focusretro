@@ -77,6 +77,13 @@
   "setup.screen_recording_name": "Screen Recording",
   "setup.screen_recording_why": "Required to read window titles to detect which Dofus Retro characters are running.",
 
+  "layout.maximize": "Maximize all",
+  "layout.split_h": "Split horizontal",
+  "layout.split_v": "Split vertical",
+  "layout.grid_2x2": "Grid 2×2",
+  "layout.grid_3x2": "Grid 3×2",
+  "layout.grid_4x2": "Grid 4×2",
+
   "update.available": "Update {{version}} available",
   "update.install": "Install",
   "update.downloading": "Downloading update…",

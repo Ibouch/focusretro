@@ -253,3 +253,24 @@ pub fn get_theme(state: tauri::State<'_, Arc<AppState>>) -> String {
 pub fn set_theme(theme: String, state: tauri::State<'_, Arc<AppState>>) {
     state.set_theme(theme);
 }
+
+#[tauri::command]
+pub fn get_available_layouts() -> Vec<String> {
+    vec!["maximize", "split-h", "split-v", "grid-2x2", "grid-3x2", "grid-4x2"]
+        .into_iter()
+        .map(String::from)
+        .collect()
+}
+
+#[tauri::command]
+pub fn apply_layout(layout: String, state: tauri::State<'_, Arc<AppState>>) -> Result<(), String> {
+    let wm = platform::create_window_manager();
+    let live = wm.list_dofus_windows();
+    let ordered_names: Vec<String> = state.accounts.lock().unwrap()
+        .iter().map(|w| w.character_name.clone()).collect();
+    let windows: Vec<_> = ordered_names.iter()
+        .filter_map(|name| live.iter().find(|w| w.character_name.eq_ignore_ascii_case(name)))
+        .cloned()
+        .collect();
+    wm.arrange_windows(&windows, &layout).map_err(|e| e.to_string())
+}

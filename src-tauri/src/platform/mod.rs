@@ -24,6 +24,7 @@ pub trait WindowManager: Send + Sync {
     fn list_dofus_windows(&self) -> Vec<GameWindow>;
     fn focus_window(&self, window: &GameWindow) -> anyhow::Result<()>;
     fn send_enter_key(&self) -> anyhow::Result<()>;
+    fn arrange_windows(&self, windows: &[GameWindow], layout: &str) -> anyhow::Result<()>;
 }
 
 pub trait NotificationListener: Send + Sync {

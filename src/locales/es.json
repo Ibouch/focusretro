@@ -77,6 +77,13 @@
   "setup.screen_recording_name": "Grabación de pantalla",
   "setup.screen_recording_why": "Necesario para leer los títulos de ventanas y detectar los personajes de Dofus Retro activos.",
 
+  "layout.maximize": "Maximizar todo",
+  "layout.split_h": "División horizontal",
+  "layout.split_v": "División vertical",
+  "layout.grid_2x2": "Cuadrícula 2×2",
+  "layout.grid_3x2": "Cuadrícula 3×2",
+  "layout.grid_4x2": "Cuadrícula 4×2",
+
   "update.available": "Actualización {{version}} disponible",
   "update.install": "Instalar",
   "update.downloading": "Descargando actualización…",

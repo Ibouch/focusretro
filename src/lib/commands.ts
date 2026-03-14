@@ -207,3 +207,11 @@ export function getTheme(): Promise<string> {
 export function setTheme(theme: string): Promise<void> {
   return invoke("set_theme", { theme });
 }
+
+export function getAvailableLayouts(): Promise<string[]> {
+  return invoke("get_available_layouts");
+}
+
+export function applyLayout(layout: string): Promise<void> {
+  return invoke("apply_layout", { layout });
+}
