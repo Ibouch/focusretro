@@ -31,6 +31,13 @@ fn refresh_accounts(handle: &AppHandle, state: &Arc<AppState>) {
     let views = state.get_account_views();
     let _ = handle.emit("accounts-updated", &views);
     crate::update_tray_display(handle, state);
+
+    let fg_id = crate::platform::get_foreground_window_id();
+    if let Some(focused) = views.iter().find(|v| v.window_id == fg_id) {
+        let h = handle.clone();
+        let name = focused.character_name.clone();
+        std::thread::spawn(move || { let _ = h.emit("focus-changed", &name); });
+    }
 }
 
 fn now_millis() -> u64 {
@@ -67,6 +74,7 @@ fn focus_character_with_fallback(
             Err(e) => error!("[Autoswitch] Focus failed: {}", e),
             Ok(()) => {
                 info!("[Autoswitch] Focused {}", character_name);
+                state.set_current_by_name(character_name);
                 let t_focus_done_ms = now_millis();
                 state.add_trace(TraceEntry {
                     event_type,
@@ -77,6 +85,9 @@ fn focus_character_with_fallback(
                     t_focus_done_ms,
                 });
                 let _ = handle.emit("trace-added", ());
+                let h = handle.clone();
+                let name = character_name.to_string();
+                std::thread::spawn(move || { let _ = h.emit("focus-changed", &name); });
             }
         }
     } else {

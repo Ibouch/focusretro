@@ -12,6 +12,10 @@ use windows::Win32::UI::WindowsAndMessaging::{
     IsIconic, IsWindowVisible, SetForegroundWindow, ShowWindow, SW_RESTORE,
 };
 
+pub fn get_foreground_window_id() -> u64 {
+    unsafe { GetForegroundWindow() }.0 as usize as u64
+}
+
 pub struct WinWindowManager;
 
 impl WinWindowManager {

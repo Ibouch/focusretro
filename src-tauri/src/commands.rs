@@ -28,14 +28,17 @@ pub fn get_autoswitch_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
 }
 
 #[tauri::command]
-pub fn focus_account(name: String) -> Result<(), String> {
+pub fn focus_account(name: String, app: tauri::AppHandle, state: tauri::State<'_, Arc<AppState>>) -> Result<(), String> {
     let wm = platform::create_window_manager();
     let windows = wm.list_dofus_windows();
     let win = windows
         .iter()
         .find(|w| w.character_name.eq_ignore_ascii_case(&name))
         .ok_or_else(|| format!("Window not found for '{}'", name))?;
-    wm.focus_window(win).map_err(|e| e.to_string())
+    wm.focus_window(win).map_err(|e| e.to_string())?;
+    state.set_current_by_name(&name);
+    let _ = tauri::Emitter::emit(&app, "focus-changed", &name);
+    Ok(())
 }
 
 #[tauri::command]

@@ -28,11 +28,13 @@ const AVAILABLE_ICONS = [
 
 interface Props {
   accounts: AccountView[];
+  focusedName: string | null;
   onRefresh: () => void;
   onUpdate: (accounts: AccountView[]) => void;
+  onFocused: (name: string) => void;
 }
 
-function AccountList({ accounts, onRefresh, onUpdate }: Props) {
+function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: Props) {
   const { t } = useTranslation();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
@@ -235,29 +237,67 @@ function AccountList({ accounts, onRefresh, onUpdate }: Props) {
 
   return (
     <div>
+      {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
-          {t("accounts.title")}
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+            {t("accounts.title")}
+          </h2>
+          {accounts.length > 0 && (
+            <span className="text-[10px] font-mono bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">
+              {accounts.length}
+            </span>
+          )}
+        </div>
         <button
           onClick={onRefresh}
-          className="text-xs px-2 py-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300 transition-colors"
+          className="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-gray-300 hover:bg-gray-800 transition-colors"
+          title={t("accounts.refresh")}
         >
-          {t("accounts.refresh")}
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M23 4v6h-6" />
+            <path d="M1 20v-6h6" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
         </button>
       </div>
 
+      {/* Empty state */}
       {accounts.length === 0 ? (
-        <div className="text-center py-8 text-gray-600">
+        <div className="flex flex-col items-center justify-center py-10 text-gray-600">
+          <svg
+            width="44"
+            height="44"
+            viewBox="0 0 44 44"
+            fill="none"
+            className="mb-3 opacity-40"
+          >
+            <rect x="4" y="6" width="36" height="24" rx="3" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M16 30 L12 38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M28 30 L32 38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M10 38 L34 38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="22" cy="18" r="5" stroke="currentColor" strokeWidth="1.5" />
+            <path d="M19 15 L25 21 M25 15 L19 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
           <p className="text-sm">{t("accounts.empty_title")}</p>
-          <p className="text-xs mt-1">{t("accounts.empty_desc")}</p>
+          <p className="text-xs mt-1 text-center">{t("accounts.empty_desc")}</p>
         </div>
       ) : (
         <ul ref={listRef} className="space-y-1 select-none">
-          {displayOrder.map((accountIdx, visualPos) => {
+          {displayOrder.map((accountIdx) => {
             const account = accounts[accountIdx];
             const isDragging =
               dragState !== null && dragState.sourceIdx === accountIdx;
+            const accentColor = account.color ?? "#374151";
 
             return (
               <li
@@ -268,13 +308,20 @@ function AccountList({ accounts, onRefresh, onUpdate }: Props) {
                 className={`touch-none transition-[transform,opacity] duration-150 ease-out ${isDragging ? "opacity-60 scale-[1.02] z-10 relative" : ""}`}
               >
                 <div
-                  className={`flex items-center h-9 px-2 bg-gray-900 rounded-lg border transition-colors ${
+                  className={`group relative flex items-center h-9 bg-gray-900 rounded-lg border overflow-hidden transition-colors ${
                     isDragging
                       ? "border-indigo-500 shadow-lg shadow-indigo-500/10"
                       : "border-gray-800 hover:border-gray-700"
                   } cursor-grab active:cursor-grabbing`}
                 >
-                  <div className="flex items-center gap-1 w-8 shrink-0">
+                  {/* Colored left accent bar */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-[3px] shrink-0"
+                    style={{ backgroundColor: account.character_name === focusedName ? "#f97316" : "#374151" }}
+                  />
+
+                  {/* Drag handle */}
+                  <div className="flex items-center pl-3 pr-1.5 shrink-0">
                     <svg
                       width="8"
                       height="10"
@@ -289,11 +336,9 @@ function AccountList({ accounts, onRefresh, onUpdate }: Props) {
                       <circle cx="2" cy="8" r="1" />
                       <circle cx="6" cy="8" r="1" />
                     </svg>
-                    <span className="text-[10px] text-gray-600 font-mono">
-                      {visualPos + 1}
-                    </span>
                   </div>
 
+                  {/* Avatar */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -307,27 +352,33 @@ function AccountList({ accounts, onRefresh, onUpdate }: Props) {
                     style={{
                       backgroundColor: account.icon_path
                         ? "transparent"
-                        : account.color ?? "#4b5563",
+                        : (account.color ?? "#4b5563"),
                       borderColor: account.color ?? "#374151",
                     }}
                     title={t("accounts.customize")}
                   >
-                    {account.icon_path && (
+                    {account.icon_path ? (
                       <img
                         src={`/icons/${account.icon_path}.png`}
                         alt=""
                         className="w-full h-full object-cover pointer-events-none"
                       />
+                    ) : (
+                      <span className="text-[9px] font-bold text-white/80 leading-none">
+                        {account.character_name[0]?.toUpperCase()}
+                      </span>
                     )}
                   </button>
 
+                  {/* Name */}
                   <div className="flex-1 min-w-0">
                     <span className="text-xs font-medium truncate block">
                       {account.character_name}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0 ml-1">
+                  {/* Action buttons */}
+                  <div className="flex items-center gap-1 shrink-0 ml-1 pr-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -336,7 +387,7 @@ function AccountList({ accounts, onRefresh, onUpdate }: Props) {
                       className={`w-6 h-6 flex items-center justify-center transition-colors rounded ${
                         account.is_principal
                           ? "text-amber-400"
-                          : "text-gray-600 hover:text-amber-400"
+                          : "text-gray-600 opacity-0 group-hover:opacity-100 hover:text-amber-400"
                       }`}
                       title={
                         account.is_principal
@@ -359,8 +410,9 @@ function AccountList({ accounts, onRefresh, onUpdate }: Props) {
                       onClick={(e) => {
                         e.stopPropagation();
                         focusAccount(account.character_name);
+                        onFocused(account.character_name);
                       }}
-                      className="w-6 h-6 flex items-center justify-center text-gray-500 hover:text-indigo-400 transition-colors rounded"
+                      className="w-6 h-6 flex items-center justify-center text-gray-500 opacity-0 group-hover:opacity-100 hover:text-indigo-400 transition-colors rounded"
                       title={t("accounts.focus_window")}
                     >
                       <svg
@@ -379,7 +431,6 @@ function AccountList({ accounts, onRefresh, onUpdate }: Props) {
                     </button>
                   </div>
                 </div>
-
               </li>
             );
           })}

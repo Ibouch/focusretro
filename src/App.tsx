@@ -30,6 +30,7 @@ function App() {
   const [tab, setTab] = useState<Tab>("accounts");
   const [showDebug, setShowDebug] = useState(false);
   const [hotkeys, setHotkeys] = useState<HotkeyBinding[]>([]);
+  const [focusedName, setFocusedName] = useState<string | null>(null);
   const [pendingUpdate, setPendingUpdate] = useState<Update | null>(null);
   const [updateStatus, setUpdateStatus] = useState<"idle" | "downloading" | "done">("idle");
 
@@ -53,13 +54,18 @@ function App() {
       setAccounts(e.payload);
     });
 
-const unlistenHotkeys = listen<HotkeyBinding[]>("hotkeys-updated", (e) => {
+    const unlistenHotkeys = listen<HotkeyBinding[]>("hotkeys-updated", (e) => {
       setHotkeys(e.payload);
+    });
+
+    const unlistenFocus = listen<string>("focus-changed", (e) => {
+      setFocusedName(e.payload);
     });
 
     return () => {
       unlistenAccounts.then((f) => f());
-unlistenHotkeys.then((f) => f());
+      unlistenHotkeys.then((f) => f());
+      unlistenFocus.then((f) => f());
     };
   }, []);
 
@@ -147,32 +153,6 @@ unlistenHotkeys.then((f) => f());
         </div>
       )}
 
-      {hotkeys.length > 0 && (
-        <div className="mx-4 mt-3 px-4 py-3 bg-gray-900/70 border border-gray-800 rounded-lg text-xs text-gray-300">
-          <p className="text-gray-500 mb-3">{t("hotkeys.label")}</p>
-          <div className="grid grid-cols-3 gap-x-4 gap-y-2">
-            <div className="flex flex-col items-center gap-1">
-              <kbd className="px-2 py-1 bg-red-950/40 border border-red-500/50 rounded text-red-300 w-fit text-sm font-mono">
-                {hotkeyLabelFor("prev")}
-              </kbd>
-              <span>{t("accounts.previous")}</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <kbd className="px-2 py-1 bg-emerald-950/40 border border-emerald-500/50 rounded text-emerald-300 w-fit text-sm font-mono">
-                {hotkeyLabelFor("next")}
-              </kbd>
-              <span>{t("accounts.next")}</span>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <kbd className="px-2 py-1 bg-amber-950/40 border border-amber-500/50 rounded text-amber-300 w-fit text-sm font-mono">
-                {hotkeyLabelFor("principal")}
-              </kbd>
-              <span>{t("accounts.principal")}</span>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="flex border-b border-gray-800 mx-4 mt-3">
         {visibleTabs.map((t) => (
           <button
@@ -189,13 +169,39 @@ unlistenHotkeys.then((f) => f());
         ))}
       </div>
 
-      <main className="flex-1 px-4 py-3 overflow-y-auto">
+      <main className="flex-1 px-4 py-3 overflow-y-auto flex flex-col">
         {tab === "accounts" && (
-          <AccountList
-            accounts={accounts}
-            onRefresh={() => refreshAccounts().then(setAccounts)}
-            onUpdate={setAccounts}
-          />
+          <div className="flex flex-col flex-1">
+            <AccountList
+              accounts={accounts}
+              focusedName={focusedName}
+              onRefresh={() => refreshAccounts().then(setAccounts)}
+              onUpdate={setAccounts}
+              onFocused={setFocusedName}
+            />
+            {hotkeys.length > 0 && (
+              <div className="mt-auto pt-4 flex items-center justify-center gap-5 text-[10px] text-gray-400">
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-gray-800 border border-gray-600 rounded font-mono text-gray-200 text-[10px]">
+                    {hotkeyLabelFor("prev")}
+                  </kbd>
+                  {t("accounts.previous")}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-gray-800 border border-gray-600 rounded font-mono text-gray-200 text-[10px]">
+                    {hotkeyLabelFor("next")}
+                  </kbd>
+                  {t("accounts.next")}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-gray-800 border border-gray-600 rounded font-mono text-gray-200 text-[10px]">
+                    {hotkeyLabelFor("principal")}
+                  </kbd>
+                  {t("accounts.principal")}
+                </span>
+              </div>
+            )}
+          </div>
         )}
         {tab === "messages" && <MessageList />}
         {tab === "settings" && <Settings showDebug={showDebug} onToggleDebug={setShowDebug} />}

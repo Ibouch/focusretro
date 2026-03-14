@@ -96,29 +96,27 @@ fn read_modifiers() -> (bool, bool, bool, bool) {
 }
 
 fn fire_action(action: &str, c: &HotkeyContext) {
-    match action {
-        "next" => {
-            if let Some(win) = c.state.cycle_next() {
-                let wm = platform::create_window_manager();
-                let _ = wm.focus_window(&win);
-                let _ = c.handle.emit("turn-switched", &win.character_name);
-            }
-        }
-        "prev" => {
-            if let Some(win) = c.state.cycle_prev() {
-                let wm = platform::create_window_manager();
-                let _ = wm.focus_window(&win);
-                let _ = c.handle.emit("turn-switched", &win.character_name);
-            }
-        }
-        "principal" => {
-            if let Some(win) = c.state.get_principal() {
-                let wm = platform::create_window_manager();
-                let _ = wm.focus_window(&win);
-                let _ = c.handle.emit("turn-switched", &win.character_name);
-            }
-        }
-        _ => {}
+    // Sync current index from the actual foreground window before cycling,
+    // so next/prev always starts from wherever focus currently is.
+    let fg_id = platform::get_foreground_window_id();
+    if fg_id != 0 {
+        c.state.sync_current_from_window_id(fg_id);
+    }
+
+    let win = match action {
+        "next" => c.state.cycle_next(),
+        "prev" => c.state.cycle_prev(),
+        "principal" => c.state.get_principal(),
+        _ => return,
+    };
+    if let Some(win) = win {
+        let wm = platform::create_window_manager();
+        let _ = wm.focus_window(&win);
+        let handle = c.handle.clone();
+        let name = win.character_name.clone();
+        std::thread::spawn(move || {
+            let _ = handle.emit("focus-changed", &name);
+        });
     }
 }
 

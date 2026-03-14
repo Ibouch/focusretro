@@ -511,6 +511,20 @@ impl AppState {
         self.messages.lock().unwrap().clear();
     }
 
+    pub fn set_current_by_name(&self, name: &str) {
+        let accounts = self.accounts.lock().unwrap();
+        if let Some(idx) = accounts.iter().position(|w| w.character_name.eq_ignore_ascii_case(name)) {
+            *self.current_index.lock().unwrap() = idx;
+        }
+    }
+
+    pub fn sync_current_from_window_id(&self, window_id: u64) {
+        let accounts = self.accounts.lock().unwrap();
+        if let Some(idx) = accounts.iter().position(|w| w.window_id == window_id) {
+            *self.current_index.lock().unwrap() = idx;
+        }
+    }
+
     pub fn cycle_next(&self) -> Option<GameWindow> {
         let accounts = self.accounts.lock().unwrap();
         if accounts.is_empty() {
