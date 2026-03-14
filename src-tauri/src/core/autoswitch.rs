@@ -64,46 +64,99 @@ fn focus_character_with_fallback(
     t_parsed_ms: u64,
     t_focus_triggered_ms: u64,
 ) {
-    let wm = platform::create_window_manager();
-    let windows = wm.list_dofus_windows();
-    if let Some(win) = windows
-        .iter()
-        .find(|w| w.character_name.eq_ignore_ascii_case(character_name))
+    #[cfg(target_os = "macos")]
     {
-        match wm.focus_window(win) {
-            Err(e) => error!("[Autoswitch] Focus failed: {}", e),
-            Ok(()) => {
-                info!("[Autoswitch] Focused {}", character_name);
-                state.set_current_by_name(character_name);
-                let t_focus_done_ms = now_millis();
-                state.add_trace(TraceEntry {
-                    event_type,
-                    character_name: character_name.to_string(),
-                    t_notification_ms,
-                    t_parsed_ms,
-                    t_focus_triggered_ms,
-                    t_focus_done_ms,
-                });
-                let _ = handle.emit("trace-added", ());
-                let h = handle.clone();
-                let name = character_name.to_string();
-                std::thread::spawn(move || { let _ = h.emit("focus-changed", &name); });
-            }
-        }
-    } else {
-        info!("[Autoswitch] Window not found for {}", character_name);
-    }
-
-    if auto_accept {
+        // On macOS, a short delay before focus lets the notification/OS settle and avoids
+        // focus flipping back (e.g. after trade/invite). Run focus in a thread with 50ms delay.
         let name = character_name.to_string();
+        let state_mac = state.clone();
+        let handle_mac = handle.clone();
+        let event_type_mac = event_type.clone();
         std::thread::spawn(move || {
-            std::thread::sleep(std::time::Duration::from_millis(300));
-            info!("[Autoswitch] Auto-accept: sending Enter for {}", name);
-            let wm_enter = platform::create_window_manager();
-            if let Err(e) = wm_enter.send_enter_key() {
-                error!("[Autoswitch] Auto-accept Enter failed: {}", e);
+            std::thread::sleep(std::time::Duration::from_millis(50));
+            info!("[Autoswitch] Running fallback direct focus for {}", name);
+            let wm_fallback = platform::create_window_manager();
+            let windows = wm_fallback.list_dofus_windows();
+            if let Some(win) = windows
+                .iter()
+                .find(|w| w.character_name.eq_ignore_ascii_case(&name))
+            {
+                match wm_fallback.focus_window(win) {
+                    Err(e) => error!("[Autoswitch] Focus failed: {}", e),
+                    Ok(()) => {
+                        info!("[Autoswitch] Focused {}", name);
+                        state_mac.set_current_by_name(&name);
+                        let t_focus_done_ms = now_millis();
+                        state_mac.add_trace(TraceEntry {
+                            event_type: event_type_mac,
+                            character_name: name.clone(),
+                            t_notification_ms,
+                            t_parsed_ms,
+                            t_focus_triggered_ms,
+                            t_focus_done_ms,
+                        });
+                        let _ = handle_mac.emit("trace-added", ());
+                        let _ = handle_mac.emit("focus-changed", &name);
+                    }
+                }
+            } else {
+                info!("[Autoswitch] Window not found for {}", name);
+            }
+            if auto_accept {
+                std::thread::sleep(std::time::Duration::from_millis(300));
+                info!("[Autoswitch] Auto-accept: sending Enter for {}", name);
+                let wm_enter = platform::create_window_manager();
+                if let Err(e) = wm_enter.send_enter_key() {
+                    error!("[Autoswitch] Auto-accept Enter failed: {}", e);
+                }
             }
         });
+        return;
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let wm = platform::create_window_manager();
+        let windows = wm.list_dofus_windows();
+        if let Some(win) = windows
+            .iter()
+            .find(|w| w.character_name.eq_ignore_ascii_case(character_name))
+        {
+            match wm.focus_window(win) {
+                Err(e) => error!("[Autoswitch] Focus failed: {}", e),
+                Ok(()) => {
+                    info!("[Autoswitch] Focused {}", character_name);
+                    state.set_current_by_name(character_name);
+                    let t_focus_done_ms = now_millis();
+                    state.add_trace(TraceEntry {
+                        event_type,
+                        character_name: character_name.to_string(),
+                        t_notification_ms,
+                        t_parsed_ms,
+                        t_focus_triggered_ms,
+                        t_focus_done_ms,
+                    });
+                    let _ = handle.emit("trace-added", ());
+                    let h = handle.clone();
+                    let name = character_name.to_string();
+                    std::thread::spawn(move || { let _ = h.emit("focus-changed", &name); });
+                }
+            }
+        } else {
+            info!("[Autoswitch] Window not found for {}", character_name);
+        }
+
+        if auto_accept {
+            let name = character_name.to_string();
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_millis(300));
+                info!("[Autoswitch] Auto-accept: sending Enter for {}", name);
+                let wm_enter = platform::create_window_manager();
+                if let Err(e) = wm_enter.send_enter_key() {
+                    error!("[Autoswitch] Auto-accept Enter failed: {}", e);
+                }
+            });
+        }
     }
 }
 
