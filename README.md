@@ -111,7 +111,7 @@ src-tauri/src/
     │   └── permissions.rs  # Accessibility permission checks
     └── windows/
     │   ├── hotkeys.rs      # WH_KEYBOARD_LL global hotkey listener
-    │   ├── window.rs       # EnumWindows + SetForegroundWindow + SendInput
+    │   ├── window.rs       # EnumWindows + HWND-direct focus (AttachThreadInput/SetActiveWindow) + SendInput
     │   └── notifications.rs # WinRT UserNotificationListener
 
 src/
@@ -141,6 +141,18 @@ src/
 |----------|--------|
 | macOS    | Supported |
 | Windows  | Supported |
+
+## Code signing (macOS)
+
+macOS binaries are signed with an ad-hoc identity (`-`). They are **not notarized**, so Gatekeeper will block the app when downloaded from the internet. To run it:
+
+```bash
+xattr -d com.apple.quarantine /Applications/Focus\ Retro.app
+```
+
+Or right-click the app → Open → Open anyway.
+
+TODO: set up proper Apple Developer signing + notarization for a smoother install experience.
 
 ## Code signing (Windows)
 
