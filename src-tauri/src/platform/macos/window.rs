@@ -2,7 +2,9 @@ use crate::platform::{GameWindow, WindowManager};
 use core_foundation::base::TCFType;
 use core_foundation::number::CFNumber;
 use core_foundation::string::CFString;
-use core_graphics::display::CGWindowListCopyWindowInfo;
+use core_graphics::display::{
+    CGDisplayBounds, CGMainDisplayID, CGPoint, CGRect, CGSize, CGWindowListCopyWindowInfo,
+};
 use core_graphics::window::{
     kCGNullWindowID, kCGWindowListExcludeDesktopElements, kCGWindowListOptionOnScreenOnly,
 };
@@ -14,6 +16,8 @@ type AXUIElementRef = *mut c_void;
 type AXError = i32;
 
 const K_AX_SUCCESS: AXError = 0;
+const K_AX_VALUE_CG_POINT_TYPE: i32 = 1;
+const K_AX_VALUE_CG_SIZE_TYPE: i32 = 2;
 
 type CGEventRef = *mut c_void;
 type CGEventSourceRef = *mut c_void;
@@ -25,7 +29,13 @@ extern "C" {
         attribute: *const c_void,
         value: *mut *mut c_void,
     ) -> AXError;
+    fn AXUIElementSetAttributeValue(
+        element: AXUIElementRef,
+        attribute: *const c_void,
+        value: *const c_void,
+    ) -> AXError;
     fn AXUIElementPerformAction(element: AXUIElementRef, action: *const c_void) -> AXError;
+    fn AXValueCreate(value_type: i32, value_ptr: *const c_void) -> *mut c_void;
     fn CFRelease(cf: *const c_void);
     fn CFArrayGetCount(array: *const c_void) -> isize;
     fn CFArrayGetValueAtIndex(array: *const c_void, idx: isize) -> *const c_void;
@@ -132,9 +142,190 @@ impl WindowManager for MacWindowManager {
         Ok(())
     }
 
-    fn arrange_windows(&self, _windows: &[GameWindow], _layout: &str) -> anyhow::Result<()> {
+    fn arrange_windows(&self, windows: &[GameWindow], layout: &str) -> anyhow::Result<()> {
+        if windows.is_empty() {
+            return Ok(());
+        }
+
+        if layout == "maximize" {
+            let (l, b, w, h) = main_display_bounds();
+            for window in windows {
+                set_window_frame_ax(window.pid as i32, &window.title, l, b, w, h)?;
+            }
+            info!("[MacWindowManager] Arranged {} windows: maximize", windows.len());
+            return Ok(());
+        }
+
+        let (l, b, w, h) = main_display_bounds();
+
+        type Slot = (f64, f64, f64, f64); // left, bottom, width, height
+        let slots: Vec<Slot> = match layout {
+            "split-h" => vec![(l, b, w / 2.0, h), (l + w / 2.0, b, w - w / 2.0, h)],
+            "split-v" => vec![(l, b + h / 2.0, w, h / 2.0), (l, b, w, h - h / 2.0)],
+            "grid-2x2" => vec![
+                (l, b + h / 2.0, w / 2.0, h / 2.0),
+                (l + w / 2.0, b + h / 2.0, w - w / 2.0, h / 2.0),
+                (l, b, w / 2.0, h - h / 2.0),
+                (l + w / 2.0, b, w - w / 2.0, h - h / 2.0),
+            ],
+            "grid-3x2" => {
+                let cw = w / 3.0;
+                let rh = h / 2.0;
+                vec![
+                    (l, b + rh, cw, rh),
+                    (l + cw, b + rh, cw, rh),
+                    (l + cw * 2.0, b + rh, w - cw * 2.0, rh),
+                    (l, b, cw, h - rh),
+                    (l + cw, b, cw, h - rh),
+                    (l + cw * 2.0, b, w - cw * 2.0, h - rh),
+                ]
+            }
+            "grid-4x2" => {
+                let cw = w / 4.0;
+                let rh = h / 2.0;
+                vec![
+                    (l, b + rh, cw, rh),
+                    (l + cw, b + rh, cw, rh),
+                    (l + cw * 2.0, b + rh, cw, rh),
+                    (l + cw * 3.0, b + rh, w - cw * 3.0, rh),
+                    (l, b, cw, h - rh),
+                    (l + cw, b, cw, h - rh),
+                    (l + cw * 2.0, b, cw, h - rh),
+                    (l + cw * 3.0, b, w - cw * 3.0, h - rh),
+                ]
+            }
+            _ => return Err(anyhow::anyhow!("Unknown layout: {}", layout)),
+        };
+
+        for (window, (left, bottom, cw, ch)) in windows.iter().zip(slots.iter()) {
+            set_window_frame_ax(window.pid as i32, &window.title, *left, *bottom, *cw, *ch)?;
+        }
+        info!(
+            "[MacWindowManager] Arranged {} windows: {}",
+            windows.len(),
+            layout
+        );
         Ok(())
     }
+}
+
+/// Returns (left, bottom, width, height) of the main display in screen coordinates (origin bottom-left).
+fn main_display_bounds() -> (f64, f64, f64, f64) {
+    let display_id = unsafe { CGMainDisplayID() };
+    let bounds: CGRect = unsafe { CGDisplayBounds(display_id) };
+    (
+        bounds.origin.x,
+        bounds.origin.y,
+        bounds.size.width,
+        bounds.size.height,
+    )
+}
+
+/// Set a window's position and size via Accessibility API. (left, bottom) is bottom-left in screen coords.
+fn set_window_frame_ax(
+    pid: i32,
+    title: &str,
+    left: f64,
+    bottom: f64,
+    width: f64,
+    height: f64,
+) -> anyhow::Result<()> {
+    unsafe {
+        let app_element = AXUIElementCreateApplication(pid);
+        if app_element.is_null() {
+            return Err(anyhow::anyhow!("Failed to create AXUIElement for pid {}", pid));
+        }
+
+        let windows_attr = CFString::new("AXWindows");
+        let mut windows_value: *mut c_void = ptr::null_mut();
+        let err = AXUIElementCopyAttributeValue(
+            app_element,
+            windows_attr.as_concrete_TypeRef() as *const c_void,
+            &mut windows_value,
+        );
+
+        if err != K_AX_SUCCESS || windows_value.is_null() {
+            CFRelease(app_element as *const c_void);
+            return Err(anyhow::anyhow!("Failed to get AXWindows (error {})", err));
+        }
+
+        let count = CFArrayGetCount(windows_value as *const c_void);
+        let mut win_element: AXUIElementRef = ptr::null_mut();
+
+        for i in 0..count {
+            let elem = CFArrayGetValueAtIndex(windows_value as *const c_void, i) as AXUIElementRef;
+            if elem.is_null() {
+                continue;
+            }
+
+            let title_attr = CFString::new("AXTitle");
+            let mut title_value: *mut c_void = ptr::null_mut();
+            let title_err = AXUIElementCopyAttributeValue(
+                elem,
+                title_attr.as_concrete_TypeRef() as *const c_void,
+                &mut title_value,
+            );
+
+            if title_err == K_AX_SUCCESS && !title_value.is_null() {
+                let cf_title = CFString::wrap_under_get_rule(title_value as *const _);
+                if cf_title.to_string() == title {
+                    win_element = elem;
+                    break;
+                }
+            }
+        }
+
+        if win_element.is_null() {
+            CFRelease(windows_value as *const c_void);
+            CFRelease(app_element as *const c_void);
+            return Err(anyhow::anyhow!(
+                "Window not found for title: {} (pid {})",
+                title,
+                pid
+            ));
+        }
+
+        // Set position/size while window element is still valid (before releasing the array that owns it).
+        let pos = CGPoint { x: left, y: bottom };
+        let size = CGSize {
+            width,
+            height,
+        };
+        let pos_value = AXValueCreate(K_AX_VALUE_CG_POINT_TYPE, &pos as *const CGPoint as *const c_void);
+        let size_value = AXValueCreate(K_AX_VALUE_CG_SIZE_TYPE, &size as *const CGSize as *const c_void);
+
+        if pos_value.is_null() || size_value.is_null() {
+            CFRelease(windows_value as *const c_void);
+            CFRelease(app_element as *const c_void);
+            return Err(anyhow::anyhow!("AXValueCreate failed"));
+        }
+
+        let pos_attr = CFString::new("AXPosition");
+        let size_attr = CFString::new("AXSize");
+        let pos_err = AXUIElementSetAttributeValue(
+            win_element,
+            pos_attr.as_concrete_TypeRef() as *const c_void,
+            pos_value as *const c_void,
+        );
+        let size_err = AXUIElementSetAttributeValue(
+            win_element,
+            size_attr.as_concrete_TypeRef() as *const c_void,
+            size_value as *const c_void,
+        );
+
+        CFRelease(pos_value as *const c_void);
+        CFRelease(size_value as *const c_void);
+        CFRelease(windows_value as *const c_void);
+        CFRelease(app_element as *const c_void);
+
+        if pos_err != K_AX_SUCCESS {
+            return Err(anyhow::anyhow!("AXUIElementSetAttributeValue AXPosition failed: {}", pos_err));
+        }
+        if size_err != K_AX_SUCCESS {
+            return Err(anyhow::anyhow!("AXUIElementSetAttributeValue AXSize failed: {}", size_err));
+        }
+    }
+    Ok(())
 }
 
 fn activate_app(pid: i32) -> anyhow::Result<()> {
