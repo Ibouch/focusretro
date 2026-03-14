@@ -534,7 +534,6 @@ impl AppState {
         }
     }
 
-    #[cfg_attr(not(target_os = "windows"), allow(dead_code))]
     pub fn sync_current_from_window_id(&self, window_id: u64) {
         let accounts = self.accounts.lock().unwrap();
         if let Some(idx) = accounts.iter().position(|w| w.window_id == window_id) {

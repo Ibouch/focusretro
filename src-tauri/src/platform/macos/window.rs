@@ -221,6 +221,89 @@ fn main_display_bounds() -> (f64, f64, f64, f64) {
     )
 }
 
+/// Returns the frontmost application's process identifier, or None if unavailable.
+fn frontmost_application_pid() -> Option<i32> {
+    let out = std::process::Command::new("osascript")
+        .args(["-e", "tell application \"System Events\" to return unix id of first process whose frontmost is true"])
+        .output()
+        .ok()?;
+    if !out.status.success() {
+        return None;
+    }
+    let s = String::from_utf8_lossy(&out.stdout);
+    s.trim().parse().ok()
+}
+
+/// Returns the main window's title for the given application PID via Accessibility API.
+fn main_window_title_ax(pid: i32) -> Option<String> {
+    unsafe {
+        let app_element = AXUIElementCreateApplication(pid);
+        if app_element.is_null() {
+            return None;
+        }
+        let main_attr = CFString::new("AXMainWindow");
+        let mut main_value: *mut c_void = ptr::null_mut();
+        let err = AXUIElementCopyAttributeValue(
+            app_element,
+            main_attr.as_concrete_TypeRef() as *const c_void,
+            &mut main_value,
+        );
+        CFRelease(app_element as *const c_void);
+        if err != K_AX_SUCCESS || main_value.is_null() {
+            return None;
+        }
+        let win_element = main_value as AXUIElementRef;
+        let title_attr = CFString::new("AXTitle");
+        let mut title_value: *mut c_void = ptr::null_mut();
+        let title_err = AXUIElementCopyAttributeValue(
+            win_element,
+            title_attr.as_concrete_TypeRef() as *const c_void,
+            &mut title_value,
+        );
+        CFRelease(main_value as *const c_void);
+        if title_err != K_AX_SUCCESS || title_value.is_null() {
+            return None;
+        }
+        let cf_title = CFString::wrap_under_get_rule(title_value as *const _);
+        Some(cf_title.to_string())
+    }
+}
+
+/// Returns the CGWindowID of the frontmost window, or 0 if it cannot be determined.
+/// Used to sync the "current" account from the actual focused Dofus window.
+pub fn get_foreground_window_id() -> u64 {
+    let pid = match frontmost_application_pid() {
+        Some(p) => p,
+        None => return 0,
+    };
+    let title = match main_window_title_ax(pid) {
+        Some(t) => t,
+        None => return 0,
+    };
+    let options = kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements;
+    let window_list = unsafe { CGWindowListCopyWindowInfo(options, kCGNullWindowID) };
+    if window_list.is_null() {
+        return 0;
+    }
+    let window_list_ptr = window_list as *const c_void;
+    let count = unsafe { CFArrayGetCount(window_list_ptr) };
+    let mut result = 0u64;
+    for i in 0..count {
+        let dict = unsafe { CFArrayGetValueAtIndex(window_list_ptr, i) };
+        if dict.is_null() {
+            continue;
+        }
+        let owner_pid = get_dict_i64(dict, "kCGWindowOwnerPID").unwrap_or(0) as i32;
+        let name = get_dict_string(dict, "kCGWindowName");
+        if owner_pid == pid && name.as_deref() == Some(title.as_str()) {
+            result = get_dict_i64(dict, "kCGWindowNumber").unwrap_or(0) as u64;
+            break;
+        }
+    }
+    unsafe { CFRelease(window_list_ptr) };
+    result
+}
+
 /// Set a window's position and size via Accessibility API. (left, bottom) is bottom-left in screen coords.
 fn set_window_frame_ax(
     pid: i32,

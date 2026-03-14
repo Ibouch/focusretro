@@ -17,7 +17,7 @@ pub fn setup(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let poll_handle = handle.clone();
     let poll_state = state.clone();
     std::thread::spawn(move || loop {
-        std::thread::sleep(std::time::Duration::from_secs(5));
+        std::thread::sleep(std::time::Duration::from_secs(3));
         refresh_accounts(&poll_handle, &poll_state);
     });
 
@@ -31,13 +31,30 @@ fn refresh_accounts(handle: &AppHandle, state: &Arc<AppState>) {
     let views = state.get_account_views();
     let _ = handle.emit("accounts-updated", &views);
     crate::update_tray_display(handle, state);
+    sync_focus_from_foreground(handle, state);
+}
 
+/// Updates current account from the actual foreground window and emits focus-changed if it changed.
+fn sync_focus_from_foreground(handle: &AppHandle, state: &Arc<AppState>) {
     let fg_id = crate::platform::get_foreground_window_id();
-    if let Some(focused) = views.iter().find(|v| v.window_id == fg_id) {
-        let h = handle.clone();
-        let name = focused.character_name.clone();
-        std::thread::spawn(move || { let _ = h.emit("focus-changed", &name); });
+    if fg_id == 0 {
+        return;
     }
+    let views = state.get_account_views();
+    let Some(focused) = views.iter().find(|v| v.window_id == fg_id) else {
+        return;
+    };
+    let current_idx = *state.current_index.lock().unwrap();
+    let current_window_id = views.get(current_idx).map(|v| v.window_id);
+    if Some(fg_id) == current_window_id {
+        return;
+    }
+    state.sync_current_from_window_id(fg_id);
+    let h = handle.clone();
+    let name = focused.character_name.clone();
+    std::thread::spawn(move || {
+        let _ = h.emit("focus-changed", &name);
+    });
 }
 
 fn now_millis() -> u64 {

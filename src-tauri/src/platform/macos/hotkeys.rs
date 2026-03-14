@@ -149,30 +149,29 @@ extern "C" fn hotkey_callback(
 
     for binding in &hotkeys {
         if matches_binding(keycode, flags, binding) {
-            match binding.action.as_str() {
-                "next" => {
-                    if let Some(win) = ctx.state.cycle_next() {
-                        let wm = platform::create_window_manager();
-                        let _ = wm.focus_window(&win);
-                        let _ = ctx.handle.emit("turn-switched", &win.character_name);
-                    }
-                }
-                "prev" => {
-                    if let Some(win) = ctx.state.cycle_prev() {
-                        let wm = platform::create_window_manager();
-                        let _ = wm.focus_window(&win);
-                        let _ = ctx.handle.emit("turn-switched", &win.character_name);
-                    }
-                }
-                "principal" => {
-                    if let Some(win) = ctx.state.get_principal() {
-                        let wm = platform::create_window_manager();
-                        let _ = wm.focus_window(&win);
-                        let _ = ctx.handle.emit("turn-switched", &win.character_name);
-                    }
-                }
-                _ => {}
+            // Sync current index from the actual foreground window before cycling.
+            let fg_id = platform::get_foreground_window_id();
+            if fg_id != 0 {
+                ctx.state.sync_current_from_window_id(fg_id);
             }
+
+            let win = match binding.action.as_str() {
+                "next" => ctx.state.cycle_next(),
+                "prev" => ctx.state.cycle_prev(),
+                "principal" => ctx.state.get_principal(),
+                _ => continue,
+            };
+
+            if let Some(win) = win {
+                let wm = platform::create_window_manager();
+                let _ = wm.focus_window(&win);
+                let handle = ctx.handle.clone();
+                let name = win.character_name.clone();
+                std::thread::spawn(move || {
+                    let _ = handle.emit("focus-changed", &name);
+                });
+            }
+            break;
         }
     }
 

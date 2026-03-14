@@ -40,9 +40,17 @@ pub trait NotificationListener: Send + Sync {
 
 pub fn get_foreground_window_id() -> u64 {
     #[cfg(target_os = "windows")]
-    { windows::window::get_foreground_window_id() }
-    #[cfg(not(target_os = "windows"))]
-    { 0 }
+    {
+        windows::window::get_foreground_window_id()
+    }
+    #[cfg(target_os = "macos")]
+    {
+        macos::window::get_foreground_window_id()
+    }
+    #[cfg(not(any(target_os = "windows", target_os = "macos")))]
+    {
+        0
+    }
 }
 
 pub fn create_window_manager() -> Box<dyn WindowManager> {
