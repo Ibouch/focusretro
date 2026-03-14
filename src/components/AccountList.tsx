@@ -22,27 +22,65 @@ const PRESET_COLORS = [
 ];
 
 const AVAILABLE_ICONS = [
-  "10", "11", "20", "21", "30", "31", "40", "41",
-  "50", "51", "60", "61", "70", "71", "80", "81",
-  "90", "91", "100", "101", "110", "111", "120", "121",
+  "10",
+  "11",
+  "20",
+  "21",
+  "30",
+  "31",
+  "40",
+  "41",
+  "50",
+  "51",
+  "60",
+  "61",
+  "70",
+  "71",
+  "80",
+  "81",
+  "90",
+  "91",
+  "100",
+  "101",
+  "110",
+  "111",
+  "120",
+  "121",
 ];
 
-const LAYOUTS: { id: "maximize" | "split-h" | "split-v" | "grid-2x2" | "grid-3x2" | "grid-4x2"; show: (n: number) => boolean; i18nKey: string }[] = [
-  { id: "maximize",  show: (n) => n >= 2,  i18nKey: "layout.maximize" },
-  { id: "split-h",   show: (n) => n === 2, i18nKey: "layout.split_h" },
-  { id: "split-v",   show: (n) => n === 2, i18nKey: "layout.split_v" },
-  { id: "grid-2x2",  show: (n) => n === 4, i18nKey: "layout.grid_2x2" },
-  { id: "grid-3x2",  show: (n) => n === 6, i18nKey: "layout.grid_3x2" },
-  { id: "grid-4x2",  show: (n) => n === 8, i18nKey: "layout.grid_4x2" },
+const LAYOUTS: {
+  id: "maximize" | "split-h" | "split-v" | "grid-2x2" | "grid-3x2" | "grid-4x2";
+  show: (n: number) => boolean;
+  i18nKey: string;
+}[] = [
+  { id: "maximize", show: (n) => n >= 2, i18nKey: "layout.maximize" },
+  { id: "split-h", show: (n) => n === 2, i18nKey: "layout.split_h" },
+  { id: "split-v", show: (n) => n === 2, i18nKey: "layout.split_v" },
+  { id: "grid-2x2", show: (n) => n === 4, i18nKey: "layout.grid_2x2" },
+  { id: "grid-3x2", show: (n) => n === 6, i18nKey: "layout.grid_3x2" },
+  { id: "grid-4x2", show: (n) => n === 8, i18nKey: "layout.grid_4x2" },
 ];
-type Layout = "maximize" | "split-h" | "split-v" | "grid-2x2" | "grid-3x2" | "grid-4x2";
+type Layout =
+  | "maximize"
+  | "split-h"
+  | "split-v"
+  | "grid-2x2"
+  | "grid-3x2"
+  | "grid-4x2";
 
 function LayoutIcon({ type }: { type: Layout }) {
   // 14×14 SVG diagrams showing the tiling pattern
   switch (type) {
     case "maximize":
       return (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
           {/* Back square (top-right): only draw the parts not hidden by the front square */}
           <path d="M4 4 L4 1 L13 1 L13 10 L10 10" />
           {/* Front square (bottom-left): fully visible on top */}
@@ -51,21 +89,42 @@ function LayoutIcon({ type }: { type: Layout }) {
       );
     case "split-h":
       return (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
           <rect x="1" y="1" width="12" height="12" rx="1" />
           <line x1="7" y1="1" x2="7" y2="13" />
         </svg>
       );
     case "split-v":
       return (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
           <rect x="1" y="1" width="12" height="12" rx="1" />
           <line x1="1" y1="7" x2="13" y2="7" />
         </svg>
       );
     case "grid-2x2":
       return (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
           <rect x="1" y="1" width="12" height="12" rx="1" />
           <line x1="7" y1="1" x2="7" y2="13" />
           <line x1="1" y1="7" x2="13" y2="7" />
@@ -73,7 +132,14 @@ function LayoutIcon({ type }: { type: Layout }) {
       );
     case "grid-3x2":
       return (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
           <rect x="1" y="1" width="12" height="12" rx="1" />
           <line x1="5" y1="1" x2="5" y2="13" />
           <line x1="9" y1="1" x2="9" y2="13" />
@@ -82,7 +148,14 @@ function LayoutIcon({ type }: { type: Layout }) {
       );
     case "grid-4x2":
       return (
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.2">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 14 14"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
           <rect x="1" y="1" width="12" height="12" rx="1" />
           <line x1="4" y1="1" x2="4" y2="13" />
           <line x1="7" y1="1" x2="7" y2="13" />
@@ -101,7 +174,13 @@ interface Props {
   onFocused: (name: string) => void;
 }
 
-function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: Props) {
+function AccountList({
+  accounts,
+  focusedName,
+  onRefresh,
+  onUpdate,
+  onFocused,
+}: Props) {
   const { t } = useTranslation();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
@@ -122,13 +201,14 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
       if (listRef.current) {
         const items = listRef.current.children;
         if (items.length > 0) {
-          itemHeightRef.current = (items[0] as HTMLElement).getBoundingClientRect().height + 4;
+          itemHeightRef.current =
+            (items[0] as HTMLElement).getBoundingClientRect().height + 4;
         }
       }
 
       setDragState({ sourceIdx: idx, currentIdx: idx });
     },
-    []
+    [],
   );
 
   const handlePointerMove = useCallback(
@@ -138,13 +218,13 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
       const shift = Math.round(dy / itemHeightRef.current);
       const newIdx = Math.max(
         0,
-        Math.min(accounts.length - 1, dragState.sourceIdx + shift)
+        Math.min(accounts.length - 1, dragState.sourceIdx + shift),
       );
       if (newIdx !== dragState.currentIdx) {
         setDragState({ ...dragState, currentIdx: newIdx });
       }
     },
-    [dragState, accounts.length]
+    [dragState, accounts.length],
   );
 
   const handlePointerUp = useCallback(async () => {
@@ -168,15 +248,13 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
   const handleColorChange = async (name: string, color: string | null) => {
     const account = accounts.find((a) => a.character_name === name);
     onUpdate(
-      await updateAccountProfile(name, color, account?.icon_path ?? null)
+      await updateAccountProfile(name, color, account?.icon_path ?? null),
     );
   };
 
   const handleIconChange = async (name: string, icon: string | null) => {
     const account = accounts.find((a) => a.character_name === name);
-    onUpdate(
-      await updateAccountProfile(name, account?.color ?? null, icon)
-    );
+    onUpdate(await updateAccountProfile(name, account?.color ?? null, icon));
   };
 
   const getDisplayOrder = () => {
@@ -303,7 +381,7 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
     ) : null;
 
   return (
-    <div>
+    <div className="flex flex-col flex-1 min-h-0">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -341,38 +419,35 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
       {/* Layout toolbar */}
       {accounts.length >= 2 && (
         <div className="flex items-center gap-1 mb-2">
-          {LAYOUTS.filter((l) => l.show(accounts.length)).map(({ id, i18nKey }) => (
-            <button
-              key={id}
-              onClick={() => applyLayout(id)}
-              className="w-7 h-7 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              title={t(i18nKey)}
-            >
-              <LayoutIcon type={id} />
-            </button>
-          ))}
+          {LAYOUTS.filter((l) => l.show(accounts.length)).map(
+            ({ id, i18nKey }) => (
+              <button
+                key={id}
+                onClick={() => applyLayout(id)}
+                className="w-7 h-7 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title={t(i18nKey)}
+              >
+                <LayoutIcon type={id} />
+              </button>
+            ),
+          )}
         </div>
       )}
 
       {/* Empty state */}
       {accounts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-10 text-gray-400 dark:text-gray-600">
-          <svg
-            width="44"
-            height="44"
-            viewBox="0 0 44 44"
-            fill="none"
-            className="mb-3 opacity-40"
-          >
-            <rect x="4" y="6" width="36" height="24" rx="3" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M16 30 L12 38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M28 30 L32 38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M10 38 L34 38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <circle cx="22" cy="18" r="5" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M19 15 L25 21 M25 15 L19 21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <p className="text-sm">{t("accounts.empty_title")}</p>
-          <p className="text-xs mt-1 text-center">{t("accounts.empty_desc")}</p>
+        <div className="flex-1 min-h-0 flex flex-col items-center justify-center py-10">
+          <img
+            src="/no-accounts.png"
+            alt=""
+            className="w-24 h-24 object-contain opacity-90"
+          />
+          <p className="text-sm text-center text-gray-600 dark:text-gray-400">
+            {t("accounts.empty_title")}
+          </p>
+          <p className="text-xs mt-1 text-center max-w-[200px] text-gray-500 dark:text-gray-500">
+            {t("accounts.empty_desc")}
+          </p>
         </div>
       ) : (
         <ul ref={listRef} className="space-y-1 select-none">
@@ -398,8 +473,22 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
                 >
                   {/* Colored left accent bar */}
                   <div
-                    className="absolute left-0 top-0 bottom-0 w-[3px] shrink-0"
-                    style={{ backgroundColor: account.character_name === focusedName ? "#f97316" : "#d1d5db" }}
+                    className="absolute left-0 top-0 bottom-0 w-[3px] shrink-0 dark:hidden"
+                    style={{
+                      backgroundColor:
+                        account.character_name === focusedName
+                          ? "#f97316"
+                          : "#d1d5db",
+                    }}
+                  />
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-[3px] shrink-0 hidden dark:block"
+                    style={{
+                      backgroundColor:
+                        account.character_name === focusedName
+                          ? "#f97316"
+                          : "#374151",
+                    }}
                   />
 
                   {/* Drag handle */}
@@ -427,7 +516,7 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
                       setEditingName(
                         editingName === account.character_name
                           ? null
-                          : account.character_name
+                          : account.character_name,
                       );
                     }}
                     className="w-6 h-6 rounded-full shrink-0 border overflow-hidden flex items-center justify-center mr-2"
