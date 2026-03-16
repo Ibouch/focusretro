@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+}
+
+@layer components {
+  .lang-btn.active,
+  .tab-btn.active {
+    @apply bg-brand-600 text-white border-brand-600;
+  }
+  .lang-btn:focus-visible,
+  .tab-btn:focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2 dark:ring-offset-gray-900;
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+}

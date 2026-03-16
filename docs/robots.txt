@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://alacroix.github.io/focusretro/sitemap.xml
