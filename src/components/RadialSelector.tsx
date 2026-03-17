@@ -32,10 +32,9 @@ function labelPos(i: number, n: number) {
 interface Props {
   pos: { x: number; y: number } | null;
   hovered: number;
-  isDark: boolean;
 }
 
-export default function RadialSelector({ pos, hovered, isDark }: Props) {
+export default function RadialSelector({ pos, hovered }: Props) {
   const [accounts, setAccounts] = useState<AccountView[]>([]);
 
   useEffect(() => {
@@ -45,22 +44,21 @@ export default function RadialSelector({ pos, hovered, isDark }: Props) {
   const n = accounts.length;
   if (!pos || n === 0) return null;
 
-  // Dark: near-black disc. Light: near-white disc.
-  const disc       = isDark ? "#0e0e18"                   : "#f2f2f8";
-  const discGrad1  = isDark ? "rgba(28,28,46,1)"          : "rgba(255,255,255,1)";
-  const discGrad2  = isDark ? "rgba(8,8,14,1)"            : "rgba(228,228,242,1)";
-  const sliceHover = isDark ? "rgba(255,255,255,0.07)"    : "rgba(0,0,0,0.06)";
-  const sliceActive= isDark ? "rgba(246,168,0,0.16)"      : "rgba(246,168,0,0.18)";
-  const sliceAH    = isDark ? "rgba(246,168,0,0.26)"      : "rgba(246,168,0,0.30)"; // active+hovered
-  const spoke      = isDark ? "rgba(255,255,255,0.09)"    : "rgba(0,0,0,0.09)";
-  const outerRim   = isDark ? "rgba(255,255,255,0.18)"    : "rgba(0,0,0,0.18)";
-  const innerRim   = isDark ? "rgba(255,255,255,0.14)"    : "rgba(0,0,0,0.14)";
-  const shadow     = isDark ? "rgba(0,0,0,0.75)"          : "rgba(0,0,0,0.28)";
-  const textNorm   = isDark ? "rgba(195,195,218,0.72)"    : "rgba(50,50,72,0.72)";
-  const textActive = "#F6A800";
-  const textHover  = isDark ? "#ffffff"                   : "#111122";
-  const textShadow = isDark ? "0 1px 5px rgba(0,0,0,0.9)" : "0 1px 3px rgba(255,255,255,0.85)";
-  const iconBorder = isDark ? "rgba(255,255,255,0.14)"    : "rgba(0,0,0,0.12)";
+  const accent     = "#d4721a";
+  const discGrad1  = "rgba(68,56,38,0.80)";
+  const discGrad2  = "rgba(30,23,14,0.94)";
+  const sliceHover = "rgba(255,255,255,0.09)";
+  const sliceActive= "rgba(212,114,26,0.20)";
+  const sliceAH    = "rgba(212,114,26,0.34)";
+  const spoke      = "rgba(210,195,165,0.12)";
+  const outerRim   = "rgba(210,195,165,0.28)";
+  const innerRim   = "rgba(210,195,165,0.22)";
+  const shadow     = "rgba(0,0,0,0.65)";
+  const textNorm   = "rgba(215,205,180,0.85)";
+  const textActive = accent;
+  const textHover  = "#f0e8d0";
+  const textShadow = "0 1px 4px rgba(0,0,0,0.90)";
+  const iconBorder = "rgba(210,195,165,0.22)";
 
   const sliceFill = (i: number) => {
     const isHov = i === hovered;
@@ -85,10 +83,14 @@ export default function RadialSelector({ pos, hovered, isDark }: Props) {
           <filter id="disc-shadow" x="-30%" y="-30%" width="160%" height="160%">
             <feDropShadow dx="0" dy="4" stdDeviation="12" floodColor={shadow} floodOpacity="1" />
           </filter>
+          <mask id="disc-mask">
+            <rect width={SIZE} height={SIZE} fill="white" />
+            <circle cx={CX} cy={CY} r={INNER_R} fill="black" />
+          </mask>
         </defs>
 
         {/* Disc */}
-        <circle cx={CX} cy={CY} r={DISC_R} fill="url(#disc-bg)" filter="url(#disc-shadow)" />
+        <circle cx={CX} cy={CY} r={DISC_R} fill="url(#disc-bg)" filter="url(#disc-shadow)" mask="url(#disc-mask)" />
 
         {/* Slice highlights */}
         {n === 1 ? (
@@ -119,12 +121,12 @@ export default function RadialSelector({ pos, hovered, isDark }: Props) {
           const r = DISC_R - 1;
           const large = a2 - a1 > Math.PI ? 1 : 0;
           if (n === 1) {
-            return <circle key={i} cx={CX} cy={CY} r={r} fill="none" stroke="#F6A800" strokeWidth="2.5" opacity="0.75" />;
+            return <circle key={i} cx={CX} cy={CY} r={r} fill="none" stroke={accent} strokeWidth="2.5" opacity="0.75" />;
           }
           return (
             <path key={i}
               d={`M ${CX + r * Math.cos(a1)} ${CY + r * Math.sin(a1)} A ${r} ${r} 0 ${large} 1 ${CX + r * Math.cos(a2)} ${CY + r * Math.sin(a2)}`}
-              fill="none" stroke="#F6A800" strokeWidth="2.5" strokeLinecap="round" opacity="0.75"
+              fill="none" stroke={accent} strokeWidth="2.5" strokeLinecap="round" opacity="0.75"
             />
           );
         })}
@@ -132,7 +134,7 @@ export default function RadialSelector({ pos, hovered, isDark }: Props) {
         {/* Outer rim */}
         <circle cx={CX} cy={CY} r={DISC_R} fill="none" stroke={outerRim} strokeWidth="1" />
         {/* Inner rim */}
-        <circle cx={CX} cy={CY} r={INNER_R} fill={disc} stroke={innerRim} strokeWidth="1.5" />
+        <circle cx={CX} cy={CY} r={INNER_R} fill="none" stroke={innerRim} strokeWidth="1.5" />
       </svg>
 
       {/* Labels */}
@@ -150,8 +152,8 @@ export default function RadialSelector({ pos, hovered, isDark }: Props) {
               style={{
                 backgroundColor: acc.icon_path ? "transparent" : (acc.color ?? "#6b7280"),
                 color: "#fff",
-                borderColor: isHov ? "#F6A800" : (acc.color ?? iconBorder),
-                boxShadow: isHov ? "0 0 0 2px rgba(246,168,0,0.25)" : "none",
+                borderColor: isHov ? accent : (acc.color ?? iconBorder),
+                boxShadow: isHov ? "0 0 0 2px rgba(212,114,26,0.30)" : "none",
                 transform: isHov ? "scale(1.20) translateY(-2px)" : isCur ? "scale(1.05)" : "scale(1)",
                 transition: "transform 0.15s cubic-bezier(0.34,1.56,0.64,1), border-color 0.10s, box-shadow 0.10s",
               }}

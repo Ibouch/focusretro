@@ -1,6 +1,7 @@
 mod commands;
 mod core;
 mod platform;
+mod radial;
 mod state;
 
 use state::AppState;

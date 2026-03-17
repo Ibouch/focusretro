@@ -1,27 +1,31 @@
 use crate::platform;
+use crate::radial::{focus_selected_or_current, radial_segment_at, resolve_selection, RADIAL_WIN_CX};
 use crate::state::{AppState, HotkeyBinding};
 use log::{error, info};
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager};
-use windows::Win32::Foundation::{LPARAM, LRESULT, WPARAM};
+use windows::Win32::Foundation::{LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     GetKeyState, VK_CONTROL, VK_LWIN, VK_MENU, VK_RWIN, VK_SHIFT,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    CallNextHookEx, GetMessageW, SetWindowsHookExW, UnhookWindowsHookEx, HHOOK, KBDLLHOOKSTRUCT,
-    MSLLHOOKSTRUCT, MSG, WH_KEYBOARD_LL, WH_MOUSE_LL, WM_KEYDOWN, WM_KEYUP, WM_SYSKEYDOWN,
-    WM_SYSKEYUP, WM_XBUTTONDOWN,
+    CallNextHookEx, GetCursorPos, GetMessageW, SetWindowsHookExW, UnhookWindowsHookEx, HHOOK,
+    KBDLLHOOKSTRUCT, MSLLHOOKSTRUCT, MSG, WH_KEYBOARD_LL, WH_MOUSE_LL, WM_KEYDOWN, WM_KEYUP,
+    WM_MOUSEMOVE, WM_SYSKEYDOWN, WM_SYSKEYUP, WM_XBUTTONDOWN, WM_XBUTTONUP,
 };
 
 struct HotkeyContext {
     state: Arc<AppState>,
     handle: AppHandle,
+    last_hover_seg: Arc<std::sync::atomic::AtomicI32>,
+    scale: Arc<std::sync::Mutex<f64>>,
 }
 
 thread_local! {
     static HOTKEY_CTX: std::cell::RefCell<Option<HotkeyContext>> =
         std::cell::RefCell::new(None);
 }
+
 
 fn js_code_to_vk(code: &str) -> Option<u16> {
     match code {
@@ -103,14 +107,46 @@ fn fire_action(action: &str, c: &HotkeyContext) {
             return; // guard against key-repeat
         }
         c.state.radial_open.store(true, Ordering::Relaxed);
+        c.last_hover_seg.store(-1, Ordering::Relaxed);
+
+        // Capture physical cursor position NOW on the hook thread, before
+        // crossing to the main thread where the cursor may have moved.
+        let mut pt = POINT { x: 0, y: 0 };
+        unsafe { let _ = GetCursorPos(&mut pt); }
+        let phys_x = pt.x as f64;
+        let phys_y = pt.y as f64;
+
         let h = c.handle.clone();
-        std::thread::spawn(move || {
+        let state_ref = c.state.clone();
+        let scale_arc = c.scale.clone();
+
+        let _ = h.clone().run_on_main_thread(move || {
             if let Some(w) = h.get_webview_window("radial-overlay") {
+                let scale = w.scale_factor().unwrap_or(1.0);
+                // Cache scale so mouse_callback can convert physical→logical
+                if let Ok(mut g) = scale_arc.lock() {
+                    *g = scale;
+                }
+
+                // Store logical cursor as radial center for segment math
+                state_ref.set_radial_center(phys_x / scale, phys_y / scale);
+
+                // Position window centered on cursor (physical pixel coords)
+                let win_x = (phys_x - RADIAL_WIN_CX * scale) as i32;
+                let win_y = (phys_y - RADIAL_WIN_CX * scale) as i32;
+                let _ = w.set_position(tauri::Position::Physical(tauri::PhysicalPosition {
+                    x: win_x,
+                    y: win_y,
+                }));
                 let _ = w.set_ignore_cursor_events(true);
                 let _ = w.show();
                 // NO set_focus() — keep focus on game window
-                let pos = crate::commands::wheel_pos_payload(&w);
-                let _ = w.emit("show-radial", pos);
+
+                let theme = state_ref.get_theme();
+                let _ = w.eval(&format!(
+                    "window.__radialShow&&window.__radialShow({:.2},{:.2},'{}')",
+                    RADIAL_WIN_CX, RADIAL_WIN_CX, theme
+                ));
             }
         });
         return;
@@ -138,6 +174,25 @@ fn fire_action(action: &str, c: &HotkeyContext) {
             let _ = handle.emit("focus-changed", &name);
         });
     }
+}
+
+/// Called from a spawned thread to hide the radial wheel and focus the selected account.
+fn close_radial(
+    h: AppHandle,
+    state_ref: Arc<AppState>,
+    scale_arc: Arc<std::sync::Mutex<f64>>,
+    phys_x: f64,
+    phys_y: f64,
+) {
+    let scale = scale_arc.lock().map(|g| *g).unwrap_or(1.0);
+    let selected = resolve_selection(&state_ref, phys_x / scale, phys_y / scale);
+
+    if let Some(w) = h.get_webview_window("radial-overlay") {
+        let _ = w.eval("window.__radialHide&&window.__radialHide()");
+        let _ = w.hide();
+    }
+
+    focus_selected_or_current(h, state_ref, selected);
 }
 
 fn matches_keyboard_binding(
@@ -185,7 +240,7 @@ unsafe extern "system" fn hotkey_callback(
 
     let msg_id = wparam.0 as u32;
 
-    // On keyup: if the radial is open and the released key matches the radial binding, hide directly
+    // On keyup: if the radial is open and the released key matches the radial binding, hide it
     if msg_id == WM_KEYUP || msg_id == WM_SYSKEYUP {
         let kb = &*(lparam.0 as *const KBDLLHOOKSTRUCT);
         let vk = kb.vkCode as u16;
@@ -199,16 +254,19 @@ unsafe extern "system" fn hotkey_callback(
                             if let Some(expected) = js_code_to_vk(&binding.key) {
                                 if vk == expected {
                                     c.state.radial_open.store(false, Ordering::Relaxed);
+
+                                    // Capture physical cursor at key-release moment
+                                    let mut pt = POINT { x: 0, y: 0 };
+                                    let _ = GetCursorPos(&mut pt);
+                                    let phys_x = pt.x as f64;
+                                    let phys_y = pt.y as f64;
+
                                     let h = c.handle.clone();
                                     let state_ref = c.state.clone();
+                                    let scale_arc = c.scale.clone();
+
                                     std::thread::spawn(move || {
-                                        if let Some(w) = h.get_webview_window("radial-overlay") {
-                                            let _ = w.hide();
-                                        }
-                                        if let Some(win) = state_ref.get_current_window() {
-                                            let wm = crate::platform::create_window_manager();
-                                            let _ = wm.focus_window(&win);
-                                        }
+                                        close_radial(h, state_ref, scale_arc, phys_x, phys_y);
                                     });
                                 }
                             }
@@ -252,7 +310,82 @@ unsafe extern "system" fn mouse_callback(
         return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
     }
 
-    if wparam.0 as u32 != WM_XBUTTONDOWN {
+    let msg = wparam.0 as u32;
+
+    // Hover tracking: update radial highlight while wheel is open
+    if msg == WM_MOUSEMOVE {
+        HOTKEY_CTX.with(|ctx| {
+            if let Some(ref c) = *ctx.borrow() {
+                use std::sync::atomic::Ordering;
+                if c.state.radial_open.load(Ordering::Relaxed) {
+                    if let Some(keydown) = c.state.get_radial_center() {
+                        let ms = &*(lparam.0 as *const MSLLHOOKSTRUCT);
+                        let scale = c.scale.lock().map(|g| *g).unwrap_or(1.0);
+                        let lx = ms.pt.x as f64 / scale;
+                        let ly = ms.pt.y as f64 / scale;
+                        let accounts = c.state.get_account_views();
+                        let n = accounts.len();
+                        let rel_x = RADIAL_WIN_CX + (lx - keydown.0);
+                        let rel_y = RADIAL_WIN_CX + (ly - keydown.1);
+                        let seg =
+                            radial_segment_at(rel_x, rel_y, RADIAL_WIN_CX, RADIAL_WIN_CX, n)
+                                .map(|s| s as i32)
+                                .unwrap_or(-1);
+                        let prev = c.last_hover_seg.swap(seg, Ordering::Relaxed);
+                        if seg != prev {
+                            let h = c.handle.clone();
+                            let _ = h.clone().run_on_main_thread(move || {
+                                if let Some(w) = h.get_webview_window("radial-overlay") {
+                                    let _ = w.eval(&format!(
+                                        "window.__radialHover&&window.__radialHover({})",
+                                        seg
+                                    ));
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+        });
+        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+    }
+
+    // Mouse button release: if radial is open and the button matches the radial binding, hide it
+    if msg == WM_XBUTTONUP {
+        let ms = &*(lparam.0 as *const MSLLHOOKSTRUCT);
+        let xbutton = (ms.mouseData >> 16) as u16;
+        let button = match xbutton {
+            1 => "Mouse4",
+            2 => "Mouse5",
+            _ => return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam),
+        };
+        HOTKEY_CTX.with(|ctx| {
+            if let Some(ref c) = *ctx.borrow() {
+                use std::sync::atomic::Ordering;
+                if c.state.radial_open.load(Ordering::Relaxed) {
+                    let hotkeys = c.state.get_hotkeys();
+                    for binding in &hotkeys {
+                        if binding.action == "radial" && binding.key == button {
+                            c.state.radial_open.store(false, Ordering::Relaxed);
+                            let mut pt = POINT { x: 0, y: 0 };
+                            let _ = GetCursorPos(&mut pt);
+                            let phys_x = pt.x as f64;
+                            let phys_y = pt.y as f64;
+                            let h = c.handle.clone();
+                            let state_ref = c.state.clone();
+                            let scale_arc = c.scale.clone();
+                            std::thread::spawn(move || {
+                                close_radial(h, state_ref, scale_arc, phys_x, phys_y);
+                            });
+                        }
+                    }
+                }
+            }
+        });
+        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+    }
+
+    if msg != WM_XBUTTONDOWN {
         return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
     }
 
@@ -286,6 +419,8 @@ pub fn start_hotkey_listener(handle: AppHandle, state: Arc<AppState>) {
             *ctx.borrow_mut() = Some(HotkeyContext {
                 state: state.clone(),
                 handle: handle.clone(),
+                last_hover_seg: Arc::new(std::sync::atomic::AtomicI32::new(-1)),
+                scale: Arc::new(std::sync::Mutex::new(1.0)),
             });
         });
 
