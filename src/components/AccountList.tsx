@@ -424,7 +424,7 @@ function AccountList({
               <button
                 key={id}
                 onClick={() => applyLayout(id)}
-                className="w-7 h-7 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 title={t(i18nKey)}
               >
                 <LayoutIcon type={id} />
@@ -467,7 +467,7 @@ function AccountList({
                 <div
                   className={`group relative flex items-center h-9 bg-gray-50 dark:bg-gray-900 rounded-lg border overflow-hidden transition-colors ${
                     isDragging
-                      ? "border-indigo-500 shadow-lg shadow-indigo-500/10"
+                      ? "border-brand-500 shadow-lg shadow-brand-500/10"
                       : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700"
                   } cursor-grab active:cursor-grabbing`}
                 >
@@ -477,7 +477,7 @@ function AccountList({
                     style={{
                       backgroundColor:
                         account.character_name === focusedName
-                          ? "#f97316"
+                          ? "#F6A800"
                           : "#d1d5db",
                     }}
                   />
@@ -486,7 +486,7 @@ function AccountList({
                     style={{
                       backgroundColor:
                         account.character_name === focusedName
-                          ? "#f97316"
+                          ? "#F6A800"
                           : "#374151",
                     }}
                   />
@@ -583,7 +583,7 @@ function AccountList({
                         focusAccount(account.character_name);
                         onFocused(account.character_name);
                       }}
-                      className="w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors rounded"
+                      className="w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors rounded"
                       title={t("accounts.focus_window")}
                     >
                       <svg

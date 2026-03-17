@@ -160,11 +160,11 @@ function App() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col">
 {pendingUpdate && updateStatus === "idle" && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-indigo-50 border border-indigo-200 dark:bg-indigo-950/50 dark:border-indigo-800/50 rounded-lg text-sm text-indigo-700 dark:text-indigo-200 flex items-center justify-between gap-2">
+        <div className="mx-4 mt-3 px-3 py-2 bg-brand-50 border border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 rounded-lg text-sm text-brand-700 dark:text-brand-200 flex items-center justify-between gap-2">
           <span>{t("update.available", { version: pendingUpdate.version })}</span>
           <button
             onClick={handleInstall}
-            className="px-2 py-0.5 bg-indigo-700 hover:bg-indigo-600 text-white rounded text-xs font-medium shrink-0"
+            className="px-2 py-0.5 bg-brand-600 hover:bg-brand-500 text-white rounded text-xs font-medium shrink-0"
           >
             {t("update.install")}
           </button>
@@ -172,7 +172,7 @@ function App() {
       )}
 
       {updateStatus === "downloading" && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-indigo-50 border border-indigo-200 dark:bg-indigo-950/50 dark:border-indigo-800/50 rounded-lg text-sm text-indigo-600 dark:text-indigo-300 animate-pulse">
+        <div className="mx-4 mt-3 px-3 py-2 bg-brand-50 border border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 rounded-lg text-sm text-brand-600 dark:text-brand-300 animate-pulse">
           {t("update.downloading")}
         </div>
       )}
@@ -196,7 +196,7 @@ function App() {
             onClick={() => setTab(t)}
             className={`px-3 py-2 text-xs font-medium transition-colors ${
               tab === t
-                ? "text-gray-900 dark:text-gray-100 border-b-2 border-indigo-500"
+                ? "text-gray-900 dark:text-gray-100 border-b-2 border-brand-500"
                 : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >

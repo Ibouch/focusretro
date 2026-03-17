@@ -123,7 +123,7 @@ function PermissionsSetup({ accessibility, screenRecording, onRecheck }: Props) 
             <button
               type="button"
               onClick={() => requestScreenRecording()}
-              className="text-xs px-3 py-1.5 rounded-md bg-indigo-100 hover:bg-indigo-200 text-indigo-800 dark:bg-indigo-700/50 dark:hover:bg-indigo-600/60 dark:text-indigo-200 transition-colors"
+              className="text-xs px-3 py-1.5 rounded-md bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 transition-colors"
             >
               {t("setup.request_permission")}
             </button>
@@ -152,7 +152,7 @@ function PermissionsSetup({ accessibility, screenRecording, onRecheck }: Props) 
           disabled={!allGranted}
           className={`text-xs px-4 py-1.5 rounded-md font-medium transition-colors ${
             allGranted
-              ? "bg-indigo-600 hover:bg-indigo-500 text-white"
+              ? "bg-brand-600 hover:bg-brand-500 text-white"
               : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
           }`}
         >

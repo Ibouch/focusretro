@@ -21,7 +21,7 @@ function eventLabel(type: string): string {
 }
 
 function eventBadge(type: string): string {
-  if (type === "turn") return "bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/60 dark:text-indigo-300 dark:border-indigo-700/50";
+  if (type === "turn") return "bg-brand-50 text-brand-700 border border-brand-200 dark:bg-brand-900/60 dark:text-brand-300 dark:border-brand-700/50";
   if (type === "group_invite") return "bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/60 dark:text-emerald-300 dark:border-emerald-700/50";
   if (type === "trade") return "bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/60 dark:text-amber-300 dark:border-amber-700/50";
   return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";

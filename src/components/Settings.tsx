@@ -123,19 +123,19 @@ function HotkeyRow({
       <span className="text-xs text-gray-700 dark:text-gray-300">{actionLabel}</span>
       <div className="flex items-center gap-2">
         {recording ? (
-          <span className="text-[11px] text-indigo-500 dark:text-indigo-400 animate-pulse">
+          <span className="text-[11px] text-brand-600 dark:text-brand-400 animate-pulse">
             {pressKeyLabel}
           </span>
         ) : (
           <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[11px] text-gray-700 dark:text-gray-400 font-mono">
-            {binding ? formatHotkeyLabel(binding) : "—"}
+            {binding && binding.key ? formatHotkeyLabel(binding) : "—"}
           </kbd>
         )}
         <button
           onClick={() => onRecord(action)}
           className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
             recording
-              ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-600/20 dark:text-indigo-400"
+              ? "bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-400"
               : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700"
           }`}
         >
@@ -189,7 +189,7 @@ function ThemeSelector({ theme, onChange }: { theme: string; onChange: (t: strin
           title={opt.label}
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] transition-colors ${
             theme === opt.value
-              ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-600/20 dark:text-indigo-400"
+              ? "bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-400"
               : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700"
           }`}
         >
