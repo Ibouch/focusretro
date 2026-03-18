@@ -4,7 +4,7 @@
   <img src="src-tauri/icons/128x128.png" width="96" alt="FocusRetro logo" />
 </p>
 
-A lightweight desktop app that auto-focuses Dofus Retro game windows when it's your character's turn in combat. Built for multi-account players.
+A lightweight desktop app that auto-focuses Dofus Retro game windows when it's your character's turn in combat, and lets you switch accounts via a radial overlay. Built for multi-account players.
 
 ## How it works
 
@@ -24,10 +24,12 @@ No game client modification is needed.
 - **Private messages**: Captures incoming PMs and displays them in a dedicated Messages tab with HTML item links cleaned up
 - **Account detection**: Detects all open Dofus Retro windows by parsing window titles
 - **Account management**: Reorder accounts via drag & drop, assign icons and colors, designate a principal account
+- **Radial character selector**: Hold a configurable hotkey to open a radial overlay centered on the cursor — move the mouse to the desired character slice and release to focus that account. Works on both macOS and Windows
 - **Configurable global hotkeys**: Default bindings — customizable in Settings:
   - `F1` — Focus previous account
   - `F2` — Focus next account
   - `F3` — Focus principal account
+  - Arrow keys also supported for previous/next navigation
 - **Hotkeys work everywhere**: Uses low-level event hooks (`CGEventTap` on macOS, `WH_KEYBOARD_LL` on Windows) so hotkeys fire even when Dofus (Wine) has focus
 - **System tray**: Dynamic icon (active/paused), shows principal account name, account count, toggle autoswitch, show/hide window, quit
 - **Translations**: English, French, Spanish — auto-detects system language on first launch
@@ -98,6 +100,7 @@ src-tauri/src/
 ├── lib.rs                  # App setup, tray icon, tray menu
 ├── commands.rs             # Tauri IPC commands
 ├── state.rs                # Shared app state (toggles, accounts, messages, hotkeys, language, persistence)
+├── radial.rs               # Radial overlay geometry (segment hit-test, selection resolution, focus dispatch)
 ├── core/
 │   ├── autoswitch.rs       # Main autoswitch controller
 │   ├── accounts.rs         # Account detection
@@ -121,6 +124,7 @@ src/
 ├── components/
 │   ├── AccountList.tsx     # Account list with drag & drop, icons, colors
 │   ├── MessageList.tsx     # PM display
+│   ├── RadialSelector.tsx  # Radial account picker overlay (SVG wheel)
 │   └── Settings.tsx        # Toggles, hotkey config, language selector
 └── lib/
     └── commands.ts         # Typed Tauri invoke wrappers
@@ -130,10 +134,10 @@ src/
 
 | Event | Body pattern | Action |
 |-------|-------------|--------|
-| Turn | `C'est à <name> de jouer` | Focus the named character's window |
-| Group invite | `<name> t'invite à rejoindre son groupe` | Focus the receiver's window (inviter must be a known account) |
-| Trade | `<name> te propose de faire un échange` | Focus the receiver's window (requester must be a known account) |
-| Private message | `de <name> : <message>` | Store and display in Messages tab (no focus) |
+| Turn | FR: `C'est à <name> de jouer` / EN: `<name> 's turn to play` / ES: `le toca jugar a <name>` | Focus the named character's window |
+| Group invite | FR: `<name> t'invite à rejoindre son groupe` / EN: `You are invited to join <name>'s group` / ES: `<name> te invita a unirte a su grupo` | Focus the receiver's window (inviter must be a known account) |
+| Trade | FR: `<name> te propose de faire un échange` / EN: `<name> offers a trade` / ES: `<name> te propone realizar un intercambio` | Focus the receiver's window (requester must be a known account) |
+| Private message | FR: `de <name> : <msg>` / EN: `from <name> : <msg>` / ES: `desde <name> : <msg>` | Store and display in Messages tab (no focus) |
 
 ## Supported platforms
 
