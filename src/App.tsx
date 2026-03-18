@@ -120,8 +120,12 @@ function App() {
     if (hk.ctrl) parts.push("Ctrl");
     if (hk.alt) parts.push("Alt");
     if (hk.shift) parts.push("Shift");
-    parts.push(hk.key.replace("Key", "").replace("Digit", ""));
-    return parts.join("+");
+    const ARROW_LABELS: Record<string, string> = {
+      ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓",
+    };
+    const MOUSE_LABELS: Record<string, string> = { Mouse4: "Mouse 4", Mouse5: "Mouse 5" };
+    parts.push(MOUSE_LABELS[hk.key] ?? ARROW_LABELS[hk.key] ?? hk.key.replace("Key", "").replace("Digit", ""));
+    return parts.join(" + ");
   };
 
   const hotkeyLabelFor = (action: string) => {

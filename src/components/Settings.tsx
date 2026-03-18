@@ -80,6 +80,8 @@ const JS_KEY_TO_MAC_KEYCODE: Record<string, string> = {
   Digit4: "Digit4", Digit5: "Digit5", Digit6: "Digit6", Digit7: "Digit7",
   Digit8: "Digit8", Digit9: "Digit9",
   Space: "Space", Tab: "Tab",
+  ArrowLeft: "ArrowLeft", ArrowRight: "ArrowRight",
+  ArrowUp: "ArrowUp", ArrowDown: "ArrowDown",
   F1: "F1", F2: "F2", F3: "F3", F4: "F4", F5: "F5", F6: "F6",
   F7: "F7", F8: "F8", F9: "F9", F10: "F10", F11: "F11", F12: "F12",
 };
@@ -95,7 +97,10 @@ function formatHotkeyLabel(hk: HotkeyBinding): string {
   if (hk.ctrl) parts.push("Ctrl");
   if (hk.alt) parts.push("Alt");
   if (hk.shift) parts.push("Shift");
-  parts.push(MOUSE_BUTTON_LABELS[hk.key] ?? hk.key.replace("Key", "").replace("Digit", ""));
+  const ARROW_LABELS: Record<string, string> = {
+    ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓",
+  };
+  parts.push(MOUSE_BUTTON_LABELS[hk.key] ?? ARROW_LABELS[hk.key] ?? hk.key.replace("Key", "").replace("Digit", ""));
   return parts.join("+");
 }
 

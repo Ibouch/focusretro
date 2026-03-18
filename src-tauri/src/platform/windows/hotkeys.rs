@@ -83,6 +83,10 @@ fn js_code_to_vk(code: &str) -> Option<u16> {
         // Special keys
         "Space" => Some(0x20),
         "Tab" => Some(0x09),
+        "ArrowLeft" => Some(0x25),
+        "ArrowUp" => Some(0x26),
+        "ArrowRight" => Some(0x27),
+        "ArrowDown" => Some(0x28),
         _ => None,
     }
 }
