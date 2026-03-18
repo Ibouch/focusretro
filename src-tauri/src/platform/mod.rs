@@ -18,6 +18,7 @@ pub struct GameWindow {
 pub struct PermissionStatus {
     pub accessibility: bool,
     pub screen_recording: bool,
+    pub input_monitoring: bool,
 }
 
 pub trait WindowManager: Send + Sync {
@@ -112,6 +113,22 @@ pub fn check_screen_recording_permission() -> bool {
 pub fn request_screen_recording_permission() {
     #[cfg(target_os = "macos")]
     macos::permissions::request_screen_recording();
+}
+
+pub fn check_input_monitoring_permission() -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        macos::permissions::is_input_monitoring_enabled()
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        true
+    }
+}
+
+pub fn request_input_monitoring_permission() {
+    #[cfg(target_os = "macos")]
+    macos::permissions::request_input_monitoring();
 }
 
 #[allow(dead_code)]

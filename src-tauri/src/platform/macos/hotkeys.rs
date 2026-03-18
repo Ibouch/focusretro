@@ -309,7 +309,17 @@ pub fn start_hotkey_listener(handle: AppHandle, state: Arc<AppState>) {
     });
     let ctx_addr = Box::into_raw(ctx) as usize;
 
-    std::thread::spawn(move || unsafe {
+    std::thread::spawn(move || {
+        use crate::platform::macos::permissions::is_input_monitoring_enabled;
+        loop {
+            if is_input_monitoring_enabled() {
+                break;
+            }
+            info!("[Hotkeys] Waiting for Input Monitoring permission…");
+            std::thread::sleep(std::time::Duration::from_secs(1));
+        }
+
+        unsafe {
         let user_info = ctx_addr as *mut c_void;
         let events_mask: u64 = (1 << K_CG_EVENT_MOUSE_MOVED) | (1 << K_CG_EVENT_KEY_DOWN) | (1 << K_CG_EVENT_KEY_UP);
 
@@ -334,5 +344,6 @@ pub fn start_hotkey_listener(handle: AppHandle, state: Arc<AppState>) {
 
         info!("[Hotkeys] CGEventTap started — listening for global hotkeys");
         CFRunLoopRun();
+        } // unsafe
     });
 }

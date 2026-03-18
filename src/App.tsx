@@ -41,6 +41,7 @@ function App() {
   const [permissionsChecked, setPermissionsChecked] = useState(false);
   const [hasAccessibility, setHasAccessibility] = useState(false);
   const [hasScreenRecording, setHasScreenRecording] = useState(false);
+  const [hasInputMonitoring, setHasInputMonitoring] = useState(false);
   const [tab, setTab] = useState<Tab>("accounts");
   const [showDebug, setShowDebug] = useState(false);
   const [hotkeys, setHotkeys] = useState<HotkeyBinding[]>([]);
@@ -54,6 +55,7 @@ function App() {
     checkPermissions().then((p) => {
       setHasAccessibility(p.accessibility);
       setHasScreenRecording(p.screen_recording);
+      setHasInputMonitoring(p.input_monitoring);
       setPermissionsChecked(true);
     });
     getLanguage().then((lang) => {
@@ -144,6 +146,7 @@ function App() {
     checkPermissions().then((p) => {
       setHasAccessibility(p.accessibility);
       setHasScreenRecording(p.screen_recording);
+      setHasInputMonitoring(p.input_monitoring);
     });
   };
 
@@ -151,11 +154,12 @@ function App() {
     return <div className="min-h-screen bg-white dark:bg-gray-950" />;
   }
 
-  if (!hasAccessibility || !hasScreenRecording) {
+  if (!hasAccessibility || !hasScreenRecording || !hasInputMonitoring) {
     return (
       <PermissionsSetup
         accessibility={hasAccessibility}
         screenRecording={hasScreenRecording}
+        inputMonitoring={hasInputMonitoring}
         onRecheck={handleRecheck}
       />
     );

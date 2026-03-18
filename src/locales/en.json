@@ -77,6 +77,8 @@
   "setup.accessibility_note": "Must be granted manually in System Settings — Focus Retro cannot request it automatically.",
   "setup.screen_recording_name": "Screen Recording",
   "setup.screen_recording_why": "Required to read window titles to detect which Dofus Retro characters are running.",
+  "setup.input_monitoring_name": "Input Monitoring",
+  "setup.input_monitoring_why": "Required to detect global keyboard shortcuts. Without it, hotkeys won't work.",
 
   "layout.maximize": "Maximize all",
   "layout.split_h": "Split horizontal",

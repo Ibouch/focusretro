@@ -77,6 +77,8 @@
   "setup.accessibility_note": "Debe concederse manualmente en Ajustes del Sistema — Focus Retro no puede solicitarlo automáticamente.",
   "setup.screen_recording_name": "Grabación de pantalla",
   "setup.screen_recording_why": "Necesario para leer los títulos de ventanas y detectar los personajes de Dofus Retro activos.",
+  "setup.input_monitoring_name": "Supervisión de entrada",
+  "setup.input_monitoring_why": "Necesario para detectar atajos de teclado globales. Sin este permiso, los atajos no funcionarán.",
 
   "layout.maximize": "Maximizar todo",
   "layout.split_h": "División horizontal",

@@ -187,12 +187,18 @@ pub fn check_permissions() -> PermissionStatus {
     PermissionStatus {
         accessibility: platform::check_accessibility_permission(),
         screen_recording: platform::check_screen_recording_permission(),
+        input_monitoring: platform::check_input_monitoring_permission(),
     }
 }
 
 #[tauri::command]
 pub fn request_screen_recording() {
     platform::request_screen_recording_permission();
+}
+
+#[tauri::command]
+pub fn request_input_monitoring() {
+    platform::request_input_monitoring_permission();
 }
 
 #[tauri::command]
@@ -203,6 +209,9 @@ pub fn open_settings(section: String) {
         }
         "screen_recording" => {
             "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture"
+        }
+        "input_monitoring" => {
+            "x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent"
         }
         _ => return,
     };

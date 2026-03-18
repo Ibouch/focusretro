@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { openSettings, requestScreenRecording } from "../lib/commands";
+import { openSettings, requestScreenRecording, requestInputMonitoring } from "../lib/commands";
 
 interface Props {
   accessibility: boolean;
   screenRecording: boolean;
+  inputMonitoring: boolean;
   onRecheck: () => void;
 }
 
@@ -73,9 +74,9 @@ function PermissionCard({
   );
 }
 
-function PermissionsSetup({ accessibility, screenRecording, onRecheck }: Props) {
+function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onRecheck }: Props) {
   const { t } = useTranslation();
-  const allGranted = accessibility && screenRecording;
+  const allGranted = accessibility && screenRecording && inputMonitoring;
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col">
@@ -130,6 +131,36 @@ function PermissionsSetup({ accessibility, screenRecording, onRecheck }: Props) 
             <button
               type="button"
               onClick={() => openSettings("screen_recording")}
+              className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors"
+            >
+              {t("setup.open_settings")}
+            </button>
+          </>
+        }
+      />
+
+      <PermissionCard
+        granted={inputMonitoring}
+        icon={
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+          </svg>
+        }
+        name={t("setup.input_monitoring_name")}
+        why={t("setup.input_monitoring_why")}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => requestInputMonitoring()}
+              className="text-xs px-3 py-1.5 rounded-md bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 transition-colors"
+            >
+              {t("setup.request_permission")}
+            </button>
+            <button
+              type="button"
+              onClick={() => openSettings("input_monitoring")}
               className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors"
             >
               {t("setup.open_settings")}

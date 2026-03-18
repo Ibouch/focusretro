@@ -22,6 +22,7 @@ export interface AccountView {
 export interface PermissionStatus {
   accessibility: boolean;
   screen_recording: boolean;
+  input_monitoring: boolean;
 }
 
 export interface StoredMessage {
@@ -71,7 +72,11 @@ export function requestScreenRecording(): Promise<void> {
   return invoke("request_screen_recording");
 }
 
-export function openSettings(section: "accessibility" | "screen_recording"): Promise<void> {
+export function requestInputMonitoring(): Promise<void> {
+  return invoke("request_input_monitoring");
+}
+
+export function openSettings(section: "accessibility" | "screen_recording" | "input_monitoring"): Promise<void> {
   return invoke("open_settings", { section });
 }
 

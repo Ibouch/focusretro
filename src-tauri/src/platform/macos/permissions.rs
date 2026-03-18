@@ -8,6 +8,8 @@ extern "C" {
     fn AXIsProcessTrustedWithOptions(options: *const c_void) -> bool;
     fn CGPreflightScreenCaptureAccess() -> bool;
     fn CGRequestScreenCaptureAccess() -> bool;
+    fn CGPreflightListenEventAccess() -> bool;
+    fn CGRequestListenEventAccess() -> bool;
 }
 
 pub fn is_accessibility_enabled() -> bool {
@@ -36,5 +38,15 @@ pub fn is_screen_recording_enabled() -> bool {
 pub fn request_screen_recording() {
     unsafe {
         CGRequestScreenCaptureAccess();
+    }
+}
+
+pub fn is_input_monitoring_enabled() -> bool {
+    unsafe { CGPreflightListenEventAccess() }
+}
+
+pub fn request_input_monitoring() {
+    unsafe {
+        CGRequestListenEventAccess();
     }
 }

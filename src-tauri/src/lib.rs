@@ -34,6 +34,7 @@ pub fn run() {
             commands::focus_prev_account,
             commands::check_permissions,
             commands::request_screen_recording,
+            commands::request_input_monitoring,
             commands::open_settings,
             commands::refresh_accounts,
             commands::toggle_group_invite,

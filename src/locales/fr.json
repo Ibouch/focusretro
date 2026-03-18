@@ -77,6 +77,8 @@
   "setup.accessibility_note": "Doit être accordée manuellement dans les Réglages Système — Focus Retro ne peut pas la demander automatiquement.",
   "setup.screen_recording_name": "Enregistrement d'écran",
   "setup.screen_recording_why": "Nécessaire pour lire les titres des fenêtres et détecter les personnages Dofus Retro actifs.",
+  "setup.input_monitoring_name": "Surveillance de l'entrée",
+  "setup.input_monitoring_why": "Nécessaire pour détecter les raccourcis clavier globaux. Sans cette permission, les raccourcis ne fonctionneront pas.",
 
   "layout.maximize": "Maximiser tout",
   "layout.split_h": "Partage horizontal",
