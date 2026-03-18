@@ -101,7 +101,7 @@ function formatHotkeyLabel(hk: HotkeyBinding): string {
     ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓",
   };
   parts.push(MOUSE_BUTTON_LABELS[hk.key] ?? ARROW_LABELS[hk.key] ?? hk.key.replace("Key", "").replace("Digit", ""));
-  return parts.join("+");
+  return parts.join(" + ");
 }
 
 function HotkeyRow({
@@ -132,7 +132,7 @@ function HotkeyRow({
             {pressKeyLabel}
           </span>
         ) : (
-          <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[11px] text-gray-700 dark:text-gray-400 font-mono">
+          <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[11px] text-gray-700 dark:text-gray-400 font-mono whitespace-nowrap">
             {binding && binding.key ? formatHotkeyLabel(binding) : "—"}
           </kbd>
         )}

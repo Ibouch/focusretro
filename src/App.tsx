@@ -220,25 +220,33 @@ function App() {
               onFocused={setFocusedName}
             />
             {hotkeys.length > 0 && (
-              <div className="mt-auto pt-4 flex items-center justify-center gap-5 text-[10px] text-gray-500 dark:text-gray-400">
-                <span className="flex items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px]">
+              <div className="mt-auto pt-4 flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400">
+                <span className="flex flex-col items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px] whitespace-nowrap">
                     {hotkeyLabelFor("prev")}
                   </kbd>
                   {t("accounts.previous")}
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px]">
+                <span className="flex flex-col items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px] whitespace-nowrap">
                     {hotkeyLabelFor("next")}
                   </kbd>
                   {t("accounts.next")}
                 </span>
-                <span className="flex items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px]">
+                <span className="flex flex-col items-center gap-1.5">
+                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px] whitespace-nowrap">
                     {hotkeyLabelFor("principal")}
                   </kbd>
                   {t("accounts.principal")}
                 </span>
+                {hotkeyLabelFor("radial") && (
+                  <span className="flex flex-col items-center gap-1.5">
+                    <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px] whitespace-nowrap">
+                      {hotkeyLabelFor("radial")}
+                    </kbd>
+                    {t("hotkeys.radial")}
+                  </span>
+                )}
               </div>
             )}
           </div>
