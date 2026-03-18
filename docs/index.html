@@ -345,7 +345,7 @@
     <div class="text-sm leading-relaxed text-orange-900/80 dark:text-orange-200/80 space-y-2 mb-6 text-center" data-i18n="verified.desc">
       <p>Des sites tiers redistribuent des binaires modifiés d'outils communautaires Dofus - certains contiennent des keyloggers ou des stealers.</p>
       <p>Focus Retro n'est distribué que via GitHub, sur le repo <a href="https://github.com/alacroix/focusretro" target="_blank" rel="noopener" class="font-semibold underline underline-offset-2 decoration-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors">alacroix/focusretro</a>.</p>
-      <p>Chaque fichier affiché sur notre page de release porte un badge <strong>« Verified »</strong> apposé par GitHub lui-même : c'est la preuve que le binaire a été compilé automatiquement depuis le code source, sans intervention humaine.</p>
+      <p>Chaque release est accompagnée d'une <strong>attestation de build</strong> signée par GitHub Actions : c'est la preuve que le binaire a été compilé automatiquement depuis le code source, sans intervention humaine. <a href="https://github.com/alacroix/focusretro/attestations?q=0.3.2" target="_blank" rel="noopener" class="font-semibold underline underline-offset-2 decoration-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors">Consulter les attestations</a>.</p>
     </div>
     <!-- Warning callout -->
     <div class="flex justify-center"><div class="inline-flex items-center gap-3 rounded-xl bg-orange-100/80 dark:bg-orange-900/40 border border-orange-200 dark:border-orange-700/50 px-5 py-4">
@@ -353,7 +353,7 @@
         <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" clip-rule="evenodd"/>
       </svg>
       <p class="text-sm font-semibold text-orange-800 dark:text-orange-300 leading-snug" data-i18n="verified.caption">
-        Pas de badge Verified sur la page de téléchargement ? Ne téléchargez pas le fichier.
+        <a href="https://github.com/alacroix/focusretro/attestations?q=0.3.2" target="_blank" rel="noopener" class="underline underline-offset-2 decoration-orange-600 dark:decoration-orange-400 hover:text-orange-600 dark:hover:text-orange-200 transition-colors">Vérifiez les attestations de build sur GitHub</a> avant de télécharger.
       </p>
     </div></div>
     <!-- Right: screenshot (hidden until after next release) -->
@@ -1020,8 +1020,8 @@
       "install.win.s4.desc": "Focus Retro apparaît dans la barre des tâches. Lancez Dofus Retro et jouez normalement.",
       "install.githubLink": "Je préfère télécharger depuis GitHub directement",
       "verified.title": "Téléchargez uniquement depuis GitHub",
-      "verified.desc": "Des sites tiers redistribuent des binaires modifiés d'outils communautaires Dofus - certains contiennent des keyloggers ou des stealers. Focus Retro n'est distribué que via GitHub, sur le repo <a href=\"https://github.com/alacroix/focusretro\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">alacroix/focusretro</a>. Chaque fichier affiché sur notre page de release porte un badge <strong>« Verified »</strong> apposé par GitHub lui-même : c'est la preuve que le binaire a été compilé automatiquement depuis le code source, sans intervention humaine.",
-      "verified.caption": "Pas de badge Verified sur la page de téléchargement ? Ne téléchargez pas le fichier.",
+      "verified.desc": "Des sites tiers redistribuent des binaires modifiés d'outils communautaires Dofus - certains contiennent des keyloggers ou des stealers. Focus Retro n'est distribué que via GitHub, sur le repo <a href=\"https://github.com/alacroix/focusretro\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">alacroix/focusretro</a>. Chaque release est accompagnée d'une <strong>attestation de build</strong> signée par GitHub Actions : c'est la preuve que le binaire a été compilé automatiquement depuis le code source, sans intervention humaine. <a href=\"https://github.com/alacroix/focusretro/attestations?q=0.3.2\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">Consulter les attestations</a>.",
+      "verified.caption": "Vérifiez les attestations de build sur GitHub avant de télécharger.",
       "faq.ban.q": "Est-ce que je risque d'être banni ?",
       "faq.ban.a": "Non. Ankama tolère officiellement les outils de gestion de fenêtre qui n'interagissent pas avec les fichiers du jeu. Focus Retro lit uniquement les notifications système de votre OS - il ne touche jamais au jeu lui-même.",
       "faq.bot.q": "C'est un bot ou une macro ?",
@@ -1121,8 +1121,8 @@
       "install.win.s4.desc": "Focus Retro appears in your system tray. Launch Dofus Retro and play normally.",
       "install.githubLink": "I prefer to download directly from GitHub",
       "verified.title": "Only download from GitHub",
-      "verified.desc": "Third-party sites redistribute modified binaries of Dofus community tools — some contain keyloggers or stealers. Focus Retro is only distributed via GitHub, on the <a href=\"https://github.com/alacroix/focusretro\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">alacroix/focusretro</a> repo. Every file on our release page carries a <strong>\"Verified\"</strong> badge issued by GitHub itself: proof that the binary was compiled automatically from source code, without human intervention.",
-      "verified.caption": "No Verified badge on the download page? Don't download the file.",
+      "verified.desc": "Third-party sites redistribute modified binaries of Dofus community tools — some contain keyloggers or stealers. Focus Retro is only distributed via GitHub, on the <a href=\"https://github.com/alacroix/focusretro\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">alacroix/focusretro</a> repo. Every release includes a <strong>build attestation</strong> signed by GitHub Actions: proof that the binary was compiled automatically from source code, without human intervention. <a href=\"https://github.com/alacroix/focusretro/attestations?q=0.3.2\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">View attestations</a>.",
+      "verified.caption": "Check the build attestations on GitHub before downloading.",
       "faq.ban.q": "Can I get banned?",
       "faq.ban.a": "No. Ankama officially tolerates window management tools that don't interact with game files. Focus Retro only reads your OS system notifications - it never touches the game itself.",
       "faq.bot.q": "Is it a bot or a macro?",
@@ -1222,8 +1222,8 @@
       "install.win.s4.desc": "Focus Retro aparece en la bandeja del sistema. Inicia Dofus Retro y juega normalmente.",
       "install.githubLink": "Prefiero descargar directamente desde GitHub",
       "verified.title": "Descarga únicamente desde GitHub",
-      "verified.desc": "Sitios de terceros redistribuyen binarios modificados de herramientas comunitarias de Dofus — algunos contienen keyloggers o stealers. Focus Retro solo se distribuye a través de GitHub, en el repositorio <a href=\"https://github.com/alacroix/focusretro\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">alacroix/focusretro</a>. Cada archivo en nuestra página de release lleva un distintivo <strong>«Verified»</strong> emitido por el propio GitHub: prueba de que el binario fue compilado automáticamente desde el código fuente, sin intervención humana.",
-      "verified.caption": "¿No ves el distintivo Verified en la página de descarga? No descargues el archivo.",
+      "verified.desc": "Sitios de terceros redistribuyen binarios modificados de herramientas comunitarias de Dofus — algunos contienen keyloggers o stealers. Focus Retro solo se distribuye a través de GitHub, en el repositorio <a href=\"https://github.com/alacroix/focusretro\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">alacroix/focusretro</a>. Cada release incluye una <strong>attestación de build</strong> firmada por GitHub Actions: prueba de que el binario fue compilado automáticamente desde el código fuente, sin intervención humana. <a href=\"https://github.com/alacroix/focusretro/attestations?q=0.3.2\" target=\"_blank\" rel=\"noopener\" class=\"font-semibold underline\">Ver las attestaciones</a>.",
+      "verified.caption": "Comprueba las attestaciones de build en GitHub antes de descargar.",
       "faq.ban.q": "¿Puedo ser baneado?",
       "faq.ban.a": "No. Ankama tolera oficialmente las herramientas de gestión de ventanas que no interactúan con los archivos del juego. Focus Retro solo lee las notificaciones del sistema - nunca toca el juego en sí.",
       "faq.bot.q": "¿Es un bot o una macro?",
