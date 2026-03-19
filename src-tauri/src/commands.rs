@@ -241,6 +241,12 @@ pub fn set_hotkey(
 }
 
 #[tauri::command]
+pub fn reset_hotkeys(state: tauri::State<'_, Arc<AppState>>) -> Vec<HotkeyBinding> {
+    state.reset_hotkeys();
+    state.get_hotkeys()
+}
+
+#[tauri::command]
 pub fn get_language(state: tauri::State<'_, Arc<AppState>>) -> String {
     state.get_language()
 }

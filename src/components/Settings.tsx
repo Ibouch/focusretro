@@ -19,6 +19,7 @@ import {
   setHotkey,
   getLanguage,
   setLanguage,
+  resetHotkeys,
 } from "../lib/commands";
 
 function ToggleRow({
@@ -422,9 +423,22 @@ function Settings({
         </div>
       </div>
 
-      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-5 mb-2">
-        {t("hotkeys.title")}
-      </h3>
+      <div className="flex items-center justify-between mt-5 mb-2">
+        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          {t("hotkeys.title")}
+        </h3>
+        <button
+          onClick={() => {
+            resetHotkeys().then((newHotkeys) => {
+              setHotkeys(newHotkeys);
+              emit("hotkeys-updated", newHotkeys);
+            });
+          }}
+          className="text-[11px] text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors"
+        >
+          {t("hotkeys.reset")}
+        </button>
+      </div>
 
       <div className="divide-y divide-gray-200 dark:divide-gray-800/50">
         {hotkeyActions.map(({ action, label }) => (
