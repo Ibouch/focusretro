@@ -106,6 +106,9 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             setup_radial_panel(app);
 
+            #[cfg(target_os = "windows")]
+            setup_radial_window(app);
+
             Ok(())
         })
         .build(tauri::generate_context!())
@@ -139,6 +142,28 @@ fn start_hotkey_listener(app: &tauri::App) {
     {
         let _ = (handle, state);
         log::warn!("[Hotkeys] Global hotkeys not available on this platform");
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn setup_radial_window(app: &tauri::App) {
+    use log::warn;
+    use windows::Win32::UI::WindowsAndMessaging::{
+        GetWindowLongPtrW, SetWindowLongPtrW, GWL_EXSTYLE, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
+    };
+    match app.get_webview_window("radial-overlay") {
+        None => warn!("[Radial] radial-overlay window not found during setup"),
+        Some(overlay) => match overlay.hwnd() {
+            Err(e) => warn!("[Radial] Failed to get HWND for overlay: {:?}", e),
+            Ok(hwnd) => unsafe {
+                let ex_style = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+                SetWindowLongPtrW(
+                    hwnd,
+                    GWL_EXSTYLE,
+                    ex_style | WS_EX_NOACTIVATE.0 as isize | WS_EX_TOOLWINDOW.0 as isize,
+                );
+            },
+        },
     }
 }
 

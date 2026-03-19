@@ -9,7 +9,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
     GetKeyState, VK_CONTROL, VK_LWIN, VK_MENU, VK_RWIN, VK_SHIFT,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
-    CallNextHookEx, GetCursorPos, GetMessageW, SetWindowsHookExW, UnhookWindowsHookEx, HHOOK,
+    CallNextHookEx, GetCursorPos, GetMessageW, SetWindowsHookExW, UnhookWindowsHookEx,
     KBDLLHOOKSTRUCT, MSLLHOOKSTRUCT, MSG, WH_KEYBOARD_LL, WH_MOUSE_LL, WM_KEYDOWN, WM_KEYUP,
     WM_MOUSEMOVE, WM_SYSKEYDOWN, WM_SYSKEYUP, WM_XBUTTONDOWN, WM_XBUTTONUP,
 };
@@ -239,7 +239,7 @@ unsafe extern "system" fn hotkey_callback(
     lparam: LPARAM,
 ) -> LRESULT {
     if ncode < 0 {
-        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+        return CallNextHookEx(None, ncode, wparam, lparam);
     }
 
     let msg_id = wparam.0 as u32;
@@ -279,12 +279,12 @@ unsafe extern "system" fn hotkey_callback(
                 }
             }
         });
-        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+        return CallNextHookEx(None, ncode, wparam, lparam);
     }
 
     // Only act on key-down events (also WM_SYSKEYDOWN for Alt+key combos)
     if msg_id != WM_KEYDOWN && msg_id != WM_SYSKEYDOWN {
-        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+        return CallNextHookEx(None, ncode, wparam, lparam);
     }
 
     let kb = &*(lparam.0 as *const KBDLLHOOKSTRUCT);
@@ -302,7 +302,7 @@ unsafe extern "system" fn hotkey_callback(
         }
     });
 
-    CallNextHookEx(HHOOK::default(), ncode, wparam, lparam)
+    CallNextHookEx(None, ncode, wparam, lparam)
 }
 
 unsafe extern "system" fn mouse_callback(
@@ -311,7 +311,7 @@ unsafe extern "system" fn mouse_callback(
     lparam: LPARAM,
 ) -> LRESULT {
     if ncode < 0 {
-        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+        return CallNextHookEx(None, ncode, wparam, lparam);
     }
 
     let msg = wparam.0 as u32;
@@ -351,7 +351,7 @@ unsafe extern "system" fn mouse_callback(
                 }
             }
         });
-        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+        return CallNextHookEx(None, ncode, wparam, lparam);
     }
 
     // Mouse button release: if radial is open and the button matches the radial binding, hide it
@@ -361,7 +361,7 @@ unsafe extern "system" fn mouse_callback(
         let button = match xbutton {
             1 => "Mouse4",
             2 => "Mouse5",
-            _ => return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam),
+            _ => return CallNextHookEx(None, ncode, wparam, lparam),
         };
         HOTKEY_CTX.with(|ctx| {
             if let Some(ref c) = *ctx.borrow() {
@@ -386,11 +386,11 @@ unsafe extern "system" fn mouse_callback(
                 }
             }
         });
-        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+        return CallNextHookEx(None, ncode, wparam, lparam);
     }
 
     if msg != WM_XBUTTONDOWN {
-        return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam);
+        return CallNextHookEx(None, ncode, wparam, lparam);
     }
 
     let ms = &*(lparam.0 as *const MSLLHOOKSTRUCT);
@@ -398,7 +398,7 @@ unsafe extern "system" fn mouse_callback(
     let button = match xbutton {
         1 => "Mouse4",
         2 => "Mouse5",
-        _ => return CallNextHookEx(HHOOK::default(), ncode, wparam, lparam),
+        _ => return CallNextHookEx(None, ncode, wparam, lparam),
     };
 
     let (shift, ctrl, alt, cmd) = read_modifiers();
@@ -414,7 +414,7 @@ unsafe extern "system" fn mouse_callback(
         }
     });
 
-    CallNextHookEx(HHOOK::default(), ncode, wparam, lparam)
+    CallNextHookEx(None, ncode, wparam, lparam)
 }
 
 pub fn start_hotkey_listener(handle: AppHandle, state: Arc<AppState>) {

@@ -1,7 +1,8 @@
 use crate::platform::{GameWindow, WindowManager};
 use log::info;
 use std::mem;
-use windows::Win32::Foundation::{BOOL, HWND, LPARAM, TRUE};
+use windows::core::BOOL;
+use windows::Win32::Foundation::{HWND, LPARAM, TRUE};
 use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
 use windows::Win32::UI::Input::KeyboardAndMouse::{
     SendInput, SetActiveWindow, SetFocus, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS,
@@ -101,16 +102,16 @@ impl WindowManager for WinWindowManager {
             let fg_tid = GetWindowThreadProcessId(GetForegroundWindow(), None);
             let target_tid = GetWindowThreadProcessId(hwnd, None);
 
-            if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, TRUE); }
-            if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, TRUE); }
+            if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, true); }
+            if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, true); }
 
             let _ = BringWindowToTop(hwnd);
             let _ = SetForegroundWindow(hwnd);
             let _ = SetActiveWindow(hwnd);
-            let _ = SetFocus(hwnd);
+            let _ = SetFocus(Some(hwnd));
 
-            if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, BOOL::from(false)); }
-            if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, BOOL::from(false)); }
+            if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, false); }
+            if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, false); }
         }
 
         info!("[WinWindow] Focused window: {}", window.character_name);

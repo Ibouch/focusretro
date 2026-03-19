@@ -2,13 +2,12 @@ use crate::platform::NotificationListener;
 use log::{error, info, warn};
 use std::collections::HashSet;
 use std::sync::{Arc, Mutex};
-use windows::Foundation::Collections::IVectorView;
 use windows::Foundation::TypedEventHandler;
 use windows::UI::Notifications::Management::{
     UserNotificationListener, UserNotificationListenerAccessStatus,
 };
 use windows::UI::Notifications::{
-    AdaptiveNotificationText, NotificationKinds, UserNotification,
+    NotificationKinds, UserNotification,
     UserNotificationChangedEventArgs, UserNotificationChangedKind,
 };
 use windows::core::HSTRING;
@@ -71,7 +70,7 @@ fn process_notification(
         }
     };
 
-    let elements: IVectorView<AdaptiveNotificationText> = match binding.GetTextElements() {
+    let elements = match binding.GetTextElements() {
         Ok(e) => e,
         Err(e) => {
             error!("[WinNotif] GetTextElements() failed: {:?}", e);
@@ -169,7 +168,7 @@ impl NotificationListener for WinNotificationListener {
             // Seed with notifications already present so we don't replay old ones.
             if let Ok(op) = listener.GetNotificationsAsync(NotificationKinds::Toast) {
                 if let Ok(existing) = op.get() {
-                    let existing: IVectorView<UserNotification> = existing;
+                    let existing = existing;
                     let count = existing.Size().unwrap_or(0);
                     let mut ids = seen_ids.lock().unwrap();
                     for i in 0..count {
@@ -191,8 +190,8 @@ impl NotificationListener for WinNotificationListener {
             let event_result = listener.NotificationChanged(&TypedEventHandler::<
                 UserNotificationListener,
                 UserNotificationChangedEventArgs,
-            >::new(move |_, args: &Option<UserNotificationChangedEventArgs>| {
-                if let Some(args) = args {
+            >::new(move |_, args| {
+                if let Some(args) = &*args {
                     if args.ChangeKind()? == UserNotificationChangedKind::Added {
                         let id = args.UserNotificationId()?;
                         let is_new = event_seen_ids.lock().unwrap().insert(id);
@@ -221,7 +220,7 @@ impl NotificationListener for WinNotificationListener {
             loop {
                 std::thread::sleep(poll_interval);
 
-                let notifications: IVectorView<UserNotification> = match listener
+                let notifications = match listener
                     .GetNotificationsAsync(NotificationKinds::Toast)
                     .and_then(|op| op.get())
                 {
