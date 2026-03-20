@@ -62,7 +62,7 @@ export default function DebugPanel() {
               ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/60 dark:text-amber-300 dark:border-amber-700/50"
               : "bg-gray-100 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:border-gray-700"
           }`}>
-            {notifMode === "event" ? "event-driven" : notifMode === "poll" ? "polling 20ms" : notifMode === "poll-db" ? "polling DB 200ms" : notifMode}
+            {notifMode === "event" ? "event-driven" : notifMode === "poll" ? "polling 100ms" : notifMode === "poll-db" ? "polling DB 200ms" : notifMode}
           </span>
         </div>
         <button

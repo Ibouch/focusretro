@@ -346,9 +346,9 @@ impl NotificationListener for WinNotificationListener {
                     std::time::Duration::from_millis(200)
                 }
                 Err(_) => {
-                    info!("[WinNotif] NotificationChanged unavailable (unpackaged app), poll-only mode (20ms)");
+                    info!("[WinNotif] NotificationChanged unavailable (unpackaged app), poll-only mode (100ms)");
                     on_mode("poll".into());
-                    std::time::Duration::from_millis(20)
+                    std::time::Duration::from_millis(100)
                 }
             };
 
