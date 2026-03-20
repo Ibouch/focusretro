@@ -352,7 +352,7 @@ pub fn set_close_to_tray(value: bool, state: tauri::State<'_, Arc<AppState>>) {
 }
 
 #[tauri::command]
-pub fn apply_layout(layout: String, state: tauri::State<'_, Arc<AppState>>) -> Result<(), String> {
+pub fn apply_layout(layout: String, state: tauri::State<'_, Arc<AppState>>, app: tauri::AppHandle) -> Result<(), String> {
     let wm = platform::create_window_manager();
     let live = wm.list_dofus_windows();
     let ordered_names: Vec<String> = state.accounts.lock().unwrap()
@@ -361,5 +361,9 @@ pub fn apply_layout(layout: String, state: tauri::State<'_, Arc<AppState>>) -> R
         .filter_map(|name| live.iter().find(|w| w.character_name.eq_ignore_ascii_case(name)))
         .cloned()
         .collect();
-    wm.arrange_windows(&windows, &layout).map_err(|e| e.to_string())
+    wm.arrange_windows(&windows, &layout).map_err(|e| e.to_string())?;
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.set_focus();
+    }
+    Ok(())
 }
