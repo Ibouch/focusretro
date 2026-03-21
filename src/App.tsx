@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import type { Update } from "@tauri-apps/plugin-updater";
@@ -23,7 +23,10 @@ import {
   setCloseTotray as setCloseTotrayCmd,
   setCloseBehaviorPrompted,
   applyClose,
+  getTaskbarUngroupState,
+  applyWindowIcon,
 } from "./lib/commands";
+import { renderAccountIcon } from "./lib/taskbarIcon";
 import i18n from "./i18n";
 
 type Tab = "accounts" | "messages" | "settings" | "debug";
@@ -59,6 +62,9 @@ function App() {
   const [languageReady, setLanguageReady] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [closeOs, setCloseOs] = useState<string>("windows");
+  const [taskbarUngroup, setTaskbarUngroup] = useState(true);
+  const taskbarIconCache = useRef<Map<number, string>>(new Map());
+  const isWindows = navigator.userAgent.includes("Windows NT");
 
   useEffect(() => {
     refreshAccounts().then(setAccounts);
@@ -76,6 +82,7 @@ function App() {
     });
     getHotkeys().then(setHotkeys);
     getShowDebug().then(setShowDebug);
+    if (isWindows) getTaskbarUngroupState().then(setTaskbarUngroup);
     getTheme().then((t) => {
       setThemeState(t);
       applyThemeClass(t);
@@ -110,6 +117,28 @@ function App() {
       unlistenFocus.then((f) => f());
     };
   }, []);
+
+  // Apply taskbar icons whenever accounts or taskbarUngroup changes (Windows only)
+  useEffect(() => {
+    if (!isWindows || !taskbarUngroup) {
+      taskbarIconCache.current.clear();
+      return;
+    }
+    // Evict closed windows from the frontend cache
+    const activeIds = new Set(accounts.map((a) => a.window_id));
+    for (const id of taskbarIconCache.current.keys()) {
+      if (!activeIds.has(id)) taskbarIconCache.current.delete(id);
+    }
+    for (const account of accounts) {
+      const key = `${account.icon_path ?? ""}|${account.color ?? ""}`;
+      if (taskbarIconCache.current.get(account.window_id) === key) continue;
+      const windowId = account.window_id;
+      renderAccountIcon(account.icon_path, account.color)
+        .then((rgba) => applyWindowIcon(windowId, rgba))
+        .then(() => { taskbarIconCache.current.set(windowId, key); })
+        .catch(() => {});
+    }
+  }, [accounts, taskbarUngroup]);
 
   useEffect(() => {
     const unlisten = listen<string>("close-requested", (event) => {
@@ -375,7 +404,7 @@ function App() {
           </div>
         )}
         {tab === "messages" && <MessageList />}
-        {tab === "settings" && <Settings showDebug={showDebug} onToggleDebug={setShowDebug} theme={theme} onThemeChange={handleThemeChange} updateConsent={updateConsent} onUpdateConsentChange={handleUpdateConsentChange} />}
+        {tab === "settings" && <Settings showDebug={showDebug} onToggleDebug={setShowDebug} theme={theme} onThemeChange={handleThemeChange} updateConsent={updateConsent} onUpdateConsentChange={handleUpdateConsentChange} taskbarUngroup={taskbarUngroup} onToggleTaskbarUngroup={setTaskbarUngroup} />}
         {tab === "debug" && <DebugPanel />}
       </main>
     </div>

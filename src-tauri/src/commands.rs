@@ -105,6 +105,45 @@ pub fn get_trade_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
     state.is_trade_enabled()
 }
 
+#[cfg(target_os = "windows")]
+#[tauri::command]
+pub fn toggle_taskbar_ungroup(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    let new_state = !state.is_taskbar_ungroup_enabled();
+    state.set_taskbar_ungroup(new_state);
+    new_state
+}
+
+#[cfg(target_os = "windows")]
+#[tauri::command]
+pub fn get_taskbar_ungroup_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
+    state.is_taskbar_ungroup_enabled()
+}
+
+#[cfg(not(target_os = "windows"))]
+#[tauri::command]
+pub fn toggle_taskbar_ungroup(_state: tauri::State<'_, Arc<AppState>>) -> bool {
+    false
+}
+
+#[cfg(not(target_os = "windows"))]
+#[tauri::command]
+pub fn get_taskbar_ungroup_state(_state: tauri::State<'_, Arc<AppState>>) -> bool {
+    false
+}
+
+#[cfg(target_os = "windows")]
+#[tauri::command]
+pub fn apply_window_icon(state: tauri::State<'_, Arc<AppState>>, window_id: u64, rgba: Vec<u8>) {
+    use crate::platform::windows::taskbar;
+    let mut handles = state.taskbar_icon_handles.lock().unwrap();
+    taskbar::set_window_icon(window_id as isize, &rgba, &mut handles);
+}
+
+#[cfg(not(target_os = "windows"))]
+#[tauri::command]
+pub fn apply_window_icon(_state: tauri::State<'_, Arc<AppState>>, _window_id: u64, _rgba: Vec<u8>) {
+}
+
 #[tauri::command]
 pub fn toggle_pm(state: tauri::State<'_, Arc<AppState>>) -> bool {
     let new_state = !state.is_pm_enabled();

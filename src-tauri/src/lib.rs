@@ -59,6 +59,9 @@ pub fn run() {
             commands::get_group_invite_state,
             commands::toggle_trade,
             commands::get_trade_state,
+            commands::toggle_taskbar_ungroup,
+            commands::get_taskbar_ungroup_state,
+            commands::apply_window_icon,
             commands::toggle_pm,
             commands::get_pm_state,
             commands::get_messages,
@@ -128,7 +131,14 @@ pub fn run() {
                     }
                 }
             }
-            #[cfg(not(target_os = "macos"))]
+            #[cfg(target_os = "windows")]
+            if let tauri::RunEvent::Exit = event {
+                use crate::platform::windows::taskbar;
+                let state = app_handle.state::<std::sync::Arc<AppState>>();
+                let mut handles = state.taskbar_icon_handles.lock().unwrap();
+                taskbar::cleanup_all_icons(&mut handles);
+            }
+            #[cfg(not(any(target_os = "macos", target_os = "windows")))]
             let _ = (app_handle, event);
         });
 }

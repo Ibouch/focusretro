@@ -32,6 +32,8 @@
   "settings.group_invite_desc": "Focus sur invitation de vos propres comptes",
   "settings.trade": "Échange",
   "settings.trade_desc": "Focus sur demande d'échange de vos propres comptes",
+  "settings.taskbar_ungroup": "Dégroupage dans la barre des tâches",
+  "settings.taskbar_ungroup_desc": "Sépare chaque personnage avec une icône personnalisée",
   "settings.pm": "Messages privés",
   "settings.pm_desc": "Capturer et afficher les MPs entrants",
   "settings.experimental": "Expérimental",

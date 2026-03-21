@@ -131,9 +131,17 @@ pub struct Preferences {
     pub close_to_tray: bool,
     #[serde(default)]
     pub close_behavior_prompted: bool,
+    #[cfg(target_os = "windows")]
+    #[serde(default = "default_taskbar_ungroup")]
+    pub taskbar_ungroup_enabled: bool,
 }
 
 fn default_close_to_tray() -> bool {
+    true
+}
+
+#[cfg(target_os = "windows")]
+fn default_taskbar_ungroup() -> bool {
     true
 }
 
@@ -152,6 +160,8 @@ impl Default for Preferences {
             theme: "system".into(),
             update_check_consent: None,
             close_to_tray: true,
+            #[cfg(target_os = "windows")]
+            taskbar_ungroup_enabled: true,
             close_behavior_prompted: false,
         }
     }
@@ -235,6 +245,12 @@ pub struct AppState {
     pub update_check_consent: Mutex<Option<bool>>,
     pub close_to_tray: AtomicBool,
     pub close_behavior_prompted: AtomicBool,
+    #[cfg(target_os = "windows")]
+    pub taskbar_ungroup_enabled: AtomicBool,
+    #[cfg(target_os = "windows")]
+    pub taskbar_aumid_cache: Mutex<std::collections::HashSet<isize>>,
+    #[cfg(target_os = "windows")]
+    pub taskbar_icon_handles: Mutex<std::collections::HashMap<isize, isize>>,
 }
 
 impl AppState {
@@ -276,6 +292,12 @@ impl AppState {
             update_check_consent: Mutex::new(prefs.update_check_consent),
             close_to_tray: AtomicBool::new(prefs.close_to_tray),
             close_behavior_prompted: AtomicBool::new(prefs.close_behavior_prompted),
+            #[cfg(target_os = "windows")]
+            taskbar_ungroup_enabled: AtomicBool::new(prefs.taskbar_ungroup_enabled),
+            #[cfg(target_os = "windows")]
+            taskbar_aumid_cache: Mutex::new(std::collections::HashSet::new()),
+            #[cfg(target_os = "windows")]
+            taskbar_icon_handles: Mutex::new(std::collections::HashMap::new()),
         }
     }
 
@@ -294,6 +316,8 @@ impl AppState {
             update_check_consent: *self.update_check_consent.lock().unwrap(),
             close_to_tray: self.close_to_tray.load(Ordering::Relaxed),
             close_behavior_prompted: self.close_behavior_prompted.load(Ordering::Relaxed),
+            #[cfg(target_os = "windows")]
+            taskbar_ungroup_enabled: self.taskbar_ungroup_enabled.load(Ordering::Relaxed),
         }
     }
 
@@ -691,6 +715,17 @@ impl AppState {
 
     pub fn set_close_behavior_prompted(&self, value: bool) {
         self.close_behavior_prompted.store(value, Ordering::Relaxed);
+        self.save();
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn is_taskbar_ungroup_enabled(&self) -> bool {
+        self.taskbar_ungroup_enabled.load(Ordering::Relaxed)
+    }
+
+    #[cfg(target_os = "windows")]
+    pub fn set_taskbar_ungroup(&self, enabled: bool) {
+        self.taskbar_ungroup_enabled.store(enabled, Ordering::Relaxed);
         self.save();
     }
 }

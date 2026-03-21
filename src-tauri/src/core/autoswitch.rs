@@ -32,6 +32,19 @@ fn refresh_accounts(handle: &AppHandle, state: &Arc<AppState>) {
     let _ = handle.emit("accounts-updated", &views);
     crate::update_tray_display(handle, state);
     sync_focus_from_foreground(handle, state);
+    #[cfg(target_os = "windows")]
+    {
+        use crate::platform::windows::taskbar;
+
+        let current_windows = state.accounts.lock().unwrap().clone();
+        let mut cache = state.taskbar_aumid_cache.lock().unwrap();
+        let mut handles = state.taskbar_icon_handles.lock().unwrap();
+        if state.is_taskbar_ungroup_enabled() {
+            taskbar::apply_taskbar_identities(&current_windows, &mut cache, &mut handles);
+        } else {
+            taskbar::reset_taskbar_identities(&current_windows, &mut cache, &mut handles);
+        }
+    }
 }
 
 /// Updates current account from the actual foreground window and emits focus-changed if it changed.

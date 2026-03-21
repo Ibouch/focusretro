@@ -1,0 +1,207 @@
+// Windows taskbar identity: AUMID ungrouping + custom icon per Dofus window
+//
+// Icon compositing (disc, base icon, overlay) is handled by the frontend via HTML Canvas.
+// This module only handles Win32 concerns: HICON creation, AUMID, WM_SETICON, handle cleanup.
+
+use std::collections::{HashMap, HashSet};
+
+use crate::platform::GameWindow;
+use log::warn;
+
+#[cfg(target_os = "windows")]
+use windows::{
+    core::BOOL,
+    Win32::{
+        Foundation::{HWND, LPARAM, WPARAM},
+        Graphics::Gdi::{
+            CreateBitmap, CreateDIBSection, DeleteObject, BI_RGB, BITMAPINFO,
+            BITMAPINFOHEADER, DIB_RGB_COLORS, HBITMAP,
+        },
+        UI::WindowsAndMessaging::{
+            CreateIconIndirect, DestroyIcon, SendMessageW, HICON, ICON_BIG, ICON_SMALL,
+            ICONINFO, WM_SETICON,
+        },
+        System::Com::{CoInitializeEx, COINIT_MULTITHREADED},
+        System::Com::StructuredStorage::PROPVARIANT,
+        UI::Shell::PropertiesSystem::{IPropertyStore, SHGetPropertyStoreForWindow},
+        Storage::EnhancedStorage::PKEY_AppUserModel_ID,
+    },
+};
+
+/// Converts a flat RGBA byte slice (size×size pixels) into a Windows HICON.
+/// Caller owns the returned HICON and must call DestroyIcon when done.
+#[cfg(target_os = "windows")]
+pub(crate) unsafe fn rgba_to_hicon(rgba: &[u8], size: u32) -> anyhow::Result<HICON> {
+    assert_eq!(rgba.len() as u32, size * size * 4);
+
+    // Convert RGBA → premultiplied BGRA (top-down order, matching negative biHeight below).
+    let mut bgra = vec![0u8; (size * size * 4) as usize];
+    for i in 0..(size * size) as usize {
+        let src = i * 4;
+        let a = rgba[src + 3];
+        let pm = |c: u8| -> u8 { ((c as u16 * a as u16 + 127) / 255) as u8 };
+        bgra[src]     = pm(rgba[src + 2]); // B
+        bgra[src + 1] = pm(rgba[src + 1]); // G
+        bgra[src + 2] = pm(rgba[src]);     // R
+        bgra[src + 3] = a;
+    }
+
+    // CreateDIBSection for 32bpp BGRA with alpha.
+    // Negative biHeight = top-down DIB, memory order matches our bgra buffer.
+    let bmi = BITMAPINFO {
+        bmiHeader: BITMAPINFOHEADER {
+            biSize: std::mem::size_of::<BITMAPINFOHEADER>() as u32,
+            biWidth: size as i32,
+            biHeight: -(size as i32),
+            biPlanes: 1,
+            biBitCount: 32,
+            biCompression: BI_RGB.0,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let mut bits_ptr = std::ptr::null_mut::<std::ffi::c_void>();
+    let hbm_color: HBITMAP = CreateDIBSection(None, &bmi, DIB_RGB_COLORS, &mut bits_ptr, None, 0)?;
+    std::ptr::copy_nonoverlapping(bgra.as_ptr(), bits_ptr as *mut u8, bgra.len());
+
+    // 1bpp all-zeros AND mask (size × size).
+    let mask_row_bytes = (size + 31) / 32 * 4;
+    let mask_data = vec![0u8; (mask_row_bytes * size) as usize];
+    let hbm_mask: HBITMAP = CreateBitmap(
+        size as i32,
+        size as i32,
+        1, 1,
+        Some(mask_data.as_ptr() as *const _),
+    );
+    if hbm_mask.0.is_null() {
+        let _ = DeleteObject(hbm_color.into());
+        return Err(anyhow::anyhow!("CreateBitmap for icon mask returned null"));
+    }
+
+    let icon_info = ICONINFO {
+        fIcon: BOOL(1),
+        xHotspot: 0,
+        yHotspot: 0,
+        hbmMask: hbm_mask,
+        hbmColor: hbm_color,
+    };
+    let hicon = CreateIconIndirect(&icon_info)?;
+
+    // Icon owns copies of the bitmaps — safe to delete originals
+    let _ = DeleteObject(hbm_color.into());
+    let _ = DeleteObject(hbm_mask.into());
+
+    Ok(hicon)
+}
+
+/// Sets a unique AUMID on a window via IPropertyStore, causing the Windows taskbar
+/// to group this window separately from other Dofus windows.
+#[cfg(target_os = "windows")]
+pub(crate) unsafe fn set_window_aumid(hwnd: HWND, character_name: &str) -> anyhow::Result<()> {
+    let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
+
+    let store: IPropertyStore = SHGetPropertyStoreForWindow(hwnd)
+        .map_err(|e| anyhow::anyhow!("SHGetPropertyStoreForWindow: {e:?}"))?;
+
+    let aumid = format!("focusretro.dofus.{}", character_name);
+    let pv = PROPVARIANT::from(aumid.as_str());
+
+    store.SetValue(&PKEY_AppUserModel_ID, &pv)
+        .map_err(|e| anyhow::anyhow!("IPropertyStore::SetValue: {e:?}"))?;
+    store.Commit()
+        .map_err(|e| anyhow::anyhow!("IPropertyStore::Commit: {e:?}"))?;
+
+    Ok(())
+}
+
+/// Applies a pre-composed RGBA icon (provided by the frontend) to a window's taskbar button.
+/// Creates a new HICON, sends WM_SETICON, destroys the previous handle for this window.
+#[cfg(target_os = "windows")]
+pub fn set_window_icon(hwnd_isize: isize, rgba: &[u8], icon_handles: &mut HashMap<isize, isize>) {
+    let hwnd = HWND(hwnd_isize as usize as *mut _);
+    let new_hicon = match unsafe { rgba_to_hicon(rgba, 24) } {
+        Ok(h) => h,
+        Err(e) => {
+            warn!("set_window_icon: rgba_to_hicon: {e}");
+            return;
+        }
+    };
+    unsafe {
+        SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_BIG as usize)), Some(LPARAM(new_hicon.0 as isize)));
+        SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_SMALL as usize)), Some(LPARAM(new_hicon.0 as isize)));
+    }
+    if let Some(old_raw) = icon_handles.get(&hwnd_isize).copied() {
+        unsafe { let _ = DestroyIcon(HICON(old_raw as *mut _)); }
+    }
+    icon_handles.insert(hwnd_isize, new_hicon.0 as isize);
+}
+
+/// Sets AUMID for new windows and evicts closed windows from the cache,
+/// destroying their HICON handles. Icon compositing is the frontend's responsibility.
+#[cfg(target_os = "windows")]
+pub fn apply_taskbar_identities(
+    windows: &[GameWindow],
+    aumid_cache: &mut HashSet<isize>,
+    icon_handles: &mut HashMap<isize, isize>,
+) {
+    let active: HashSet<isize> = windows.iter().map(|w| w.window_id as isize).collect();
+
+    // Evict closed windows: remove from AUMID cache and destroy their HICON handles
+    let stale: Vec<isize> = aumid_cache.iter().copied().filter(|h| !active.contains(h)).collect();
+    for hwnd in stale {
+        aumid_cache.remove(&hwnd);
+        if let Some(raw) = icon_handles.remove(&hwnd) {
+            unsafe { let _ = DestroyIcon(HICON(raw as *mut _)); }
+        }
+    }
+
+    // Set AUMID for windows not yet processed
+    for window in windows {
+        let hwnd_isize = window.window_id as isize;
+        if aumid_cache.contains(&hwnd_isize) {
+            continue;
+        }
+        let hwnd = HWND(hwnd_isize as usize as *mut _);
+        if let Err(e) = unsafe { set_window_aumid(hwnd, &window.character_name) } {
+            warn!("apply_taskbar_identities: AUMID for '{}': {e}", window.character_name);
+            continue;
+        }
+        aumid_cache.insert(hwnd_isize);
+    }
+}
+
+/// Resets all windows back to default taskbar grouping (clears AUMID, resets icons).
+/// No-op if the cache is already empty (nothing was applied).
+#[cfg(target_os = "windows")]
+pub fn reset_taskbar_identities(
+    windows: &[GameWindow],
+    aumid_cache: &mut HashSet<isize>,
+    icon_handles: &mut HashMap<isize, isize>,
+) {
+    if aumid_cache.is_empty() {
+        return;
+    }
+    for window in windows {
+        let hwnd = HWND(window.window_id as usize as *mut _);
+        unsafe {
+            let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
+            if let Ok(store) = SHGetPropertyStoreForWindow::<IPropertyStore>(hwnd) {
+                let _ = store.SetValue(&PKEY_AppUserModel_ID, &PROPVARIANT::default());
+                let _ = store.Commit();
+            }
+            SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_BIG as usize)), Some(LPARAM(0)));
+            SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_SMALL as usize)), Some(LPARAM(0)));
+        }
+    }
+    cleanup_all_icons(icon_handles);
+    aumid_cache.clear();
+}
+
+/// Destroys all tracked HICON handles and clears the map.
+#[cfg(target_os = "windows")]
+pub fn cleanup_all_icons(icon_handles: &mut HashMap<isize, isize>) {
+    for (_hwnd, raw) in icon_handles.iter() {
+        unsafe { let _ = DestroyIcon(HICON(*raw as *mut _)); }
+    }
+    icon_handles.clear();
+}

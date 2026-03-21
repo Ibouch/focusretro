@@ -21,6 +21,7 @@ import {
   resetHotkeys,
   getCloseTotray,
   setCloseTotray as setCloseTotrayCmd,
+  toggleTaskbarUngroup,
 } from "../lib/commands";
 
 function ToggleRow({
@@ -221,6 +222,8 @@ function Settings({
   onThemeChange,
   updateConsent,
   onUpdateConsentChange,
+  taskbarUngroup,
+  onToggleTaskbarUngroup,
 }: {
   showDebug: boolean;
   onToggleDebug: (v: boolean) => void;
@@ -228,6 +231,8 @@ function Settings({
   onThemeChange: (t: string) => void;
   updateConsent: boolean | null | undefined;
   onUpdateConsentChange: (consent: boolean) => void;
+  taskbarUngroup: boolean;
+  onToggleTaskbarUngroup: (v: boolean) => void;
 }) {
   const { t, i18n } = useTranslation();
   const [autoswitch, setAutoswitch] = useState(true);
@@ -355,6 +360,16 @@ function Settings({
           onLabel={t("settings.on")}
           offLabel={t("settings.off")}
         />
+        {navigator.userAgent.includes("Windows NT") && (
+          <ToggleRow
+            label={t("settings.taskbar_ungroup")}
+            description={t("settings.taskbar_ungroup_desc")}
+            enabled={taskbarUngroup}
+            onToggle={async () => onToggleTaskbarUngroup(await toggleTaskbarUngroup())}
+            onLabel={t("settings.on")}
+            offLabel={t("settings.off")}
+          />
+        )}
         <ToggleRow
           label={t("settings.pm")}
           description={t("settings.pm_desc")}

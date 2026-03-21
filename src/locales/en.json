@@ -32,6 +32,8 @@
   "settings.group_invite_desc": "Focus on invite from your own accounts",
   "settings.trade": "Trade",
   "settings.trade_desc": "Focus on trade request from your own accounts",
+  "settings.taskbar_ungroup": "Taskbar ungrouping",
+  "settings.taskbar_ungroup_desc": "Separates each character with a custom icon",
   "settings.pm": "Private messages",
   "settings.pm_desc": "Capture and display incoming PMs",
   "settings.experimental": "Experimental",

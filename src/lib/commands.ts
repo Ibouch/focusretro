@@ -92,6 +92,14 @@ export function toggleTrade(): Promise<boolean> {
   return invoke("toggle_trade");
 }
 
+export function toggleTaskbarUngroup(): Promise<boolean> {
+  return invoke("toggle_taskbar_ungroup");
+}
+
+export function getTaskbarUngroupState(): Promise<boolean> {
+  return invoke("get_taskbar_ungroup_state");
+}
+
 export function getTradeState(): Promise<boolean> {
   return invoke("get_trade_state");
 }
@@ -256,4 +264,8 @@ export function setCloseBehaviorPrompted(value: boolean): Promise<void> {
 
 export function applyClose(): Promise<void> {
   return invoke("apply_close");
+}
+
+export function applyWindowIcon(windowId: number, rgba: number[]): Promise<void> {
+  return invoke("apply_window_icon", { windowId, rgba });
 }
