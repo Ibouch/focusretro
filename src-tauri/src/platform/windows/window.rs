@@ -8,6 +8,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
     SendInput, SetActiveWindow, SetFocus, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS,
     KEYBDINPUT, KEYEVENTF_KEYUP, VK_RETURN,
 };
+use windows::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_TRANSITIONS_FORCEDISABLED};
 use windows::Win32::Graphics::Gdi::{GetMonitorInfoA, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST};
 use windows::Win32::UI::WindowsAndMessaging::{
     BringWindowToTop, EnumWindows, GetForegroundWindow, GetWindowTextW, GetWindowThreadProcessId,
@@ -88,6 +89,15 @@ impl WindowManager for WinWindowManager {
         let hwnd = HWND(window.window_id as usize as *mut _);
 
         unsafe {
+            // Disable DWM transition animation for instant focus appearance.
+            let disable: u32 = 1;
+            let _ = DwmSetWindowAttribute(
+                hwnd,
+                DWMWA_TRANSITIONS_FORCEDISABLED,
+                &disable as *const u32 as *const _,
+                std::mem::size_of::<u32>() as u32,
+            );
+
             // Unminimize only if actually minimized — calling SW_RESTORE on a
             // fullscreen window would exit fullscreen and shrink it to windowed.
             if IsIconic(hwnd).as_bool() {
@@ -112,6 +122,15 @@ impl WindowManager for WinWindowManager {
 
             if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, false); }
             if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, false); }
+
+            // Re-enable DWM transitions.
+            let enable: u32 = 0;
+            let _ = DwmSetWindowAttribute(
+                hwnd,
+                DWMWA_TRANSITIONS_FORCEDISABLED,
+                &enable as *const u32 as *const _,
+                std::mem::size_of::<u32>() as u32,
+            );
         }
 
         info!("[WinWindow] Focused window: {}", window.character_name);
