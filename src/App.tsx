@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { listen } from "@tauri-apps/api/event";
 import type { Update } from "@tauri-apps/plugin-updater";
@@ -20,6 +20,9 @@ import {
   setTheme,
   getUpdateConsent,
   setUpdateConsent,
+  setCloseTotray as setCloseTotrayCmd,
+  setCloseBehaviorPrompted,
+  applyClose,
 } from "./lib/commands";
 import i18n from "./i18n";
 
@@ -54,6 +57,8 @@ function App() {
   const [updateConsent, setUpdateConsentState] = useState<boolean | null | undefined>(undefined);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [languageReady, setLanguageReady] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [closeOs, setCloseOs] = useState<string>("windows");
 
   useEffect(() => {
     refreshAccounts().then(setAccounts);
@@ -105,6 +110,28 @@ function App() {
       unlistenFocus.then((f) => f());
     };
   }, []);
+
+  useEffect(() => {
+    const unlisten = listen<string>("close-requested", (event) => {
+      setCloseOs(event.payload);
+      setShowCloseModal(true);
+    });
+    return () => { unlisten.then(fn => fn()); };
+  }, []);
+
+  const handleCloseChoice = useCallback(async (toTray: boolean) => {
+    setShowCloseModal(false);
+    await setCloseTotrayCmd(toTray);
+    await setCloseBehaviorPrompted(true);
+    await applyClose();
+  }, []);
+
+  useEffect(() => {
+    if (!showCloseModal) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") handleCloseChoice(true); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [showCloseModal, handleCloseChoice]);
 
   useEffect(() => {
     applyThemeClass(theme);
@@ -220,6 +247,38 @@ function App() {
               {t("update.consent_no")}
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showCloseModal) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-950 flex items-center justify-center p-6">
+        <div className="max-w-sm w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            {t("close.title")}
+          </h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
+            {t("close.body")}
+          </p>
+          <div className="flex flex-col gap-2 mb-3">
+            <button
+              onClick={() => handleCloseChoice(true)}
+              className="flex-1 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors"
+            >
+              {closeOs === "macos" ? t("close.hide_menubar") : t("close.hide_tray")}
+            </button>
+            <button
+              onClick={() => handleCloseChoice(false)}
+              className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors"
+            >
+              {t("close.quit")}
+            </button>
+          </div>
+          <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
+            {t("close.note")}
+          </p>
         </div>
       </div>
     );

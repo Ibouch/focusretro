@@ -99,5 +99,11 @@
   "update.consent_no": "Non merci",
   "settings.update_check": "Vérifier les mises à jour",
   "settings.update_check_desc": "Contacte GitHub Releases au démarrage pour détecter les nouvelles versions.",
-  "settings.close_to_tray": "Fermeture réduit dans la barre système"
+  "settings.close_to_tray": "Fermeture réduit dans la barre des tâches",
+  "close.title": "Avant de partir...",
+  "close.body": "Comment FocusRetro doit-il se comporter quand vous fermez la fenêtre ?",
+  "close.hide_tray": "Réduire dans la barre des tâches",
+  "close.hide_menubar": "Réduire dans la barre des menus",
+  "close.quit": "Quitter l'application",
+  "close.note": "Vous pouvez modifier ce comportement dans les Paramètres"
 }

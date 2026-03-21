@@ -129,6 +129,8 @@ pub struct Preferences {
     pub update_check_consent: Option<bool>,
     #[serde(default = "default_close_to_tray")]
     pub close_to_tray: bool,
+    #[serde(default)]
+    pub close_behavior_prompted: bool,
 }
 
 fn default_close_to_tray() -> bool {
@@ -150,6 +152,7 @@ impl Default for Preferences {
             theme: "system".into(),
             update_check_consent: None,
             close_to_tray: true,
+            close_behavior_prompted: false,
         }
     }
 }
@@ -231,6 +234,7 @@ pub struct AppState {
     pub theme: Mutex<String>,
     pub update_check_consent: Mutex<Option<bool>>,
     pub close_to_tray: AtomicBool,
+    pub close_behavior_prompted: AtomicBool,
 }
 
 impl AppState {
@@ -271,12 +275,12 @@ impl AppState {
             theme: Mutex::new(prefs.theme),
             update_check_consent: Mutex::new(prefs.update_check_consent),
             close_to_tray: AtomicBool::new(prefs.close_to_tray),
+            close_behavior_prompted: AtomicBool::new(prefs.close_behavior_prompted),
         }
     }
 
-    fn save(&self) {
-        let path = self.config_path.clone();
-        let prefs = Preferences {
+    fn snapshot_prefs(&self) -> Preferences {
+        Preferences {
             autoswitch_enabled: self.autoswitch_enabled.load(Ordering::Relaxed),
             group_invite_enabled: self.group_invite_enabled.load(Ordering::Relaxed),
             trade_enabled: self.trade_enabled.load(Ordering::Relaxed),
@@ -289,10 +293,20 @@ impl AppState {
             theme: self.theme.lock().unwrap().clone(),
             update_check_consent: *self.update_check_consent.lock().unwrap(),
             close_to_tray: self.close_to_tray.load(Ordering::Relaxed),
-        };
+            close_behavior_prompted: self.close_behavior_prompted.load(Ordering::Relaxed),
+        }
+    }
+
+    fn save(&self) {
+        let path = self.config_path.clone();
+        let prefs = self.snapshot_prefs();
         std::thread::spawn(move || {
             save_preferences(&path, &prefs);
         });
+    }
+
+    pub fn save_sync(&self) {
+        save_preferences(&self.config_path, &self.snapshot_prefs());
     }
 
     pub fn is_autoswitch_enabled(&self) -> bool {
@@ -668,6 +682,15 @@ impl AppState {
 
     pub fn set_close_to_tray(&self, enabled: bool) {
         self.close_to_tray.store(enabled, Ordering::Relaxed);
+        self.save();
+    }
+
+    pub fn is_close_behavior_prompted(&self) -> bool {
+        self.close_behavior_prompted.load(Ordering::Relaxed)
+    }
+
+    pub fn set_close_behavior_prompted(&self, value: bool) {
+        self.close_behavior_prompted.store(value, Ordering::Relaxed);
         self.save();
     }
 }

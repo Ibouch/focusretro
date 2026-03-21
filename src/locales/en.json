@@ -99,5 +99,11 @@
   "update.consent_no": "No thanks",
   "settings.update_check": "Check for updates",
   "settings.update_check_desc": "Contacts GitHub Releases at startup to detect new versions.",
-  "settings.close_to_tray": "Close minimizes to tray"
+  "settings.close_to_tray": "Close minimizes to tray",
+  "close.title": "Before you go...",
+  "close.body": "How should FocusRetro behave when you click the close button?",
+  "close.hide_tray": "Hide to system tray",
+  "close.hide_menubar": "Hide to menu bar",
+  "close.quit": "Quit app",
+  "close.note": "You can change this later in Settings"
 }

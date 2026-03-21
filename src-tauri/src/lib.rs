@@ -31,8 +31,11 @@ pub fn run() {
             if let tauri::WindowEvent::CloseRequested { api, .. } = event {
                 if window.label() == "main" {
                     let state = window.app_handle().state::<Arc<AppState>>();
-                    if state.is_close_to_tray() {
-                        api.prevent_close();
+                    api.prevent_close();
+                    if !state.is_close_behavior_prompted() {
+                        let os = if cfg!(target_os = "macos") { "macos" } else { "windows" };
+                        let _ = window.emit("close-requested", os);
+                    } else if state.is_close_to_tray() {
                         let _ = window.hide();
                     } else {
                         window.app_handle().exit(0);
@@ -87,6 +90,8 @@ pub fn run() {
             commands::set_update_consent,
             commands::get_close_to_tray,
             commands::set_close_to_tray,
+            commands::set_close_behavior_prompted,
+            commands::apply_close,
         ])
         .setup(|app| {
             let config_path = app

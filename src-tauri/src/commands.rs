@@ -352,6 +352,21 @@ pub fn set_close_to_tray(value: bool, state: tauri::State<'_, Arc<AppState>>) {
 }
 
 #[tauri::command]
+pub fn set_close_behavior_prompted(value: bool, state: tauri::State<'_, Arc<AppState>>) {
+    state.set_close_behavior_prompted(value);
+}
+
+#[tauri::command]
+pub fn apply_close(window: tauri::WebviewWindow, state: tauri::State<'_, Arc<AppState>>) {
+    if state.is_close_to_tray() {
+        let _ = window.hide();
+    } else {
+        state.save_sync();
+        window.app_handle().exit(0);
+    }
+}
+
+#[tauri::command]
 pub fn apply_layout(layout: String, state: tauri::State<'_, Arc<AppState>>, app: tauri::AppHandle) -> Result<(), String> {
     let wm = platform::create_window_manager();
     let live = wm.list_dofus_windows();

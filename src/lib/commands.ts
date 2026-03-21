@@ -249,3 +249,11 @@ export function getCloseTotray(): Promise<boolean> {
 export function setCloseTotray(value: boolean): Promise<void> {
   return invoke("set_close_to_tray", { value });
 }
+
+export function setCloseBehaviorPrompted(value: boolean): Promise<void> {
+  return invoke("set_close_behavior_prompted", { value });
+}
+
+export function applyClose(): Promise<void> {
+  return invoke("apply_close");
+}
