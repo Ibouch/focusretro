@@ -104,6 +104,7 @@ pub fn run() {
             commands::set_close_to_tray,
             commands::set_close_behavior_prompted,
             commands::apply_close,
+            commands::set_tray_icon,
         ])
         .setup(|app| {
             let config_path = app
@@ -209,26 +210,6 @@ fn setup_radial_panel(app: &tauri::App) {
     }
 }
 
-fn make_circle_icon(r: u8, g: u8, b: u8, size: u32) -> Vec<u8> {
-    let mut pixels = vec![0u8; (size * size * 4) as usize];
-    let center = size as f32 / 2.0;
-    let radius = center - 1.0;
-    for y in 0..size {
-        for x in 0..size {
-            let dx = x as f32 - center;
-            let dy = y as f32 - center;
-            if dx * dx + dy * dy <= radius * radius {
-                let idx = ((y * size + x) * 4) as usize;
-                pixels[idx] = r;
-                pixels[idx + 1] = g;
-                pixels[idx + 2] = b;
-                pixels[idx + 3] = 255;
-            }
-        }
-    }
-    pixels
-}
-
 fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     use tauri::menu::{MenuBuilder, MenuItemBuilder};
     use tauri::tray::TrayIconBuilder;
@@ -269,12 +250,8 @@ fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .item(&quit_item)
         .build()?;
 
-    let icon_pixels = if is_active {
-        make_circle_icon(246, 168, 0, 22) // brand-500
-    } else {
-        make_circle_icon(107, 114, 128, 22) // gray
-    };
-    let icon = tauri::image::Image::new_owned(icon_pixels, 22, 22);
+    // Transparent placeholder — the frontend canvas replaces this on first render
+    let icon = tauri::image::Image::new_owned(vec![0u8; 32 * 32 * 4], 32, 32);
 
     let tooltip = if is_active {
         "FocusRetro — Active"
@@ -320,14 +297,6 @@ pub(crate) fn update_tray_display(handle: &AppHandle, state: &AppState) {
     };
 
     let is_active = state.is_autoswitch_enabled();
-
-    let icon_pixels = if is_active {
-        make_circle_icon(99, 102, 241, 22)
-    } else {
-        make_circle_icon(107, 114, 128, 22)
-    };
-    let icon = tauri::image::Image::new_owned(icon_pixels, 22, 22);
-    let _ = tray.set_icon(Some(icon));
 
     let tooltip = if is_active {
         "FocusRetro — Active"

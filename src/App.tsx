@@ -25,8 +25,11 @@ import {
   applyClose,
   getTaskbarUngroupState,
   applyWindowIcon,
+  getAutoswitchState,
+  setTrayIcon,
 } from "./lib/commands";
 import { renderAccountIcon } from "./lib/taskbarIcon";
+import { renderTrayIcon } from "./lib/trayIcon";
 import i18n from "./i18n";
 
 type Tab = "accounts" | "messages" | "settings" | "debug";
@@ -139,6 +142,26 @@ function App() {
         .catch(() => {});
     }
   }, [accounts, taskbarUngroup]);
+
+  // Render tray icon on mount and whenever autoswitch state changes
+  useEffect(() => {
+    let cancelled = false;
+    getAutoswitchState().then((active) => {
+      if (cancelled) return;
+      renderTrayIcon(active)
+        .then((rgba) => setTrayIcon(rgba))
+        .catch(() => {});
+    });
+    const unlisten = listen<boolean>("autoswitch-changed", (e) => {
+      renderTrayIcon(e.payload)
+        .then((rgba) => setTrayIcon(rgba))
+        .catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+      unlisten.then((f) => f());
+    };
+  }, []);
 
   useEffect(() => {
     const unlisten = listen<string>("close-requested", (event) => {

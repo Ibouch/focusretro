@@ -40,9 +40,10 @@ pub fn refresh_accounts(state: tauri::State<'_, Arc<AppState>>) -> Vec<AccountVi
 }
 
 #[tauri::command]
-pub fn toggle_autoswitch(state: tauri::State<'_, Arc<AppState>>) -> bool {
+pub fn toggle_autoswitch(handle: tauri::AppHandle, state: tauri::State<'_, Arc<AppState>>) -> bool {
     let new_state = !state.is_autoswitch_enabled();
     state.set_autoswitch(new_state);
+    let _ = handle.emit("autoswitch-changed", new_state);
     new_state
 }
 
@@ -142,6 +143,17 @@ pub fn apply_window_icon(state: tauri::State<'_, Arc<AppState>>, window_id: u64,
 #[cfg(not(target_os = "windows"))]
 #[tauri::command]
 pub fn apply_window_icon(_state: tauri::State<'_, Arc<AppState>>, _window_id: u64, _rgba: Vec<u8>) {
+}
+
+#[tauri::command]
+pub fn set_tray_icon(handle: tauri::AppHandle, rgba: Vec<u8>) {
+    if rgba.len() != 32 * 32 * 4 {
+        return;
+    }
+    if let Some(tray) = handle.tray_by_id("main") {
+        let icon = tauri::image::Image::new_owned(rgba, 32, 32);
+        let _ = tray.set_icon(Some(icon));
+    }
 }
 
 #[tauri::command]

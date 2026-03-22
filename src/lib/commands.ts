@@ -269,3 +269,7 @@ export function applyClose(): Promise<void> {
 export function applyWindowIcon(windowId: number, rgba: number[]): Promise<void> {
   return invoke("apply_window_icon", { windowId, rgba });
 }
+
+export function setTrayIcon(rgba: number[]): Promise<void> {
+  return invoke("set_tray_icon", { rgba });
+}
