@@ -90,7 +90,7 @@
   "layout.grid_3x2": "Cuadrícula 3×2",
   "layout.grid_4x2": "Cuadrícula 4×2",
 
-  "update.available": "Actualización {{version}} disponible",
+  "update.available": "Actualización v{{version}} disponible",
   "update.install": "Instalar",
   "update.downloading": "Descargando actualización…",
   "update.ready": "Actualización lista — reinicia para aplicar",
@@ -101,6 +101,9 @@
   "update.consent_no": "No, gracias",
   "settings.update_check": "Verificar actualizaciones",
   "settings.update_check_desc": "Contacta GitHub Releases al inicio para detectar nuevas versiones.",
+  "settings.check_now": "Buscar actualizaciones",
+  "settings.checking": "Comprobando…",
+  "settings.up_to_date": "Al día",
   "settings.close_to_tray": "Cerrar minimiza a la bandeja",
   "close.title": "Antes de salir...",
   "close.body": "¿Cómo debe comportarse FocusRetro al cerrar la ventana?",

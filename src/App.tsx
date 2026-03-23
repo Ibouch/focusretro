@@ -42,7 +42,9 @@ function applyThemeClass(theme: string) {
   } else if (theme === "light") {
     html.classList.remove("dark");
   } else {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const prefersDark = window.matchMedia(
+      "(prefers-color-scheme: dark)",
+    ).matches;
     html.classList.toggle("dark", prefersDark);
   }
 }
@@ -59,9 +61,13 @@ function App() {
   const [hotkeys, setHotkeys] = useState<HotkeyBinding[]>([]);
   const [focusedName, setFocusedName] = useState<string | null>(null);
   const [pendingUpdate, setPendingUpdate] = useState<Update | null>(null);
-  const [updateStatus, setUpdateStatus] = useState<"idle" | "downloading" | "done">("idle");
+  const [updateStatus, setUpdateStatus] = useState<
+    "idle" | "downloading" | "done"
+  >("idle");
   const [theme, setThemeState] = useState("system");
-  const [updateConsent, setUpdateConsentState] = useState<boolean | null | undefined>(undefined);
+  const [updateConsent, setUpdateConsentState] = useState<
+    boolean | null | undefined
+  >(undefined);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [languageReady, setLanguageReady] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
@@ -86,39 +92,47 @@ function App() {
 
     // All invoke() calls wait for backend setup() to complete.
     // wait_for_ready suspends until AppState is managed and all init is done.
-    invoke("wait_for_ready").then(() => {
-      refreshAccounts().then(setAccounts);
-      checkPermissions().then((p) => {
-        setHasAccessibility(p.accessibility);
-        setHasScreenRecording(p.screen_recording);
-        setHasInputMonitoring(p.input_monitoring);
-        setPermissionsChecked(true);
-      });
-      getLanguage().then(async (lang) => {
-        if (lang && lang !== i18n.language) {
-          await i18n.changeLanguage(lang);
-        }
-        setLanguageReady(true);
-      });
-      getHotkeys().then(setHotkeys);
-      getShowDebug().then(setShowDebug);
-      if (isWindows) getTaskbarUngroupState().then(setTaskbarUngroup);
-      getTheme().then((t) => {
-        setThemeState(t);
-        applyThemeClass(t);
-      });
-      if (import.meta.env.VITE_UPDATER !== "false") {
-        getUpdateConsent().then(async (consent) => {
-          setUpdateConsentState(consent ?? null);
-          if (consent === null || consent === undefined) {
-            setShowConsentModal(true);
-          } else if (consent === true) {
-            const { check } = await import("@tauri-apps/plugin-updater");
-            check().then((u) => { if (u?.available) setPendingUpdate(u); }).catch(() => {});
-          }
+    invoke("wait_for_ready")
+      .then(() => {
+        refreshAccounts().then(setAccounts);
+        checkPermissions().then((p) => {
+          setHasAccessibility(p.accessibility);
+          setHasScreenRecording(p.screen_recording);
+          setHasInputMonitoring(p.input_monitoring);
+          setPermissionsChecked(true);
         });
-      }
-    }).catch((e) => console.error("[wait_for_ready] failed:", e));
+        getLanguage().then(async (lang) => {
+          if (lang && lang !== i18n.language) {
+            await i18n.changeLanguage(lang);
+          }
+          setLanguageReady(true);
+        });
+        getHotkeys().then(setHotkeys);
+        getShowDebug().then(setShowDebug);
+        if (isWindows) getTaskbarUngroupState().then(setTaskbarUngroup);
+        getTheme().then((t) => {
+          setThemeState(t);
+          applyThemeClass(t);
+        });
+        if (import.meta.env.VITE_UPDATER !== "false") {
+          getUpdateConsent().then(async (consent) => {
+            setUpdateConsentState(consent ?? null);
+            if (consent === null || consent === undefined) {
+              setShowConsentModal(true);
+            } else if (consent === true) {
+              const { check } = await import("@tauri-apps/plugin-updater");
+              check()
+                .then((u) => {
+                  if (u) {
+                    setPendingUpdate(u);
+                  }
+                })
+                .catch(() => {});
+            }
+          });
+        }
+      })
+      .catch((e) => console.error("[wait_for_ready] failed:", e));
 
     return () => {
       unlistenAccounts.then((f) => f());
@@ -144,7 +158,9 @@ function App() {
       const windowId = account.window_id;
       renderAccountIcon(account.icon_path, account.color)
         .then((rgba) => applyWindowIcon(windowId, rgba))
-        .then(() => { taskbarIconCache.current.set(windowId, key); })
+        .then(() => {
+          taskbarIconCache.current.set(windowId, key);
+        })
         .catch(() => {});
     }
   }, [accounts, taskbarUngroup]);
@@ -158,7 +174,9 @@ function App() {
     const updateIcon = (active: boolean) => {
       if (cancelled) return;
       renderTrayIcon(active)
-        .then((rgba) => { if (!cancelled) setTrayIcon(rgba); })
+        .then((rgba) => {
+          if (!cancelled) setTrayIcon(rgba);
+        })
         .catch(() => {});
     };
 
@@ -185,7 +203,9 @@ function App() {
       setCloseOs(event.payload);
       setShowCloseModal(true);
     });
-    return () => { unlisten.then(fn => fn()); };
+    return () => {
+      unlisten.then((fn) => fn());
+    };
   }, []);
 
   const handleCloseChoice = useCallback(async (toTray: boolean) => {
@@ -197,7 +217,9 @@ function App() {
 
   useEffect(() => {
     if (!showCloseModal) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") handleCloseChoice(true); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleCloseChoice(true);
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [showCloseModal, handleCloseChoice]);
@@ -224,11 +246,33 @@ function App() {
     setUpdateConsent(consent).catch(() => {});
     if (import.meta.env.VITE_UPDATER !== "false" && consent) {
       const { check } = await import("@tauri-apps/plugin-updater");
-      check().then((u) => { if (u?.available) setPendingUpdate(u); }).catch(() => {});
+      check()
+        .then((u) => {
+          if (u) {
+            setPendingUpdate(u);
+          }
+        })
+        .catch(() => {});
     }
   };
 
-  const visibleTabs = (["accounts", "messages", "settings", ...(showDebug ? ["debug"] : [])] as Tab[]);
+  const handleCheckUpdate = async (): Promise<boolean> => {
+    const { check } = await import("@tauri-apps/plugin-updater");
+    const u = await check();
+    if (u) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setPendingUpdate(u);
+      return true;
+    }
+    return false;
+  };
+
+  const visibleTabs = [
+    "accounts",
+    "messages",
+    "settings",
+    ...(showDebug ? ["debug"] : []),
+  ] as Tab[];
 
   const tabLabels: Record<Tab, string> = {
     accounts: t("tabs.accounts"),
@@ -244,10 +288,20 @@ function App() {
     if (hk.alt) parts.push("Alt");
     if (hk.shift) parts.push("Shift");
     const ARROW_LABELS: Record<string, string> = {
-      ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓",
+      ArrowLeft: "←",
+      ArrowRight: "→",
+      ArrowUp: "↑",
+      ArrowDown: "↓",
     };
-    const MOUSE_LABELS: Record<string, string> = { Mouse4: "Mouse 4", Mouse5: "Mouse 5" };
-    parts.push(MOUSE_LABELS[hk.key] ?? ARROW_LABELS[hk.key] ?? hk.key.replace("Key", "").replace("Digit", ""));
+    const MOUSE_LABELS: Record<string, string> = {
+      Mouse4: "Mouse 4",
+      Mouse5: "Mouse 5",
+    };
+    parts.push(
+      MOUSE_LABELS[hk.key] ??
+        ARROW_LABELS[hk.key] ??
+        hk.key.replace("Key", "").replace("Digit", ""),
+    );
     return parts.join(" + ");
   };
 
@@ -336,7 +390,9 @@ function App() {
               onClick={() => handleCloseChoice(true)}
               className="flex-1 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors"
             >
-              {closeOs === "macos" ? t("close.hide_menubar") : t("close.hide_tray")}
+              {closeOs === "macos"
+                ? t("close.hide_menubar")
+                : t("close.hide_tray")}
             </button>
             <button
               onClick={() => handleCloseChoice(false)}
@@ -355,9 +411,11 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col">
-{pendingUpdate && updateStatus === "idle" && (
+      {pendingUpdate && updateStatus === "idle" && (
         <div className="mx-4 mt-3 px-3 py-2 bg-brand-50 border border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 rounded-lg text-sm text-brand-700 dark:text-brand-200 flex items-center justify-between gap-2">
-          <span>{t("update.available", { version: pendingUpdate.version })}</span>
+          <span>
+            {t("update.available", { version: pendingUpdate.version })}
+          </span>
           <button
             onClick={handleInstall}
             className="px-2 py-0.5 bg-brand-600 hover:bg-brand-500 text-white rounded text-xs font-medium shrink-0"
@@ -444,7 +502,19 @@ function App() {
           </div>
         )}
         {tab === "messages" && <MessageList />}
-        {tab === "settings" && <Settings showDebug={showDebug} onToggleDebug={setShowDebug} theme={theme} onThemeChange={handleThemeChange} updateConsent={updateConsent} onUpdateConsentChange={handleUpdateConsentChange} taskbarUngroup={taskbarUngroup} onToggleTaskbarUngroup={setTaskbarUngroup} />}
+        {tab === "settings" && (
+          <Settings
+            showDebug={showDebug}
+            onToggleDebug={setShowDebug}
+            theme={theme}
+            onThemeChange={handleThemeChange}
+            updateConsent={updateConsent}
+            onUpdateConsentChange={handleUpdateConsentChange}
+            onCheckUpdate={handleCheckUpdate}
+            taskbarUngroup={taskbarUngroup}
+            onToggleTaskbarUngroup={setTaskbarUngroup}
+          />
+        )}
         {tab === "debug" && <DebugPanel />}
       </main>
     </div>

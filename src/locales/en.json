@@ -90,7 +90,7 @@
   "layout.grid_3x2": "Grid 3×2",
   "layout.grid_4x2": "Grid 4×2",
 
-  "update.available": "Update {{version}} available",
+  "update.available": "Update v{{version}} available",
   "update.install": "Install",
   "update.downloading": "Downloading update…",
   "update.ready": "Update ready — restart to apply",
@@ -101,6 +101,9 @@
   "update.consent_no": "No thanks",
   "settings.update_check": "Check for updates",
   "settings.update_check_desc": "Contacts GitHub Releases at startup to detect new versions.",
+  "settings.check_now": "Check for updates",
+  "settings.checking": "Checking…",
+  "settings.up_to_date": "Up to date",
   "settings.close_to_tray": "Close minimizes to tray",
   "close.title": "Before you go...",
   "close.body": "How should FocusRetro behave when you click the close button?",

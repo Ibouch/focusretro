@@ -90,7 +90,7 @@
   "layout.grid_3x2": "Grille 3×2",
   "layout.grid_4x2": "Grille 4×2",
 
-  "update.available": "Mise à jour {{version}} disponible",
+  "update.available": "Mise à jour v{{version}} disponible",
   "update.install": "Installer",
   "update.downloading": "Téléchargement de la mise à jour…",
   "update.ready": "Mise à jour prête — redémarrez pour appliquer",
@@ -101,6 +101,9 @@
   "update.consent_no": "Non merci",
   "settings.update_check": "Vérifier les mises à jour",
   "settings.update_check_desc": "Contacte GitHub Releases au démarrage pour détecter les nouvelles versions.",
+  "settings.check_now": "Rechercher des mises à jour",
+  "settings.checking": "Vérification…",
+  "settings.up_to_date": "À jour",
   "settings.close_to_tray": "Fermeture réduit dans la barre des tâches",
   "close.title": "Avant de partir...",
   "close.body": "Comment FocusRetro doit-il se comporter quand vous fermez la fenêtre ?",

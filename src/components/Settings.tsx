@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { emit } from "@tauri-apps/api/event";
 import { getVersion } from "@tauri-apps/api/app";
@@ -222,6 +222,7 @@ function Settings({
   onThemeChange,
   updateConsent,
   onUpdateConsentChange,
+  onCheckUpdate,
   taskbarUngroup,
   onToggleTaskbarUngroup,
 }: {
@@ -231,6 +232,7 @@ function Settings({
   onThemeChange: (t: string) => void;
   updateConsent: boolean | null | undefined;
   onUpdateConsentChange: (consent: boolean) => void;
+  onCheckUpdate: () => Promise<boolean>;
   taskbarUngroup: boolean;
   onToggleTaskbarUngroup: (v: boolean) => void;
 }) {
@@ -246,6 +248,8 @@ function Settings({
   const [language, setLang] = useState(i18n.language);
   const [version, setVersion] = useState("");
   const [unlocked, setUnlocked] = useState(false);
+  const [checkState, setCheckState] = useState<"idle" | "checking" | "up-to-date">("idle");
+  const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const konamiProgress = useState<number>(0);
 
   useEffect(() => {
@@ -257,6 +261,12 @@ function Settings({
     getCloseTotray().then(setCloseTotray);
     getHotkeys().then(setHotkeys);
     getVersion().then(setVersion);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -482,18 +492,47 @@ function Settings({
         ))}
       </div>
 
-      <p className="mt-6 text-center text-[11px] text-gray-400 dark:text-gray-600 flex items-center justify-center gap-1.5">
-        FocusRetro v{version}
-        {import.meta.env.VITE_UPDATER === "false" && (
-          <>
-            <span>— offline build</span>
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
-              <line x1="2" y1="2" x2="22" y2="22" />
-            </svg>
-          </>
+      <div className="mt-6 flex flex-col items-center gap-1 text-[11px] text-gray-400 dark:text-gray-600">
+        {import.meta.env.VITE_UPDATER !== "false" && (
+          checkState === "checking" ? (
+            <span className="animate-pulse">{t("settings.checking")}</span>
+          ) : checkState === "up-to-date" ? (
+            <span>{t("settings.up_to_date")}</span>
+          ) : (
+            <button
+              onClick={() => {
+                if (checkTimerRef.current) clearTimeout(checkTimerRef.current);
+                setCheckState("checking");
+                onCheckUpdate()
+                  .then((hasUpdate) => {
+                    if (hasUpdate) {
+                      setCheckState("idle");
+                    } else {
+                      setCheckState("up-to-date");
+                      checkTimerRef.current = setTimeout(() => setCheckState("idle"), 3000);
+                    }
+                  })
+                  .catch(() => setCheckState("idle"));
+              }}
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors underline underline-offset-2"
+            >
+              {t("settings.check_now")}
+            </button>
+          )
         )}
-      </p>
+        <span className="flex items-center gap-1.5">
+          FocusRetro v{version}
+          {import.meta.env.VITE_UPDATER === "false" && (
+            <>
+              <span>— offline build</span>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+                <line x1="2" y1="2" x2="22" y2="22" />
+              </svg>
+            </>
+          )}
+        </span>
+      </div>
     </div>
   );
 }
