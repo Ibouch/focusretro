@@ -459,6 +459,7 @@ impl AppState {
         }
 
         // Rebuild accounts in profile order, only for currently open windows
+        #[cfg(target_os = "windows")]
         let old_ids: std::collections::HashSet<u64> = accounts.iter().map(|w| w.window_id).collect();
         *accounts = profiles
             .iter()
@@ -466,6 +467,7 @@ impl AppState {
                 windows.iter().find(|w| w.character_name.eq_ignore_ascii_case(&p.character_name)).cloned()
             })
             .collect();
+        #[cfg(target_os = "windows")]
         let new_ids: std::collections::HashSet<u64> = accounts.iter().map(|w| w.window_id).collect();
 
         if !profiles.is_empty() && !profiles.iter().any(|p| p.is_principal) {
