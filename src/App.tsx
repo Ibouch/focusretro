@@ -149,22 +149,30 @@ function App() {
     }
   }, [accounts, taskbarUngroup]);
 
-  // Render tray icon on mount and whenever autoswitch state changes
+  // Render tray icon on mount and whenever autoswitch state changes.
+  // Renders immediately with default state (active=true) so the dot appears
+  // as soon as the WebView is ready, then corrects once the backend is ready.
   useEffect(() => {
     let cancelled = false;
-    invoke("wait_for_ready").then(() => {
+
+    const updateIcon = (active: boolean) => {
       if (cancelled) return;
-      getAutoswitchState().then((active) => {
-        if (cancelled) return;
-        renderTrayIcon(active)
-          .then((rgba) => setTrayIcon(rgba))
-          .catch(() => {});
-      });
-    }).catch(() => {});
-    const unlisten = listen<boolean>("autoswitch-changed", (e) => {
-      renderTrayIcon(e.payload)
-        .then((rgba) => setTrayIcon(rgba))
+      renderTrayIcon(active)
+        .then((rgba) => { if (!cancelled) setTrayIcon(rgba); })
         .catch(() => {});
+    };
+
+    // Immediate render with default state — replaces the no-dot startup icon
+    updateIcon(true);
+
+    // Sync with actual backend state once ready
+    invoke("wait_for_ready")
+      .then(() => getAutoswitchState())
+      .then((active) => updateIcon(active as boolean))
+      .catch(() => {});
+
+    const unlisten = listen<boolean>("autoswitch-changed", (e) => {
+      updateIcon(e.payload);
     });
     return () => {
       cancelled = true;

@@ -271,8 +271,7 @@ fn setup_tray(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         .item(&quit_item)
         .build()?;
 
-    // Transparent placeholder — the frontend canvas replaces this on first render
-    let icon = tauri::image::Image::new_owned(vec![0u8; 32 * 32 * 4], 32, 32);
+    let icon = tauri::include_image!("icons/32x32.png");
 
     let tooltip = if is_active {
         "FocusRetro — Active"
@@ -373,3 +372,4 @@ fn build_tray_menu(
 
     Ok(menu)
 }
+
