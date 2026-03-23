@@ -356,7 +356,7 @@ function App() {
                 handleUpdateConsentChange(true);
                 setShowConsentModal(false);
               }}
-              className="flex-1 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors"
+              className="flex-1 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
             >
               {t("update.consent_yes")}
             </button>
@@ -365,7 +365,7 @@ function App() {
                 handleUpdateConsentChange(false);
                 setShowConsentModal(false);
               }}
-              className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors"
+              className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors cursor-pointer"
             >
               {t("update.consent_no")}
             </button>
@@ -388,7 +388,7 @@ function App() {
           <div className="flex flex-col gap-2 mb-3">
             <button
               onClick={() => handleCloseChoice(true)}
-              className="flex-1 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors"
+              className="flex-1 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
             >
               {closeOs === "macos"
                 ? t("close.hide_menubar")
@@ -396,7 +396,7 @@ function App() {
             </button>
             <button
               onClick={() => handleCloseChoice(false)}
-              className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors"
+              className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors cursor-pointer"
             >
               {t("close.quit")}
             </button>
@@ -418,7 +418,7 @@ function App() {
           </span>
           <button
             onClick={handleInstall}
-            className="px-2 py-0.5 bg-brand-600 hover:bg-brand-500 text-white rounded text-xs font-medium shrink-0"
+            className="px-2 py-0.5 bg-brand-600 hover:bg-brand-500 text-white rounded text-xs font-medium shrink-0 cursor-pointer"
           >
             {t("update.install")}
           </button>
@@ -436,7 +436,7 @@ function App() {
           <span>{t("update.ready")}</span>
           <button
             onClick={relaunch}
-            className="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded text-xs font-medium shrink-0"
+            className="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded text-xs font-medium shrink-0 cursor-pointer"
           >
             {t("update.restart")}
           </button>
@@ -448,7 +448,7 @@ function App() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-3 py-2 text-xs font-medium transition-colors ${
+            className={`px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
               tab === t
                 ? "text-gray-900 dark:text-gray-100 border-b-2 border-brand-500"
                 : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"

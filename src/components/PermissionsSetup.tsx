@@ -102,7 +102,7 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
           <button
             type="button"
             onClick={() => openSettings("accessibility")}
-            className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors"
+            className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors cursor-pointer"
           >
             {t("setup.open_settings")}
           </button>
@@ -124,14 +124,14 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
             <button
               type="button"
               onClick={() => requestScreenRecording()}
-              className="text-xs px-3 py-1.5 rounded-md bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 transition-colors"
+              className="text-xs px-3 py-1.5 rounded-md bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 transition-colors cursor-pointer"
             >
               {t("setup.request_permission")}
             </button>
             <button
               type="button"
               onClick={() => openSettings("screen_recording")}
-              className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors"
+              className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors cursor-pointer"
             >
               {t("setup.open_settings")}
             </button>
@@ -154,14 +154,14 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
             <button
               type="button"
               onClick={() => requestInputMonitoring()}
-              className="text-xs px-3 py-1.5 rounded-md bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 transition-colors"
+              className="text-xs px-3 py-1.5 rounded-md bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 transition-colors cursor-pointer"
             >
               {t("setup.request_permission")}
             </button>
             <button
               type="button"
               onClick={() => openSettings("input_monitoring")}
-              className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors"
+              className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors cursor-pointer"
             >
               {t("setup.open_settings")}
             </button>
@@ -173,7 +173,7 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
         <button
           type="button"
           onClick={onRecheck}
-          className="text-xs px-3 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors"
+          className="text-xs px-3 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
         >
           {t("setup.check_again")}
         </button>
@@ -183,7 +183,7 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
           disabled={!allGranted}
           className={`text-xs px-4 py-1.5 rounded-md font-medium transition-colors ${
             allGranted
-              ? "bg-brand-600 hover:bg-brand-500 text-white"
+              ? "bg-brand-600 hover:bg-brand-500 text-white cursor-pointer"
               : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
           }`}
         >

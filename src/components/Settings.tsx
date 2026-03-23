@@ -60,7 +60,7 @@ function ToggleRow({
       </div>
       <button
         onClick={onToggle}
-        className={`text-[11px] px-2.5 py-1 rounded-md transition-colors shrink-0 w-12 ${
+        className={`text-[11px] px-2.5 py-1 rounded-md transition-colors shrink-0 w-12 cursor-pointer ${
           enabled
             ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-600/20 dark:text-emerald-400 dark:hover:bg-emerald-600/30"
             : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700"
@@ -141,7 +141,7 @@ function HotkeyRow({
         )}
         <button
           onClick={() => onRecord(action)}
-          className={`text-[11px] px-2 py-1 rounded-md transition-colors ${
+          className={`text-[11px] px-2 py-1 rounded-md transition-colors cursor-pointer ${
             recording
               ? "bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-400"
               : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700"
@@ -195,7 +195,7 @@ function ThemeSelector({ theme, onChange }: { theme: string; onChange: (t: strin
           key={opt.value}
           onClick={() => onChange(opt.value)}
           title={opt.label}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] transition-colors ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] transition-colors cursor-pointer ${
             theme === opt.value
               ? "bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-400"
               : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700"
@@ -468,7 +468,7 @@ function Settings({
               emit("hotkeys-updated", newHotkeys);
             });
           }}
-          className="text-[11px] text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors"
+          className="text-[11px] text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors cursor-pointer"
         >
           {t("hotkeys.reset")}
         </button>
@@ -514,7 +514,7 @@ function Settings({
                   })
                   .catch(() => setCheckState("idle"));
               }}
-              className="text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors underline underline-offset-2"
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors underline underline-offset-2 cursor-pointer"
             >
               {t("settings.check_now")}
             </button>

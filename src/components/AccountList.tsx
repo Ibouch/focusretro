@@ -290,7 +290,7 @@ function AccountList({
             <button
               type="button"
               onClick={() => setEditingName(null)}
-              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-lg leading-none"
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-lg leading-none cursor-pointer"
               aria-label="Close"
             >
               ×
@@ -307,7 +307,7 @@ function AccountList({
                   onClick={() =>
                     handleColorChange(editingAccount.character_name, null)
                   }
-                  className={`w-5 h-5 rounded-full border-2 bg-gray-200 dark:bg-gray-700 ${
+                  className={`w-5 h-5 rounded-full border-2 bg-gray-200 dark:bg-gray-700 cursor-pointer ${
                     (editingAccount.color ?? null) === null
                       ? "border-gray-900 dark:border-white"
                       : "border-transparent"
@@ -321,7 +321,7 @@ function AccountList({
                     onClick={() =>
                       handleColorChange(editingAccount.character_name, c)
                     }
-                    className={`w-5 h-5 rounded-full border-2 ${
+                    className={`w-5 h-5 rounded-full border-2 cursor-pointer ${
                       editingAccount.color === c
                         ? "border-gray-900 dark:border-white"
                         : "border-transparent"
@@ -342,7 +342,7 @@ function AccountList({
                   onClick={() =>
                     handleIconChange(editingAccount.character_name, null)
                   }
-                  className={`w-7 h-7 rounded border-2 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] text-gray-500 shrink-0 ${
+                  className={`w-7 h-7 rounded border-2 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] text-gray-500 shrink-0 cursor-pointer ${
                     (editingAccount.icon_path ?? null) === null
                       ? "border-gray-900 dark:border-white"
                       : "border-transparent"
@@ -358,7 +358,7 @@ function AccountList({
                     onClick={() =>
                       handleIconChange(editingAccount.character_name, icon)
                     }
-                    className={`w-7 h-7 rounded border-2 overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0 p-0 ${
+                    className={`w-7 h-7 rounded border-2 overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0 p-0 cursor-pointer ${
                       editingAccount.icon_path === icon
                         ? "border-gray-900 dark:border-white"
                         : "border-transparent"
@@ -396,7 +396,7 @@ function AccountList({
         </div>
         <button
           onClick={onRefresh}
-          className="w-6 h-6 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          className="w-6 h-6 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
           title={t("accounts.refresh")}
         >
           <svg
@@ -424,7 +424,7 @@ function AccountList({
               <button
                 key={id}
                 onClick={() => applyLayout(id)}
-                className="w-7 h-7 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="w-7 h-7 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
                 title={t(i18nKey)}
               >
                 <LayoutIcon type={id} />
@@ -519,7 +519,7 @@ function AccountList({
                           : account.character_name,
                       );
                     }}
-                    className="w-6 h-6 rounded-full shrink-0 border overflow-hidden flex items-center justify-center mr-2"
+                    className="w-6 h-6 rounded-full shrink-0 border overflow-hidden flex items-center justify-center mr-2 cursor-pointer"
                     style={{
                       backgroundColor: account.icon_path
                         ? "transparent"
@@ -555,7 +555,7 @@ function AccountList({
                         e.stopPropagation();
                         handleSetPrincipal(account.character_name);
                       }}
-                      className={`w-6 h-6 flex items-center justify-center transition-colors rounded ${
+                      className={`w-6 h-6 flex items-center justify-center transition-colors rounded cursor-pointer ${
                         account.is_principal
                           ? "text-amber-500 dark:text-amber-400"
                           : "text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 hover:text-amber-500 dark:hover:text-amber-400"
@@ -583,7 +583,7 @@ function AccountList({
                         focusAccount(account.character_name);
                         onFocused(account.character_name);
                       }}
-                      className="w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors rounded"
+                      className="w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors rounded cursor-pointer"
                       title={t("accounts.focus_window")}
                     >
                       <svg
