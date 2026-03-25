@@ -1,7 +1,9 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+
 import RadialSelector from "./components/RadialSelector";
+
 import "./index.css";
 
 // Radial is display-only — all interaction is via Rust CGEventTap.

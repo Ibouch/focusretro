@@ -1,11 +1,7 @@
-import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
-import {
-  TraceEntry,
-  getTraces,
-  clearTraces,
-  getNotifMode,
-} from "../lib/commands";
+import { useEffect, useState } from "react";
+
+import { TraceEntry, getTraces, clearTraces, getNotifMode } from "../lib/commands";
 
 function latencyColor(ms: number): string {
   if (ms < 50) return "text-emerald-600 dark:text-emerald-400";
@@ -48,9 +44,7 @@ export default function DebugPanel() {
     reload();
     getNotifMode().then(setNotifMode);
     const unlistenTrace = listen("trace-added", reload);
-    const unlistenMode = listen<string>("notif-mode-changed", (e) =>
-      setNotifMode(e.payload),
-    );
+    const unlistenMode = listen<string>("notif-mode-changed", (e) => setNotifMode(e.payload));
     return () => {
       unlistenTrace.then((f) => f());
       unlistenMode.then((f) => f());

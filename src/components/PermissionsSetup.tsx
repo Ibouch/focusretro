@@ -1,9 +1,6 @@
 import { useTranslation } from "react-i18next";
-import {
-  openSettings,
-  requestScreenRecording,
-  requestInputMonitoring,
-} from "../lib/commands";
+
+import { openSettings, requestScreenRecording, requestInputMonitoring } from "../lib/commands";
 
 interface Props {
   accessibility: boolean;
@@ -62,9 +59,7 @@ function PermissionCard({
         </div>
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-              {name}
-            </span>
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{name}</span>
             <StatusBadge granted={granted} />
           </div>
           <p className="text-xs leading-relaxed text-gray-500">{why}</p>
@@ -80,12 +75,7 @@ function PermissionCard({
   );
 }
 
-function PermissionsSetup({
-  accessibility,
-  screenRecording,
-  inputMonitoring,
-  onRecheck,
-}: Props) {
+function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onRecheck }: Props) {
   const { t } = useTranslation();
   const allGranted = accessibility && screenRecording && inputMonitoring;
 
@@ -153,7 +143,7 @@ function PermissionsSetup({
             <button
               type="button"
               onClick={() => requestScreenRecording()}
-              className="bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors"
+              className="cursor-pointer rounded-md bg-brand-100 px-3 py-1.5 text-xs text-brand-800 transition-colors hover:bg-brand-200 dark:bg-brand-700/50 dark:text-brand-200 dark:hover:bg-brand-600/60"
             >
               {t("setup.request_permission")}
             </button>
@@ -192,7 +182,7 @@ function PermissionsSetup({
             <button
               type="button"
               onClick={() => requestInputMonitoring()}
-              className="bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors"
+              className="cursor-pointer rounded-md bg-brand-100 px-3 py-1.5 text-xs text-brand-800 transition-colors hover:bg-brand-200 dark:bg-brand-700/50 dark:text-brand-200 dark:hover:bg-brand-600/60"
             >
               {t("setup.request_permission")}
             </button>
@@ -221,7 +211,7 @@ function PermissionsSetup({
           disabled={!allGranted}
           className={`rounded-md px-4 py-1.5 text-xs font-medium transition-colors ${
             allGranted
-              ? "bg-brand-600 hover:bg-brand-500 cursor-pointer text-white"
+              ? "cursor-pointer bg-brand-600 text-white hover:bg-brand-500"
               : "cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600"
           }`}
         >

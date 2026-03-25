@@ -1,14 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import type { Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
+import type { Update } from "@tauri-apps/plugin-updater";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+
 import AccountList from "./components/AccountList";
-import MessageList from "./components/MessageList";
-import Settings from "./components/Settings";
 import DebugPanel from "./components/DebugPanel";
+import MessageList from "./components/MessageList";
 import PermissionsSetup from "./components/PermissionsSetup";
+import Settings from "./components/Settings";
+import i18n from "./i18n";
 import {
   AccountView,
   HotkeyBinding,
@@ -26,7 +28,6 @@ import {
 } from "./lib/commands";
 import { renderAccountIcon } from "./lib/taskbarIcon";
 import { renderTrayIcon } from "./lib/trayIcon";
-import i18n from "./i18n";
 
 type Tab = "accounts" | "messages" | "settings" | "debug";
 
@@ -37,9 +38,7 @@ function applyThemeClass(theme: string) {
   } else if (theme === "light") {
     html.classList.remove("dark");
   } else {
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     html.classList.toggle("dark", prefersDark);
   }
 }
@@ -56,13 +55,9 @@ function App() {
   const [hotkeys, setHotkeys] = useState<HotkeyBinding[]>([]);
   const [focusedName, setFocusedName] = useState<string | null>(null);
   const [pendingUpdate, setPendingUpdate] = useState<Update | null>(null);
-  const [updateStatus, setUpdateStatus] = useState<
-    "idle" | "downloading" | "done"
-  >("idle");
+  const [updateStatus, setUpdateStatus] = useState<"idle" | "downloading" | "done">("idle");
   const [theme, setThemeState] = useState("system");
-  const [updateConsent, setUpdateConsentState] = useState<
-    boolean | null | undefined
-  >(undefined);
+  const [updateConsent, setUpdateConsentState] = useState<boolean | null | undefined>(undefined);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [languageReady, setLanguageReady] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
@@ -362,7 +357,7 @@ function App() {
                 handleUpdateConsentChange(true);
                 setShowConsentModal(false);
               }}
-              className="bg-brand-600 hover:bg-brand-500 flex-1 cursor-pointer rounded-lg px-3 py-2 text-xs font-medium text-white transition-colors"
+              className="flex-1 cursor-pointer rounded-lg bg-brand-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-500"
             >
               {t("update.consent_yes")}
             </button>
@@ -388,17 +383,13 @@ function App() {
           <h2 className="mb-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
             {t("close.title")}
           </h2>
-          <p className="mb-5 text-xs text-gray-500 dark:text-gray-400">
-            {t("close.body")}
-          </p>
+          <p className="mb-5 text-xs text-gray-500 dark:text-gray-400">{t("close.body")}</p>
           <div className="mb-3 flex flex-col gap-2">
             <button
               onClick={() => handleCloseChoice(true)}
-              className="bg-brand-600 hover:bg-brand-500 flex-1 cursor-pointer rounded-lg px-3 py-2 text-xs font-medium text-white transition-colors"
+              className="flex-1 cursor-pointer rounded-lg bg-brand-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-brand-500"
             >
-              {closeOs === "macos"
-                ? t("close.hide_menubar")
-                : t("close.hide_tray")}
+              {closeOs === "macos" ? t("close.hide_menubar") : t("close.hide_tray")}
             </button>
             <button
               onClick={() => handleCloseChoice(false)}
@@ -418,13 +409,11 @@ function App() {
   return (
     <div className="flex min-h-screen flex-col bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
       {pendingUpdate && updateStatus === "idle" && (
-        <div className="bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 text-brand-700 dark:text-brand-200 mx-4 mt-3 flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
-          <span>
-            {t("update.available", { version: pendingUpdate.version })}
-          </span>
+        <div className="mx-4 mt-3 flex items-center justify-between gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm text-brand-700 dark:border-brand-800/50 dark:bg-brand-900/20 dark:text-brand-200">
+          <span>{t("update.available", { version: pendingUpdate.version })}</span>
           <button
             onClick={handleInstall}
-            className="bg-brand-600 hover:bg-brand-500 shrink-0 cursor-pointer rounded px-2 py-0.5 text-xs font-medium text-white"
+            className="shrink-0 cursor-pointer rounded bg-brand-600 px-2 py-0.5 text-xs font-medium text-white hover:bg-brand-500"
           >
             {t("update.install")}
           </button>
@@ -432,7 +421,7 @@ function App() {
       )}
 
       {updateStatus === "downloading" && (
-        <div className="bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 text-brand-600 dark:text-brand-300 mx-4 mt-3 animate-pulse rounded-lg border px-3 py-2 text-sm">
+        <div className="mx-4 mt-3 animate-pulse rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm text-brand-600 dark:border-brand-800/50 dark:bg-brand-900/20 dark:text-brand-300">
           {t("update.downloading")}
         </div>
       )}
@@ -456,7 +445,7 @@ function App() {
             onClick={() => setTab(t)}
             className={`cursor-pointer px-3 py-2 text-xs font-medium transition-colors ${
               tab === t
-                ? "border-brand-500 border-b-2 text-gray-900 dark:text-gray-100"
+                ? "border-b-2 border-brand-500 text-gray-900 dark:text-gray-100"
                 : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >

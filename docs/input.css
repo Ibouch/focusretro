@@ -27,11 +27,11 @@
 @layer components {
   .lang-btn.active,
   .tab-btn.active {
-    @apply bg-brand-600 border-brand-600 text-white;
+    @apply border-brand-600 bg-brand-600 text-white;
   }
   .lang-btn:focus-visible,
   .tab-btn:focus-visible {
-    @apply ring-brand-500 ring-2 ring-offset-2 outline-none dark:ring-offset-gray-900;
+    @apply ring-2 ring-brand-500 ring-offset-2 outline-none dark:ring-offset-gray-900;
   }
   .tab-content {
     display: none;

@@ -1,6 +1,7 @@
+import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { listen } from "@tauri-apps/api/event";
+
 import { StoredMessage, getMessages, clearMessages } from "../lib/commands";
 
 function formatTime(epoch: number): string {
@@ -76,11 +77,8 @@ function MessageList() {
               key={`${msg.timestamp}-${i}`}
               className="text-[11px] leading-4 text-sky-600 dark:text-sky-400"
             >
-              <span className="text-sky-800 dark:text-sky-600">
-                [{formatTime(msg.timestamp)}]
-              </span>{" "}
-              {t("messages.from")}{" "}
-              <span className="font-bold">{msg.sender}</span> :{" "}
+              <span className="text-sky-800 dark:text-sky-600">[{formatTime(msg.timestamp)}]</span>{" "}
+              {t("messages.from")} <span className="font-bold">{msg.sender}</span> :{" "}
               {renderMessage(msg.message)}
             </p>
           ))}

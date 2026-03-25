@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+
 import {
   AccountView,
   applyLayout,
@@ -60,13 +61,7 @@ const LAYOUTS: {
   { id: "grid-3x2", show: (n) => n === 6, i18nKey: "layout.grid_3x2" },
   { id: "grid-4x2", show: (n) => n === 8, i18nKey: "layout.grid_4x2" },
 ];
-type Layout =
-  | "maximize"
-  | "split-h"
-  | "split-v"
-  | "grid-2x2"
-  | "grid-3x2"
-  | "grid-4x2";
+type Layout = "maximize" | "split-h" | "split-v" | "grid-2x2" | "grid-3x2" | "grid-4x2";
 
 function LayoutIcon({ type }: { type: Layout }) {
   // 14×14 SVG diagrams showing the tiling pattern
@@ -174,13 +169,7 @@ interface Props {
   onFocused: (name: string) => void;
 }
 
-function AccountList({
-  accounts,
-  focusedName,
-  onRefresh,
-  onUpdate,
-  onFocused,
-}: Props) {
+function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: Props) {
   const { t } = useTranslation();
   const [editingName, setEditingName] = useState<string | null>(null);
   const [dragState, setDragState] = useState<{
@@ -201,8 +190,7 @@ function AccountList({
       if (listRef.current) {
         const items = listRef.current.children;
         if (items.length > 0) {
-          itemHeightRef.current =
-            (items[0] as HTMLElement).getBoundingClientRect().height + 4;
+          itemHeightRef.current = (items[0] as HTMLElement).getBoundingClientRect().height + 4;
         }
       }
 
@@ -216,10 +204,7 @@ function AccountList({
       if (!dragState) return;
       const dy = e.clientY - startYRef.current;
       const shift = Math.round(dy / itemHeightRef.current);
-      const newIdx = Math.max(
-        0,
-        Math.min(accounts.length - 1, dragState.sourceIdx + shift),
-      );
+      const newIdx = Math.max(0, Math.min(accounts.length - 1, dragState.sourceIdx + shift));
       if (newIdx !== dragState.currentIdx) {
         setDragState({ ...dragState, currentIdx: newIdx });
       }
@@ -247,9 +232,7 @@ function AccountList({
 
   const handleColorChange = async (name: string, color: string | null) => {
     const account = accounts.find((a) => a.character_name === name);
-    onUpdate(
-      await updateAccountProfile(name, color, account?.icon_path ?? null),
-    );
+    onUpdate(await updateAccountProfile(name, color, account?.icon_path ?? null));
   };
 
   const handleIconChange = async (name: string, icon: string | null) => {
@@ -298,15 +281,11 @@ function AccountList({
           </div>
           <div className="space-y-2">
             <div>
-              <p className="mb-1 text-[10px] text-gray-500">
-                {t("accounts.color")}
-              </p>
+              <p className="mb-1 text-[10px] text-gray-500">{t("accounts.color")}</p>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
-                  onClick={() =>
-                    handleColorChange(editingAccount.character_name, null)
-                  }
+                  onClick={() => handleColorChange(editingAccount.character_name, null)}
                   className={`h-5 w-5 cursor-pointer rounded-full border-2 bg-gray-200 dark:bg-gray-700 ${
                     (editingAccount.color ?? null) === null
                       ? "border-gray-900 dark:border-white"
@@ -318,9 +297,7 @@ function AccountList({
                   <button
                     key={c}
                     type="button"
-                    onClick={() =>
-                      handleColorChange(editingAccount.character_name, c)
-                    }
+                    onClick={() => handleColorChange(editingAccount.character_name, c)}
                     className={`h-5 w-5 cursor-pointer rounded-full border-2 ${
                       editingAccount.color === c
                         ? "border-gray-900 dark:border-white"
@@ -333,15 +310,11 @@ function AccountList({
               </div>
             </div>
             <div>
-              <p className="mb-1 text-[10px] text-gray-500">
-                {t("accounts.icon")}
-              </p>
+              <p className="mb-1 text-[10px] text-gray-500">{t("accounts.icon")}</p>
               <div className="flex flex-wrap gap-1">
                 <button
                   type="button"
-                  onClick={() =>
-                    handleIconChange(editingAccount.character_name, null)
-                  }
+                  onClick={() => handleIconChange(editingAccount.character_name, null)}
                   className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border-2 bg-gray-100 text-[9px] text-gray-500 dark:bg-gray-800 ${
                     (editingAccount.icon_path ?? null) === null
                       ? "border-gray-900 dark:border-white"
@@ -355,9 +328,7 @@ function AccountList({
                   <button
                     key={icon}
                     type="button"
-                    onClick={() =>
-                      handleIconChange(editingAccount.character_name, icon)
-                    }
+                    onClick={() => handleIconChange(editingAccount.character_name, icon)}
                     className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded border-2 bg-gray-100 p-0 dark:bg-gray-800 ${
                       editingAccount.icon_path === icon
                         ? "border-gray-900 dark:border-white"
@@ -419,29 +390,23 @@ function AccountList({
       {/* Layout toolbar */}
       {accounts.length >= 2 && (
         <div className="mb-2 flex items-center gap-1">
-          {LAYOUTS.filter((l) => l.show(accounts.length)).map(
-            ({ id, i18nKey }) => (
-              <button
-                key={id}
-                onClick={() => applyLayout(id)}
-                className="hover:text-brand-600 dark:hover:text-brand-400 flex h-7 w-7 cursor-pointer items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-800"
-                title={t(i18nKey)}
-              >
-                <LayoutIcon type={id} />
-              </button>
-            ),
-          )}
+          {LAYOUTS.filter((l) => l.show(accounts.length)).map(({ id, i18nKey }) => (
+            <button
+              key={id}
+              onClick={() => applyLayout(id)}
+              className="flex h-7 w-7 cursor-pointer items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-brand-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-brand-400"
+              title={t(i18nKey)}
+            >
+              <LayoutIcon type={id} />
+            </button>
+          ))}
         </div>
       )}
 
       {/* Empty state */}
       {accounts.length === 0 ? (
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center py-10">
-          <img
-            src="/no-accounts.png"
-            alt=""
-            className="h-24 w-24 object-contain opacity-90"
-          />
+          <img src="/no-accounts.png" alt="" className="h-24 w-24 object-contain opacity-90" />
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
             {t("accounts.empty_title")}
           </p>
@@ -453,8 +418,7 @@ function AccountList({
         <ul ref={listRef} className="space-y-1 select-none">
           {displayOrder.map((accountIdx) => {
             const account = accounts[accountIdx];
-            const isDragging =
-              dragState !== null && dragState.sourceIdx === accountIdx;
+            const isDragging = dragState !== null && dragState.sourceIdx === accountIdx;
 
             return (
               <li
@@ -467,7 +431,7 @@ function AccountList({
                 <div
                   className={`group relative flex h-9 items-center overflow-hidden rounded-lg border bg-gray-50 transition-colors dark:bg-gray-900 ${
                     isDragging
-                      ? "border-brand-500 shadow-brand-500/10 shadow-lg"
+                      ? "border-brand-500 shadow-lg shadow-brand-500/10"
                       : "border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700"
                   } cursor-grab active:cursor-grabbing`}
                 >
@@ -476,18 +440,14 @@ function AccountList({
                     className="absolute top-0 bottom-0 left-0 w-[3px] shrink-0 dark:hidden"
                     style={{
                       backgroundColor:
-                        account.character_name === focusedName
-                          ? "#F6A800"
-                          : "#d1d5db",
+                        account.character_name === focusedName ? "#F6A800" : "#d1d5db",
                     }}
                   />
                   <div
                     className="absolute top-0 bottom-0 left-0 hidden w-[3px] shrink-0 dark:block"
                     style={{
                       backgroundColor:
-                        account.character_name === focusedName
-                          ? "#F6A800"
-                          : "#374151",
+                        account.character_name === focusedName ? "#F6A800" : "#374151",
                     }}
                   />
 
@@ -514,9 +474,7 @@ function AccountList({
                     onClick={(e) => {
                       e.stopPropagation();
                       setEditingName(
-                        editingName === account.character_name
-                          ? null
-                          : account.character_name,
+                        editingName === account.character_name ? null : account.character_name,
                       );
                     }}
                     className="mr-2 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border"
@@ -561,9 +519,7 @@ function AccountList({
                           : "text-gray-300 opacity-0 group-hover:opacity-100 hover:text-amber-500 dark:text-gray-600 dark:hover:text-amber-400"
                       }`}
                       title={
-                        account.is_principal
-                          ? t("accounts.principal")
-                          : t("accounts.set_principal")
+                        account.is_principal ? t("accounts.principal") : t("accounts.set_principal")
                       }
                     >
                       <svg
@@ -583,7 +539,7 @@ function AccountList({
                         focusAccount(account.character_name);
                         onFocused(account.character_name);
                       }}
-                      className="hover:text-brand-600 dark:hover:text-brand-400 flex h-6 w-6 cursor-pointer items-center justify-center rounded text-gray-400 opacity-0 transition-colors group-hover:opacity-100 dark:text-gray-500"
+                      className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-gray-400 opacity-0 transition-colors group-hover:opacity-100 hover:text-brand-600 dark:text-gray-500 dark:hover:text-brand-400"
                       title={t("accounts.focus_window")}
                     >
                       <svg

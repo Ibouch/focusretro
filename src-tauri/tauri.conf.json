@@ -46,9 +46,7 @@
   "plugins": {
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDRFODY5RDdFOTJCOEQzQUEKUldTcTA3aVNmcDJHVGpRNCsrN0NWNkVadFRhandLUm9ld3gxb3ZjaEtWVGxPK3J1ZUV3Q1NCWXoK",
-      "endpoints": [
-        "https://github.com/alacroix/focusretro/releases/latest/download/latest.json"
-      ]
+      "endpoints": ["https://github.com/alacroix/focusretro/releases/latest/download/latest.json"]
     }
   },
   "bundle": {

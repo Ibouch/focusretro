@@ -1,6 +1,7 @@
+import { getVersion } from "@tauri-apps/api/app";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getVersion } from "@tauri-apps/api/app";
+
 import {
   getAutoswitchState,
   toggleAutoswitch,
@@ -46,18 +47,14 @@ function ToggleRow({
     <div className="flex items-center justify-between py-2">
       <div className="mr-3 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
-            {label}
-          </span>
+          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{label}</span>
           {warn && (
             <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
               {warnLabel}
             </span>
           )}
         </div>
-        {description && (
-          <p className="mt-0.5 text-[11px] text-gray-500">{description}</p>
-        )}
+        {description && <p className="mt-0.5 text-[11px] text-gray-500">{description}</p>}
       </div>
       <button
         onClick={onToggle}
@@ -176,12 +173,10 @@ function HotkeyRow({
 }) {
   return (
     <div className="flex items-center justify-between py-2">
-      <span className="text-xs text-gray-700 dark:text-gray-300">
-        {actionLabel}
-      </span>
+      <span className="text-xs text-gray-700 dark:text-gray-300">{actionLabel}</span>
       <div className="flex items-center gap-2">
         {recording ? (
-          <span className="text-brand-600 dark:text-brand-400 animate-pulse text-[11px]">
+          <span className="animate-pulse text-[11px] text-brand-600 dark:text-brand-400">
             {pressKeyLabel}
           </span>
         ) : (
@@ -204,13 +199,7 @@ function HotkeyRow({
   );
 }
 
-function ThemeSelector({
-  theme,
-  onChange,
-}: {
-  theme: string;
-  onChange: (t: string) => void;
-}) {
+function ThemeSelector({ theme, onChange }: { theme: string; onChange: (t: string) => void }) {
   const { t } = useTranslation();
   const options = [
     {
@@ -340,9 +329,7 @@ function Settings({
   const [language, setLang] = useState(i18n.language);
   const [version, setVersion] = useState("");
   const [unlocked, setUnlocked] = useState(false);
-  const [checkState, setCheckState] = useState<
-    "idle" | "checking" | "up-to-date"
-  >("idle");
+  const [checkState, setCheckState] = useState<"idle" | "checking" | "up-to-date">("idle");
   const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const konamiProgress = useState<number>(0);
 
@@ -384,19 +371,11 @@ function Settings({
   useEffect(() => {
     if (!recordingAction) return;
 
-    const save = (
-      key: string,
-      cmd: boolean,
-      alt: boolean,
-      shift: boolean,
-      ctrl: boolean,
-    ) => {
-      setHotkey(recordingAction, key, cmd, alt, shift, ctrl).then(
-        (newHotkeys) => {
-          setHotkeys(newHotkeys);
-          onHotkeysChange?.(newHotkeys);
-        },
-      );
+    const save = (key: string, cmd: boolean, alt: boolean, shift: boolean, ctrl: boolean) => {
+      setHotkey(recordingAction, key, cmd, alt, shift, ctrl).then((newHotkeys) => {
+        setHotkeys(newHotkeys);
+        onHotkeysChange?.(newHotkeys);
+      });
       setRecordingAction(null);
     };
 
@@ -409,13 +388,7 @@ function Settings({
       const code = e.code;
       if (!JS_KEY_TO_MAC_KEYCODE[code]) return;
 
-      save(
-        JS_KEY_TO_MAC_KEYCODE[code],
-        e.metaKey,
-        e.altKey,
-        e.shiftKey,
-        e.ctrlKey,
-      );
+      save(JS_KEY_TO_MAC_KEYCODE[code], e.metaKey, e.altKey, e.shiftKey, e.ctrlKey);
     };
 
     const mouseHandler = (e: MouseEvent) => {
@@ -423,13 +396,7 @@ function Settings({
       if (e.button < 3) return;
       e.preventDefault();
       e.stopPropagation();
-      save(
-        e.button === 3 ? "Mouse4" : "Mouse5",
-        e.metaKey,
-        e.altKey,
-        e.shiftKey,
-        e.ctrlKey,
-      );
+      save(e.button === 3 ? "Mouse4" : "Mouse5", e.metaKey, e.altKey, e.shiftKey, e.ctrlKey);
     };
 
     window.addEventListener("keydown", keyHandler, true);
@@ -489,9 +456,7 @@ function Settings({
             label={t("settings.taskbar_ungroup")}
             description={t("settings.taskbar_ungroup_desc")}
             enabled={taskbarUngroup}
-            onToggle={async () =>
-              onToggleTaskbarUngroup(await toggleTaskbarUngroup())
-            }
+            onToggle={async () => onToggleTaskbarUngroup(await toggleTaskbarUngroup())}
             onLabel={t("settings.on")}
             offLabel={t("settings.off")}
           />
@@ -608,9 +573,7 @@ function Settings({
             actionLabel={label}
             binding={hotkeys.find((h) => h.action === action)}
             recording={recordingAction === action}
-            onRecord={(a) =>
-              setRecordingAction(recordingAction === a ? null : a)
-            }
+            onRecord={(a) => setRecordingAction(recordingAction === a ? null : a)}
             changeLabel={t("hotkeys.change")}
             cancelLabel={t("hotkeys.cancel")}
             pressKeyLabel={t("hotkeys.press_key")}
@@ -635,10 +598,7 @@ function Settings({
                       setCheckState("idle");
                     } else {
                       setCheckState("up-to-date");
-                      checkTimerRef.current = setTimeout(
-                        () => setCheckState("idle"),
-                        3000,
-                      );
+                      checkTimerRef.current = setTimeout(() => setCheckState("idle"), 3000);
                     }
                   })
                   .catch(() => setCheckState("idle"));

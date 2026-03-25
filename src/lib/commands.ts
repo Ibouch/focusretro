@@ -145,10 +145,7 @@ export function getAutoAcceptState(): Promise<boolean> {
   return invoke("get_auto_accept_state");
 }
 
-export function reorderAccount(
-  name: string,
-  newPosition: number,
-): Promise<AccountView[]> {
+export function reorderAccount(name: string, newPosition: number): Promise<AccountView[]> {
   return invoke("reorder_account", { name, newPosition });
 }
 
@@ -285,10 +282,7 @@ export function applyClose(): Promise<void> {
   return invoke("apply_close");
 }
 
-export function applyWindowIcon(
-  windowId: number,
-  rgba: number[],
-): Promise<void> {
+export function applyWindowIcon(windowId: number, rgba: number[]): Promise<void> {
   return invoke("apply_window_icon", { windowId, rgba });
 }
 

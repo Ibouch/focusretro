@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 import { listAccounts, AccountView } from "../lib/commands";
 
 const SIZE = 280;
@@ -80,25 +81,14 @@ export default function RadialSelector({ pos, hovered }: Props) {
         height: SIZE,
       }}
     >
-      <svg
-        width={SIZE}
-        height={SIZE}
-        overflow="visible"
-        className="absolute inset-0"
-      >
+      <svg width={SIZE} height={SIZE} overflow="visible" className="absolute inset-0">
         <defs>
           <radialGradient id="disc-bg" cx="40%" cy="35%" r="65%">
             <stop offset="0%" stopColor={discGrad1} />
             <stop offset="100%" stopColor={discGrad2} />
           </radialGradient>
           <filter id="disc-shadow" x="-30%" y="-30%" width="160%" height="160%">
-            <feDropShadow
-              dx="0"
-              dy="4"
-              stdDeviation="12"
-              floodColor={shadow}
-              floodOpacity="1"
-            />
+            <feDropShadow dx="0" dy="4" stdDeviation="12" floodColor={shadow} floodOpacity="1" />
           </filter>
           <mask id="disc-mask">
             <rect width={SIZE} height={SIZE} fill="white" />
@@ -189,23 +179,9 @@ export default function RadialSelector({ pos, hovered }: Props) {
         })}
 
         {/* Outer rim */}
-        <circle
-          cx={CX}
-          cy={CY}
-          r={DISC_R}
-          fill="none"
-          stroke={outerRim}
-          strokeWidth="1"
-        />
+        <circle cx={CX} cy={CY} r={DISC_R} fill="none" stroke={outerRim} strokeWidth="1" />
         {/* Inner rim */}
-        <circle
-          cx={CX}
-          cy={CY}
-          r={INNER_R}
-          fill="none"
-          stroke={innerRim}
-          strokeWidth="1.5"
-        />
+        <circle cx={CX} cy={CY} r={INNER_R} fill="none" stroke={innerRim} strokeWidth="1.5" />
       </svg>
 
       {/* Labels */}
@@ -222,9 +198,7 @@ export default function RadialSelector({ pos, hovered }: Props) {
             <div
               className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border text-xs font-bold"
               style={{
-                backgroundColor: acc.icon_path
-                  ? "transparent"
-                  : (acc.color ?? "#6b7280"),
+                backgroundColor: acc.icon_path ? "transparent" : (acc.color ?? "#6b7280"),
                 color: "#fff",
                 borderColor: isHov ? accent : (acc.color ?? iconBorder),
                 boxShadow: isHov ? "0 0 0 2px rgba(212,114,26,0.30)" : "none",
@@ -262,8 +236,7 @@ export default function RadialSelector({ pos, hovered }: Props) {
                 color: isHov ? textHover : isCur ? textActive : textNorm,
                 textShadow,
                 transform: isHov ? "translateY(2px)" : "none",
-                transition:
-                  "color 0.10s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
+                transition: "color 0.10s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1)",
               }}
             >
               {acc.character_name}
