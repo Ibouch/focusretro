@@ -59,8 +59,7 @@ static RE_PM: LazyLock<Regex> =
 static RE_HTML_LINK: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"<a\s[^>]*>([^<]*)</a>"#).unwrap());
 
-static RE_HTML_TAG: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"<[^>]+>").unwrap());
+static RE_HTML_TAG: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"<[^>]+>").unwrap());
 
 static RE_DOFUS_TITLE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^(.+?) - Dofus Retro v[\d.]+$").unwrap());
@@ -82,7 +81,9 @@ pub fn parse_turn_notification(text: &str) -> Option<TurnNotification> {
             .filter_map(|&i| caps.get(i))
             .map(|m| m.as_str().trim())
             .find(|s| !s.is_empty())?;
-        return Some(TurnNotification { character_name: name.to_string() });
+        return Some(TurnNotification {
+            character_name: name.to_string(),
+        });
     }
     None
 }
@@ -312,7 +313,9 @@ mod tests {
     #[test]
     fn test_clean_html_link() {
         assert_eq!(
-            clean_html("[<a href=\"asfunction:onHref,ShowItemViewer,1\">Clef du Donjon d'Incarnam</a>]"),
+            clean_html(
+                "[<a href=\"asfunction:onHref,ShowItemViewer,1\">Clef du Donjon d'Incarnam</a>]"
+            ),
             "[Clef du Donjon d'Incarnam]"
         );
     }
@@ -388,7 +391,8 @@ mod tests {
     fn test_parse_english_trade() {
         let segments = vec![
             "Notification Center".to_string(),
-            "Dofus Retro, Kura-noire - Dofus Retro v1.47.20, Testy offers a trade. Do you accept?".to_string(),
+            "Dofus Retro, Kura-noire - Dofus Retro v1.47.20, Testy offers a trade. Do you accept?"
+                .to_string(),
             "Kura-noire - Dofus Retro v1.47.20".to_string(),
             "Testy offers a trade. Do you accept?".to_string(),
         ];

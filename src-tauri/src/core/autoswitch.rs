@@ -44,7 +44,9 @@ fn refresh_accounts(handle: &AppHandle, state: &Arc<AppState>) {
             taskbar::apply_taskbar_identities(&current_windows, &mut cache, &mut handles);
             let ver = state.taskbar_order_version.load(Ordering::Relaxed);
             if ver != state.taskbar_order_version_applied.load(Ordering::Relaxed) {
-                state.taskbar_order_version_applied.store(ver, Ordering::Relaxed);
+                state
+                    .taskbar_order_version_applied
+                    .store(ver, Ordering::Relaxed);
                 taskbar::reorder_taskbar_buttons(&current_windows, &cache);
             }
         } else {
@@ -64,11 +66,15 @@ fn sync_focus_from_foreground(handle: &AppHandle, state: &Arc<AppState>) {
     if fg_id == 0 {
         return;
     }
-    let last = state.last_foreground_id.load(std::sync::atomic::Ordering::Relaxed);
+    let last = state
+        .last_foreground_id
+        .load(std::sync::atomic::Ordering::Relaxed);
     if fg_id == last {
         return;
     }
-    state.last_foreground_id.store(fg_id, std::sync::atomic::Ordering::Relaxed);
+    state
+        .last_foreground_id
+        .store(fg_id, std::sync::atomic::Ordering::Relaxed);
     let views = state.get_account_views();
     let Some(focused) = views.iter().find(|v| v.window_id == fg_id) else {
         return;
@@ -184,7 +190,9 @@ fn focus_character_with_fallback(
                     let _ = handle.emit("trace-added", ());
                     let h = handle.clone();
                     let name = character_name.to_string();
-                    std::thread::spawn(move || { let _ = h.emit("focus-changed", &name); });
+                    std::thread::spawn(move || {
+                        let _ = h.emit("focus-changed", &name);
+                    });
                 }
             }
         } else {
@@ -213,127 +221,130 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
     std::thread::spawn(move || {
         let mode_state = callback_state.clone();
         let mode_handle = callback_handle.clone();
-        let result = listener.start(Box::new(move |segments| {
-            let t_notification_ms = now_millis();
-            debug!("[Autoswitch] Notification segments: {:?}", segments);
+        let result = listener.start(
+            Box::new(move |segments| {
+                let t_notification_ms = now_millis();
+                debug!("[Autoswitch] Notification segments: {:?}", segments);
 
-            let event = match parser::parse_game_event(&segments) {
-                Some(e) => e,
-                None => {
-                    info!("[Autoswitch] No game event matched");
-                    return false;
-                }
-            };
-
-            let t_parsed_ms = now_millis();
-
-            match event {
-                parser::GameEvent::Turn(turn) => {
-                    if !callback_state.is_autoswitch_enabled() {
-                        info!("[Autoswitch] autoswitch disabled, ignoring turn");
+                let event = match parser::parse_game_event(&segments) {
+                    Some(e) => e,
+                    None => {
+                        info!("[Autoswitch] No game event matched");
                         return false;
                     }
-                    info!("[Autoswitch] Turn detected for: {}", turn.character_name);
-                    let _ = callback_handle.emit("turn-switched", &turn.character_name);
-                    let t_focus_triggered_ms = now_millis();
-                    focus_character_with_fallback(
-                        &turn.character_name,
-                        false,
-                        callback_state.clone(),
-                        callback_handle.clone(),
-                        "turn".into(),
-                        t_notification_ms,
-                        t_parsed_ms,
-                        t_focus_triggered_ms,
-                    );
-                    true
-                }
-                parser::GameEvent::GroupInvite(invite) => {
-                    if !callback_state.is_group_invite_enabled() {
-                        info!("[Autoswitch] group invite disabled, ignoring");
-                        return false;
-                    }
-                    if !callback_state.has_account(&invite.inviter_name) {
-                        info!(
-                            "[Autoswitch] group invite from unknown '{}', ignoring",
-                            invite.inviter_name
+                };
+
+                let t_parsed_ms = now_millis();
+
+                match event {
+                    parser::GameEvent::Turn(turn) => {
+                        if !callback_state.is_autoswitch_enabled() {
+                            info!("[Autoswitch] autoswitch disabled, ignoring turn");
+                            return false;
+                        }
+                        info!("[Autoswitch] Turn detected for: {}", turn.character_name);
+                        let _ = callback_handle.emit("turn-switched", &turn.character_name);
+                        let t_focus_triggered_ms = now_millis();
+                        focus_character_with_fallback(
+                            &turn.character_name,
+                            false,
+                            callback_state.clone(),
+                            callback_handle.clone(),
+                            "turn".into(),
+                            t_notification_ms,
+                            t_parsed_ms,
+                            t_focus_triggered_ms,
                         );
-                        return false;
+                        true
                     }
-                    info!(
-                        "[Autoswitch] Group invite: {} invited by {}",
-                        invite.receiver_name, invite.inviter_name
-                    );
-                    let _ = callback_handle.emit("group-invite", &invite.receiver_name);
-                    let accept = callback_state.is_auto_accept_enabled();
-                    let t_focus_triggered_ms = now_millis();
-                    focus_character_with_fallback(
-                        &invite.receiver_name,
-                        accept,
-                        callback_state.clone(),
-                        callback_handle.clone(),
-                        "group_invite".into(),
-                        t_notification_ms,
-                        t_parsed_ms,
-                        t_focus_triggered_ms,
-                    );
-                    true
-                }
-                parser::GameEvent::Trade(trade) => {
-                    if !callback_state.is_trade_enabled() {
-                        info!("[Autoswitch] trade disabled, ignoring");
-                        return false;
-                    }
-                    if !callback_state.has_account(&trade.requester_name) {
+                    parser::GameEvent::GroupInvite(invite) => {
+                        if !callback_state.is_group_invite_enabled() {
+                            info!("[Autoswitch] group invite disabled, ignoring");
+                            return false;
+                        }
+                        if !callback_state.has_account(&invite.inviter_name) {
+                            info!(
+                                "[Autoswitch] group invite from unknown '{}', ignoring",
+                                invite.inviter_name
+                            );
+                            return false;
+                        }
                         info!(
-                            "[Autoswitch] trade from unknown '{}', ignoring",
-                            trade.requester_name
+                            "[Autoswitch] Group invite: {} invited by {}",
+                            invite.receiver_name, invite.inviter_name
                         );
-                        return false;
+                        let _ = callback_handle.emit("group-invite", &invite.receiver_name);
+                        let accept = callback_state.is_auto_accept_enabled();
+                        let t_focus_triggered_ms = now_millis();
+                        focus_character_with_fallback(
+                            &invite.receiver_name,
+                            accept,
+                            callback_state.clone(),
+                            callback_handle.clone(),
+                            "group_invite".into(),
+                            t_notification_ms,
+                            t_parsed_ms,
+                            t_focus_triggered_ms,
+                        );
+                        true
                     }
-                    info!(
-                        "[Autoswitch] Trade request: {} from {}",
-                        trade.receiver_name, trade.requester_name
-                    );
-                    let _ = callback_handle.emit("trade-request", &trade.receiver_name);
-                    let accept = callback_state.is_auto_accept_enabled();
-                    let t_focus_triggered_ms = now_millis();
-                    focus_character_with_fallback(
-                        &trade.receiver_name,
-                        accept,
-                        callback_state.clone(),
-                        callback_handle.clone(),
-                        "trade".into(),
-                        t_notification_ms,
-                        t_parsed_ms,
-                        t_focus_triggered_ms,
-                    );
-                    true
-                }
-                parser::GameEvent::PrivateMessage(pm) => {
-                    if !callback_state.is_pm_enabled() {
-                        info!("[Autoswitch] PM disabled, ignoring");
-                        return false;
+                    parser::GameEvent::Trade(trade) => {
+                        if !callback_state.is_trade_enabled() {
+                            info!("[Autoswitch] trade disabled, ignoring");
+                            return false;
+                        }
+                        if !callback_state.has_account(&trade.requester_name) {
+                            info!(
+                                "[Autoswitch] trade from unknown '{}', ignoring",
+                                trade.requester_name
+                            );
+                            return false;
+                        }
+                        info!(
+                            "[Autoswitch] Trade request: {} from {}",
+                            trade.receiver_name, trade.requester_name
+                        );
+                        let _ = callback_handle.emit("trade-request", &trade.receiver_name);
+                        let accept = callback_state.is_auto_accept_enabled();
+                        let t_focus_triggered_ms = now_millis();
+                        focus_character_with_fallback(
+                            &trade.receiver_name,
+                            accept,
+                            callback_state.clone(),
+                            callback_handle.clone(),
+                            "trade".into(),
+                            t_notification_ms,
+                            t_parsed_ms,
+                            t_focus_triggered_ms,
+                        );
+                        true
                     }
-                    info!(
-                        "[Autoswitch] PM from {} to {}: {}",
-                        pm.sender_name, pm.receiver_name, pm.message
-                    );
-                    let stored = StoredMessage {
-                        receiver: pm.receiver_name.clone(),
-                        sender: pm.sender_name.clone(),
-                        message: pm.message.clone(),
-                        timestamp: now_epoch_secs(),
-                    };
-                    callback_state.add_message(stored.clone());
-                    let _ = callback_handle.emit("new-pm", &stored);
-                    false
+                    parser::GameEvent::PrivateMessage(pm) => {
+                        if !callback_state.is_pm_enabled() {
+                            info!("[Autoswitch] PM disabled, ignoring");
+                            return false;
+                        }
+                        info!(
+                            "[Autoswitch] PM from {} to {}: {}",
+                            pm.sender_name, pm.receiver_name, pm.message
+                        );
+                        let stored = StoredMessage {
+                            receiver: pm.receiver_name.clone(),
+                            sender: pm.sender_name.clone(),
+                            message: pm.message.clone(),
+                            timestamp: now_epoch_secs(),
+                        };
+                        callback_state.add_message(stored.clone());
+                        let _ = callback_handle.emit("new-pm", &stored);
+                        false
+                    }
                 }
-            }
-        }), Box::new(move |mode| {
-            mode_state.set_notif_mode(mode.clone());
-            let _ = mode_handle.emit("notif-mode-changed", mode);
-        }));
+            }),
+            Box::new(move |mode| {
+                mode_state.set_notif_mode(mode.clone());
+                let _ = mode_handle.emit("notif-mode-changed", mode);
+            }),
+        );
 
         if let Err(e) = result {
             error!("[Autoswitch] Notification listener failed: {}", e);

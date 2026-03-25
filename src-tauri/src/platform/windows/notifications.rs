@@ -8,19 +8,19 @@ use regex::Regex;
 static RE_TOAST_TEXT: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?s)<text[^>]*>([^<]*)</text>").unwrap());
 
-use windows::Foundation::TypedEventHandler;
-use windows::UI::Notifications::Management::{
-    UserNotificationListener, UserNotificationListenerAccessStatus,
-};
-use windows::UI::Notifications::{
-    NotificationKinds, UserNotification,
-    UserNotificationChangedEventArgs, UserNotificationChangedKind,
-};
 use windows::core::HSTRING;
+use windows::Foundation::TypedEventHandler;
 use windows::Win32::Foundation::{LPARAM, WPARAM};
 use windows::Win32::System::Com::{CoInitializeEx, COINIT_APARTMENTTHREADED};
 use windows::Win32::System::Threading::GetCurrentThreadId;
 use windows::Win32::UI::WindowsAndMessaging::{PostThreadMessageW, WM_QUIT};
+use windows::UI::Notifications::Management::{
+    UserNotificationListener, UserNotificationListenerAccessStatus,
+};
+use windows::UI::Notifications::{
+    NotificationKinds, UserNotification, UserNotificationChangedEventArgs,
+    UserNotificationChangedKind,
+};
 
 /// Wraps a `Send`-only `Fn` so it can be shared across WinRT threads.
 /// Safety: `Fn` uses `&self`, so concurrent calls are safe given captured data is `Send`.
@@ -39,11 +39,7 @@ impl WinNotificationListener {
     }
 }
 
-fn process_notification(
-    listener: &UserNotificationListener,
-    notif_id: u32,
-    cb: &SyncCallback,
-) {
+fn process_notification(listener: &UserNotificationListener, notif_id: u32, cb: &SyncCallback) {
     let notif = match listener.GetNotification(notif_id) {
         Ok(n) => n,
         Err(e) => {
@@ -85,7 +81,10 @@ fn process_notification(
     };
 
     let count = elements.Size().unwrap_or(0);
-    info!("[WinNotif] Notification {} has {} text element(s)", notif_id, count);
+    info!(
+        "[WinNotif] Notification {} has {} text element(s)",
+        notif_id, count
+    );
 
     let mut texts: Vec<String> = Vec::new();
     for i in 0..count {
@@ -118,7 +117,10 @@ fn process_notification(
         let segments = vec!["Dofus Retro".to_string(), combined, title, body];
         (cb.0)(segments);
     } else {
-        warn!("[WinNotif] Notification {} had no text, skipping callback", notif_id);
+        warn!(
+            "[WinNotif] Notification {} had no text, skipping callback",
+            notif_id
+        );
     }
 }
 
@@ -135,20 +137,14 @@ fn seed_last_id_from_db(db_path: &std::path::Path) -> u64 {
         }
     };
     let _ = conn.busy_timeout(std::time::Duration::from_millis(1000));
-    conn.query_row(
-        "SELECT COALESCE(MAX(Id), 0) FROM Notification",
-        [],
-        |row| row.get::<_, i64>(0),
-    )
+    conn.query_row("SELECT COALESCE(MAX(Id), 0) FROM Notification", [], |row| {
+        row.get::<_, i64>(0)
+    })
     .map(|v| v as u64)
     .unwrap_or(0)
 }
 
-fn poll_db_notifications(
-    db_path: &std::path::Path,
-    last_id: &mut u64,
-    cb: &SyncCallback,
-) {
+fn poll_db_notifications(db_path: &std::path::Path, last_id: &mut u64, cb: &SyncCallback) {
     use rusqlite::{Connection, OpenFlags};
     let conn = match Connection::open_with_flags(
         db_path,
@@ -162,9 +158,9 @@ fn poll_db_notifications(
     };
     let _ = conn.busy_timeout(std::time::Duration::from_millis(1000));
 
-    let mut stmt = match conn.prepare(
-        "SELECT Id, CAST(Payload AS TEXT) FROM Notification WHERE Id > ?1 ORDER BY Id ASC",
-    ) {
+    let mut stmt = match conn
+        .prepare("SELECT Id, CAST(Payload AS TEXT) FROM Notification WHERE Id > ?1 ORDER BY Id ASC")
+    {
         Ok(s) => s,
         Err(e) => {
             warn!("[WinNotif] poll: prepare failed: {:?}", e);
@@ -284,7 +280,7 @@ impl NotificationListener for WinNotificationListener {
 
                     unsafe {
                         use windows::Win32::UI::WindowsAndMessaging::{
-                            PM_REMOVE, PeekMessageW, MSG,
+                            PeekMessageW, MSG, PM_REMOVE,
                         };
                         let mut msg = MSG::default();
                         if PeekMessageW(&mut msg, None, WM_QUIT, WM_QUIT, PM_REMOVE).as_bool() {
@@ -386,12 +382,16 @@ impl NotificationListener for WinNotificationListener {
                 }
 
                 if let Some(&id) = new_notif_ids.last() {
-                    info!("[WinNotif] Poll: {} new notification(s), processing latest ID: {}", new_notif_ids.len(), id);
+                    info!(
+                        "[WinNotif] Poll: {} new notification(s), processing latest ID: {}",
+                        new_notif_ids.len(),
+                        id
+                    );
                     process_notification(&listener, id, &callback);
                 }
 
                 unsafe {
-                    use windows::Win32::UI::WindowsAndMessaging::{PM_REMOVE, PeekMessageW, MSG};
+                    use windows::Win32::UI::WindowsAndMessaging::{PeekMessageW, MSG, PM_REMOVE};
                     let mut msg = MSG::default();
                     if PeekMessageW(&mut msg, None, WM_QUIT, WM_QUIT, PM_REMOVE).as_bool() {
                         break;
@@ -414,7 +414,10 @@ impl NotificationListener for WinNotificationListener {
             unsafe {
                 let _ = PostThreadMessageW(thread_id, WM_QUIT, WPARAM(0), LPARAM(0));
             }
-            info!("[WinNotif] Posted WM_QUIT to notification thread {}", thread_id);
+            info!(
+                "[WinNotif] Posted WM_QUIT to notification thread {}",
+                thread_id
+            );
         }
     }
 }

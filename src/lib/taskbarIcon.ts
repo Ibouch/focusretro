@@ -26,7 +26,7 @@ function getBaseIcon(): Promise<HTMLImageElement> {
  */
 export async function renderAccountIcon(
   iconPath: string | null,
-  color: string | null
+  color: string | null,
 ): Promise<number[]> {
   const canvas = document.createElement("canvas");
   canvas.width = SIZE;

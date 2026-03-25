@@ -91,7 +91,9 @@ export function requestInputMonitoring(): Promise<void> {
   return invoke("request_input_monitoring");
 }
 
-export function openSettings(section: "accessibility" | "screen_recording" | "input_monitoring"): Promise<void> {
+export function openSettings(
+  section: "accessibility" | "screen_recording" | "input_monitoring",
+): Promise<void> {
   return invoke("open_settings", { section });
 }
 
@@ -143,8 +145,10 @@ export function getAutoAcceptState(): Promise<boolean> {
   return invoke("get_auto_accept_state");
 }
 
-
-export function reorderAccount(name: string, newPosition: number): Promise<AccountView[]> {
+export function reorderAccount(
+  name: string,
+  newPosition: number,
+): Promise<AccountView[]> {
   return invoke("reorder_account", { name, newPosition });
 }
 
@@ -155,7 +159,7 @@ export function setPrincipal(name: string): Promise<AccountView[]> {
 export function updateAccountProfile(
   name: string,
   color: string | null,
-  iconPath: string | null
+  iconPath: string | null,
 ): Promise<AccountView[]> {
   return invoke("update_account_profile", {
     name,
@@ -187,7 +191,7 @@ export function setHotkey(
   cmd: boolean,
   alt: boolean,
   shift: boolean,
-  ctrl: boolean
+  ctrl: boolean,
 ): Promise<HotkeyBinding[]> {
   return invoke("set_hotkey", { action, key, cmd, alt, shift, ctrl });
 }
@@ -281,7 +285,10 @@ export function applyClose(): Promise<void> {
   return invoke("apply_close");
 }
 
-export function applyWindowIcon(windowId: number, rgba: number[]): Promise<void> {
+export function applyWindowIcon(
+  windowId: number,
+  rgba: number[],
+): Promise<void> {
   return invoke("apply_window_icon", { windowId, rgba });
 }
 

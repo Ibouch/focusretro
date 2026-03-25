@@ -14,17 +14,17 @@ use windows::{
     Win32::{
         Foundation::{HWND, LPARAM, WPARAM},
         Graphics::Gdi::{
-            CreateBitmap, CreateDIBSection, DeleteObject, BI_RGB, BITMAPINFO,
-            BITMAPINFOHEADER, DIB_RGB_COLORS, HBITMAP,
+            CreateBitmap, CreateDIBSection, DeleteObject, BITMAPINFO, BITMAPINFOHEADER, BI_RGB,
+            DIB_RGB_COLORS, HBITMAP,
         },
-        UI::WindowsAndMessaging::{
-            CreateIconIndirect, DestroyIcon, SendMessageW, HICON, ICON_BIG, ICON_SMALL,
-            ICONINFO, WM_SETICON,
-        },
-        System::Com::{CoInitializeEx, COINIT_MULTITHREADED},
-        System::Com::StructuredStorage::PROPVARIANT,
-        UI::Shell::PropertiesSystem::{IPropertyStore, SHGetPropertyStoreForWindow},
         Storage::EnhancedStorage::PKEY_AppUserModel_ID,
+        System::Com::StructuredStorage::PROPVARIANT,
+        System::Com::{CoInitializeEx, COINIT_MULTITHREADED},
+        UI::Shell::PropertiesSystem::{IPropertyStore, SHGetPropertyStoreForWindow},
+        UI::WindowsAndMessaging::{
+            CreateIconIndirect, DestroyIcon, SendMessageW, HICON, ICONINFO, ICON_BIG, ICON_SMALL,
+            WM_SETICON,
+        },
     },
 };
 
@@ -40,9 +40,9 @@ pub(crate) unsafe fn rgba_to_hicon(rgba: &[u8], size: u32) -> anyhow::Result<HIC
         let src = i * 4;
         let a = rgba[src + 3];
         let pm = |c: u8| -> u8 { ((c as u16 * a as u16 + 127) / 255) as u8 };
-        bgra[src]     = pm(rgba[src + 2]); // B
+        bgra[src] = pm(rgba[src + 2]); // B
         bgra[src + 1] = pm(rgba[src + 1]); // G
-        bgra[src + 2] = pm(rgba[src]);     // R
+        bgra[src + 2] = pm(rgba[src]); // R
         bgra[src + 3] = a;
     }
 
@@ -70,7 +70,8 @@ pub(crate) unsafe fn rgba_to_hicon(rgba: &[u8], size: u32) -> anyhow::Result<HIC
     let hbm_mask: HBITMAP = CreateBitmap(
         size as i32,
         size as i32,
-        1, 1,
+        1,
+        1,
         Some(mask_data.as_ptr() as *const _),
     );
     if hbm_mask.0.is_null() {
@@ -106,9 +107,11 @@ pub(crate) unsafe fn set_window_aumid(hwnd: HWND, character_name: &str) -> anyho
     let aumid = format!("focusretro.dofus.{}", character_name);
     let pv = PROPVARIANT::from(aumid.as_str());
 
-    store.SetValue(&PKEY_AppUserModel_ID, &pv)
+    store
+        .SetValue(&PKEY_AppUserModel_ID, &pv)
         .map_err(|e| anyhow::anyhow!("IPropertyStore::SetValue: {e:?}"))?;
-    store.Commit()
+    store
+        .Commit()
         .map_err(|e| anyhow::anyhow!("IPropertyStore::Commit: {e:?}"))?;
 
     Ok(())
@@ -127,11 +130,23 @@ pub fn set_window_icon(hwnd_isize: isize, rgba: &[u8], icon_handles: &mut HashMa
         }
     };
     unsafe {
-        SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_BIG as usize)), Some(LPARAM(new_hicon.0 as isize)));
-        SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_SMALL as usize)), Some(LPARAM(new_hicon.0 as isize)));
+        SendMessageW(
+            hwnd,
+            WM_SETICON,
+            Some(WPARAM(ICON_BIG as usize)),
+            Some(LPARAM(new_hicon.0 as isize)),
+        );
+        SendMessageW(
+            hwnd,
+            WM_SETICON,
+            Some(WPARAM(ICON_SMALL as usize)),
+            Some(LPARAM(new_hicon.0 as isize)),
+        );
     }
     if let Some(old_raw) = icon_handles.get(&hwnd_isize).copied() {
-        unsafe { let _ = DestroyIcon(HICON(old_raw as *mut _)); }
+        unsafe {
+            let _ = DestroyIcon(HICON(old_raw as *mut _));
+        }
     }
     icon_handles.insert(hwnd_isize, new_hicon.0 as isize);
 }
@@ -147,11 +162,17 @@ pub fn apply_taskbar_identities(
     let active: HashSet<isize> = windows.iter().map(|w| w.window_id as isize).collect();
 
     // Evict closed windows: remove from AUMID cache and destroy their HICON handles
-    let stale: Vec<isize> = aumid_cache.iter().copied().filter(|h| !active.contains(h)).collect();
+    let stale: Vec<isize> = aumid_cache
+        .iter()
+        .copied()
+        .filter(|h| !active.contains(h))
+        .collect();
     for hwnd in stale {
         aumid_cache.remove(&hwnd);
         if let Some(raw) = icon_handles.remove(&hwnd) {
-            unsafe { let _ = DestroyIcon(HICON(raw as *mut _)); }
+            unsafe {
+                let _ = DestroyIcon(HICON(raw as *mut _));
+            }
         }
     }
 
@@ -163,7 +184,10 @@ pub fn apply_taskbar_identities(
         }
         let hwnd = HWND(hwnd_isize as usize as *mut _);
         if let Err(e) = unsafe { set_window_aumid(hwnd, &window.character_name) } {
-            warn!("apply_taskbar_identities: AUMID for '{}': {e}", window.character_name);
+            warn!(
+                "apply_taskbar_identities: AUMID for '{}': {e}",
+                window.character_name
+            );
             continue;
         }
         aumid_cache.insert(hwnd_isize);
@@ -189,8 +213,18 @@ pub fn reset_taskbar_identities(
                 let _ = store.SetValue(&PKEY_AppUserModel_ID, &PROPVARIANT::default());
                 let _ = store.Commit();
             }
-            SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_BIG as usize)), Some(LPARAM(0)));
-            SendMessageW(hwnd, WM_SETICON, Some(WPARAM(ICON_SMALL as usize)), Some(LPARAM(0)));
+            SendMessageW(
+                hwnd,
+                WM_SETICON,
+                Some(WPARAM(ICON_BIG as usize)),
+                Some(LPARAM(0)),
+            );
+            SendMessageW(
+                hwnd,
+                WM_SETICON,
+                Some(WPARAM(ICON_SMALL as usize)),
+                Some(LPARAM(0)),
+            );
         }
     }
     cleanup_all_icons(icon_handles);
@@ -201,7 +235,9 @@ pub fn reset_taskbar_identities(
 #[cfg(target_os = "windows")]
 pub fn cleanup_all_icons(icon_handles: &mut HashMap<isize, isize>) {
     for (_hwnd, raw) in icon_handles.iter() {
-        unsafe { let _ = DestroyIcon(HICON(*raw as *mut _)); }
+        unsafe {
+            let _ = DestroyIcon(HICON(*raw as *mut _));
+        }
     }
     icon_handles.clear();
 }
@@ -219,11 +255,9 @@ const CLSID_TASKBAR_LIST: windows::core::GUID =
 /// Gracefully no-ops if ITaskbarList is unavailable (e.g. Explorer not running).
 #[cfg(target_os = "windows")]
 pub fn reorder_taskbar_buttons(windows_in_order: &[GameWindow], aumid_cache: &HashSet<isize>) {
-    use windows::{
-        Win32::{
-            System::Com::{CoCreateInstance, CLSCTX_INPROC_SERVER},
-            UI::Shell::ITaskbarList,
-        },
+    use windows::Win32::{
+        System::Com::{CoCreateInstance, CLSCTX_INPROC_SERVER},
+        UI::Shell::ITaskbarList,
     };
 
     let ready: Vec<&GameWindow> = windows_in_order
@@ -238,17 +272,14 @@ pub fn reorder_taskbar_buttons(windows_in_order: &[GameWindow], aumid_cache: &Ha
     unsafe {
         let _ = CoInitializeEx(None, COINIT_MULTITHREADED);
 
-        let taskbar_list: ITaskbarList = match CoCreateInstance(
-            &CLSID_TASKBAR_LIST,
-            None,
-            CLSCTX_INPROC_SERVER,
-        ) {
-            Ok(tl) => tl,
-            Err(e) => {
-                warn!("reorder_taskbar_buttons: CoCreateInstance: {e}");
-                return;
-            }
-        };
+        let taskbar_list: ITaskbarList =
+            match CoCreateInstance(&CLSID_TASKBAR_LIST, None, CLSCTX_INPROC_SERVER) {
+                Ok(tl) => tl,
+                Err(e) => {
+                    warn!("reorder_taskbar_buttons: CoCreateInstance: {e}");
+                    return;
+                }
+            };
 
         if let Err(e) = taskbar_list.HrInit() {
             warn!("reorder_taskbar_buttons: HrInit: {e}");

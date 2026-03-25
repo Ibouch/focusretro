@@ -6,30 +6,32 @@
 
 /* brand colors */
 @theme {
-  --color-brand-50:  #FFF9E6;
-  --color-brand-100: #FFEFC2;
-  --color-brand-200: #FFE39A;
-  --color-brand-300: #FFD366;
-  --color-brand-400: #FFC338;
-  --color-brand-500: #F6A800;
-  --color-brand-600: #D18A00;
-  --color-brand-700: #A06100;
-  --color-brand-800: #6C3F00;
-  --color-brand-900: #3E2500;
+  --color-brand-50: #fff9e6;
+  --color-brand-100: #ffefc2;
+  --color-brand-200: #ffe39a;
+  --color-brand-300: #ffd366;
+  --color-brand-400: #ffc338;
+  --color-brand-500: #f6a800;
+  --color-brand-600: #d18a00;
+  --color-brand-700: #a06100;
+  --color-brand-800: #6c3f00;
+  --color-brand-900: #3e2500;
 }
 
 @layer base {
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 @layer components {
   .lang-btn.active,
   .tab-btn.active {
-    @apply bg-brand-600 text-white border-brand-600;
+    @apply bg-brand-600 border-brand-600 text-white;
   }
   .lang-btn:focus-visible,
   .tab-btn:focus-visible {
-    @apply outline-none ring-2 ring-brand-500 ring-offset-2 dark:ring-offset-gray-900;
+    @apply ring-brand-500 ring-2 ring-offset-2 outline-none dark:ring-offset-gray-900;
   }
   .tab-content {
     display: none;

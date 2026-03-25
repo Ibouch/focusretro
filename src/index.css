@@ -5,16 +5,16 @@
 
 /* theme.extend.colors from tailwind.config.js */
 @theme {
-  --color-brand-50:  #FFF9E6;
-  --color-brand-100: #FFEFC2;
-  --color-brand-200: #FFE39A;
-  --color-brand-300: #FFD366;
-  --color-brand-400: #FFC338;
-  --color-brand-500: #F6A800;
-  --color-brand-600: #D18A00;
-  --color-brand-700: #A06100;
-  --color-brand-800: #6C3F00;
-  --color-brand-900: #3E2500;
+  --color-brand-50: #fff9e6;
+  --color-brand-100: #ffefc2;
+  --color-brand-200: #ffe39a;
+  --color-brand-300: #ffd366;
+  --color-brand-400: #ffc338;
+  --color-brand-500: #f6a800;
+  --color-brand-600: #d18a00;
+  --color-brand-700: #a06100;
+  --color-brand-800: #6c3f00;
+  --color-brand-900: #3e2500;
 }
 
 body {

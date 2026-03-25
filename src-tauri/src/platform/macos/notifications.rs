@@ -88,11 +88,12 @@ unsafe fn click_notification_banner(element: AXUIElementRef) {
     if let Some(banner) = find_banner(element) {
         if has_action(banner, "AXPress") {
             let press = CFString::new("AXPress");
-            let err = AXUIElementPerformAction(
-                banner,
-                press.as_concrete_TypeRef() as *const c_void,
+            let err =
+                AXUIElementPerformAction(banner, press.as_concrete_TypeRef() as *const c_void);
+            info!(
+                "[AXObserver] pressed AXNotificationCenterBanner, result: {}",
+                err
             );
-            info!("[AXObserver] pressed AXNotificationCenterBanner, result: {}", err);
             return;
         }
     }
@@ -100,11 +101,11 @@ unsafe fn click_notification_banner(element: AXUIElementRef) {
     // Fallback: try AXPress directly on the root element
     if has_action(element, "AXPress") {
         let press = CFString::new("AXPress");
-        let err = AXUIElementPerformAction(
-            element,
-            press.as_concrete_TypeRef() as *const c_void,
+        let err = AXUIElementPerformAction(element, press.as_concrete_TypeRef() as *const c_void);
+        info!(
+            "[AXObserver] pressed root element as fallback, result: {}",
+            err
         );
-        info!("[AXObserver] pressed root element as fallback, result: {}", err);
     } else {
         info!("[AXObserver] no pressable banner found, focus will rely on WindowManager fallback");
     }
@@ -245,7 +246,10 @@ impl NotificationListener for MacNotificationListener {
         let pid = find_notification_center_pid()
             .ok_or_else(|| anyhow::anyhow!("NotificationCenter process not found"))?;
 
-        info!("[NotificationListener] Found NotificationCenter PID: {}", pid);
+        info!(
+            "[NotificationListener] Found NotificationCenter PID: {}",
+            pid
+        );
         self.running.store(true, Ordering::Relaxed);
 
         let ctx = Box::new(CallbackContext { on_notification });
@@ -292,7 +296,9 @@ impl NotificationListener for MacNotificationListener {
                 kCFRunLoopDefaultMode,
             );
 
-            info!("[NotificationListener] AXObserver attached to CFRunLoop, listening for banners...");
+            info!(
+                "[NotificationListener] AXObserver attached to CFRunLoop, listening for banners..."
+            );
             CFRunLoopRun();
             info!("[NotificationListener] CFRunLoop exited");
         }

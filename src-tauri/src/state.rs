@@ -407,7 +407,15 @@ impl AppState {
         self.save();
     }
 
-    pub fn set_hotkey(&self, action: &str, key: String, cmd: bool, alt: bool, shift: bool, ctrl: bool) {
+    pub fn set_hotkey(
+        &self,
+        action: &str,
+        key: String,
+        cmd: bool,
+        alt: bool,
+        shift: bool,
+        ctrl: bool,
+    ) {
         let mut hotkeys = self.hotkeys.lock().unwrap();
         if let Some(hk) = hotkeys.iter_mut().find(|h| h.action == action) {
             hk.key = key;
@@ -416,7 +424,14 @@ impl AppState {
             hk.shift = shift;
             hk.ctrl = ctrl;
         } else {
-            hotkeys.push(HotkeyBinding { action: action.into(), key, cmd, alt, shift, ctrl });
+            hotkeys.push(HotkeyBinding {
+                action: action.into(),
+                key,
+                cmd,
+                alt,
+                shift,
+                ctrl,
+            });
         }
         drop(hotkeys);
         self.save();
@@ -447,7 +462,10 @@ impl AppState {
         // Add newly detected windows not yet in profiles (preserves existing profiles)
         let mut new_profiles_added = false;
         for win in &windows {
-            if !profiles.iter().any(|p| p.character_name.eq_ignore_ascii_case(&win.character_name)) {
+            if !profiles
+                .iter()
+                .any(|p| p.character_name.eq_ignore_ascii_case(&win.character_name))
+            {
                 profiles.push(AccountProfile {
                     character_name: win.character_name.clone(),
                     color: None,
@@ -460,15 +478,20 @@ impl AppState {
 
         // Rebuild accounts in profile order, only for currently open windows
         #[cfg(target_os = "windows")]
-        let old_ids: std::collections::HashSet<u64> = accounts.iter().map(|w| w.window_id).collect();
+        let old_ids: std::collections::HashSet<u64> =
+            accounts.iter().map(|w| w.window_id).collect();
         *accounts = profiles
             .iter()
             .filter_map(|p| {
-                windows.iter().find(|w| w.character_name.eq_ignore_ascii_case(&p.character_name)).cloned()
+                windows
+                    .iter()
+                    .find(|w| w.character_name.eq_ignore_ascii_case(&p.character_name))
+                    .cloned()
             })
             .collect();
         #[cfg(target_os = "windows")]
-        let new_ids: std::collections::HashSet<u64> = accounts.iter().map(|w| w.window_id).collect();
+        let new_ids: std::collections::HashSet<u64> =
+            accounts.iter().map(|w| w.window_id).collect();
 
         if !profiles.is_empty() && !profiles.iter().any(|p| p.is_principal) {
             profiles[0].is_principal = true;
@@ -533,7 +556,10 @@ impl AppState {
         let mut accounts = self.accounts.lock().unwrap();
 
         // Find and remove the source profile
-        let source_profile_idx = match profiles.iter().position(|p| p.character_name.eq_ignore_ascii_case(name)) {
+        let source_profile_idx = match profiles
+            .iter()
+            .position(|p| p.character_name.eq_ignore_ascii_case(name))
+        {
             Some(i) => i,
             None => return false,
         };
@@ -542,7 +568,11 @@ impl AppState {
         // Build the ordered list of open account names after removal (in profile order)
         let open_after_removal: Vec<String> = profiles
             .iter()
-            .filter(|p| accounts.iter().any(|w| w.character_name.eq_ignore_ascii_case(&p.character_name)))
+            .filter(|p| {
+                accounts
+                    .iter()
+                    .any(|w| w.character_name.eq_ignore_ascii_case(&p.character_name))
+            })
             .map(|p| p.character_name.clone())
             .collect();
 
@@ -551,7 +581,10 @@ impl AppState {
             profiles.len()
         } else {
             let target_name = &open_after_removal[new_position];
-            match profiles.iter().position(|p| p.character_name.eq_ignore_ascii_case(target_name)) {
+            match profiles
+                .iter()
+                .position(|p| p.character_name.eq_ignore_ascii_case(target_name))
+            {
                 Some(i) => i,
                 None => {
                     profiles.insert(source_profile_idx, profile);
@@ -566,7 +599,12 @@ impl AppState {
         let old_accounts = accounts.clone();
         *accounts = profiles
             .iter()
-            .filter_map(|p| old_accounts.iter().find(|w| w.character_name.eq_ignore_ascii_case(&p.character_name)).cloned())
+            .filter_map(|p| {
+                old_accounts
+                    .iter()
+                    .find(|w| w.character_name.eq_ignore_ascii_case(&p.character_name))
+                    .cloned()
+            })
             .collect();
 
         drop(profiles);
@@ -595,7 +633,9 @@ impl AppState {
             .iter()
             .find(|p| p.is_principal)
             .and_then(|p| {
-                accounts.iter().find(|w| w.character_name.eq_ignore_ascii_case(&p.character_name))
+                accounts
+                    .iter()
+                    .find(|w| w.character_name.eq_ignore_ascii_case(&p.character_name))
             })
             .or_else(|| accounts.first())
             .cloned()
@@ -603,7 +643,10 @@ impl AppState {
 
     pub fn get_principal_name(&self) -> Option<String> {
         let profiles = self.profiles.lock().unwrap();
-        profiles.iter().find(|p| p.is_principal).map(|p| p.character_name.clone())
+        profiles
+            .iter()
+            .find(|p| p.is_principal)
+            .map(|p| p.character_name.clone())
     }
 
     pub fn account_count(&self) -> usize {
@@ -612,7 +655,10 @@ impl AppState {
 
     pub fn update_profile(&self, name: &str, color: Option<String>, icon_path: Option<String>) {
         let mut profiles = self.profiles.lock().unwrap();
-        if let Some(p) = profiles.iter_mut().find(|p| p.character_name.eq_ignore_ascii_case(name)) {
+        if let Some(p) = profiles
+            .iter_mut()
+            .find(|p| p.character_name.eq_ignore_ascii_case(name))
+        {
             p.color = color;
             p.icon_path = icon_path;
         }
@@ -643,7 +689,10 @@ impl AppState {
 
     pub fn set_current_by_name(&self, name: &str) {
         let accounts = self.accounts.lock().unwrap();
-        if let Some(idx) = accounts.iter().position(|w| w.character_name.eq_ignore_ascii_case(name)) {
+        if let Some(idx) = accounts
+            .iter()
+            .position(|w| w.character_name.eq_ignore_ascii_case(name))
+        {
             *self.current_index.lock().unwrap() = idx;
         }
     }
@@ -688,7 +737,11 @@ impl AppState {
             return None;
         }
         let mut idx = self.current_index.lock().unwrap();
-        *idx = if *idx == 0 { accounts.len() - 1 } else { *idx - 1 };
+        *idx = if *idx == 0 {
+            accounts.len() - 1
+        } else {
+            *idx - 1
+        };
         Some(accounts[*idx].clone())
     }
 
@@ -750,7 +803,8 @@ impl AppState {
 
     #[cfg(target_os = "windows")]
     pub fn set_taskbar_ungroup(&self, enabled: bool) {
-        self.taskbar_ungroup_enabled.store(enabled, Ordering::Relaxed);
+        self.taskbar_ungroup_enabled
+            .store(enabled, Ordering::Relaxed);
         self.save();
     }
 }
@@ -783,7 +837,10 @@ mod tests {
         migrate_config_if_needed(&new_path);
 
         assert!(new_path.exists(), "new config should exist after migration");
-        assert!(!old_path.exists(), "old config should be removed after migration");
+        assert!(
+            !old_path.exists(),
+            "old config should be removed after migration"
+        );
         assert!(!old_dir.exists(), "old dir should be removed if empty");
         let contents = fs::read_to_string(&new_path).unwrap();
         assert!(contents.contains("autoswitch_enabled"));

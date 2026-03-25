@@ -1,5 +1,7 @@
 use crate::platform;
-use crate::radial::{focus_selected_or_current, radial_segment_at, resolve_selection, RADIAL_WIN_CX};
+use crate::radial::{
+    focus_selected_or_current, radial_segment_at, resolve_selection, RADIAL_WIN_CX,
+};
 use crate::state::{AppState, HotkeyBinding};
 use log::{error, info};
 use std::sync::Arc;
@@ -10,7 +12,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CallNextHookEx, GetCursorPos, GetMessageW, SetWindowsHookExW, UnhookWindowsHookEx,
-    KBDLLHOOKSTRUCT, MSLLHOOKSTRUCT, MSG, WH_KEYBOARD_LL, WH_MOUSE_LL, WM_KEYDOWN, WM_KEYUP,
+    KBDLLHOOKSTRUCT, MSG, MSLLHOOKSTRUCT, WH_KEYBOARD_LL, WH_MOUSE_LL, WM_KEYDOWN, WM_KEYUP,
     WM_MOUSEMOVE, WM_SYSKEYDOWN, WM_SYSKEYUP, WM_XBUTTONDOWN, WM_XBUTTONUP,
 };
 
@@ -25,7 +27,6 @@ thread_local! {
     static HOTKEY_CTX: std::cell::RefCell<Option<HotkeyContext>> =
         std::cell::RefCell::new(None);
 }
-
 
 fn js_code_to_vk(code: &str) -> Option<u16> {
     match code {
@@ -96,8 +97,7 @@ fn read_modifiers() -> (bool, bool, bool, bool) {
         let shift = (GetKeyState(VK_SHIFT.0 as i32) as u16) & 0x8000 != 0;
         let ctrl = (GetKeyState(VK_CONTROL.0 as i32) as u16) & 0x8000 != 0;
         let alt = (GetKeyState(VK_MENU.0 as i32) as u16) & 0x8000 != 0;
-        let cmd = ((GetKeyState(VK_LWIN.0 as i32) as u16)
-            | (GetKeyState(VK_RWIN.0 as i32) as u16))
+        let cmd = ((GetKeyState(VK_LWIN.0 as i32) as u16) | (GetKeyState(VK_RWIN.0 as i32) as u16))
             & 0x8000
             != 0;
         (shift, ctrl, alt, cmd)
@@ -116,7 +116,9 @@ fn fire_action(action: &str, c: &HotkeyContext) {
         // Capture physical cursor position NOW on the hook thread, before
         // crossing to the main thread where the cursor may have moved.
         let mut pt = POINT { x: 0, y: 0 };
-        unsafe { let _ = GetCursorPos(&mut pt); }
+        unsafe {
+            let _ = GetCursorPos(&mut pt);
+        }
         let phys_x = pt.x as f64;
         let phys_y = pt.y as f64;
 
@@ -233,11 +235,7 @@ fn matches_mouse_binding(
         && cmd == binding.cmd
 }
 
-unsafe extern "system" fn hotkey_callback(
-    ncode: i32,
-    wparam: WPARAM,
-    lparam: LPARAM,
-) -> LRESULT {
+unsafe extern "system" fn hotkey_callback(ncode: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     if ncode < 0 {
         return CallNextHookEx(None, ncode, wparam, lparam);
     }
@@ -305,11 +303,7 @@ unsafe extern "system" fn hotkey_callback(
     CallNextHookEx(None, ncode, wparam, lparam)
 }
 
-unsafe extern "system" fn mouse_callback(
-    ncode: i32,
-    wparam: WPARAM,
-    lparam: LPARAM,
-) -> LRESULT {
+unsafe extern "system" fn mouse_callback(ncode: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     if ncode < 0 {
         return CallNextHookEx(None, ncode, wparam, lparam);
     }
@@ -331,10 +325,9 @@ unsafe extern "system" fn mouse_callback(
                         let n = accounts.len();
                         let rel_x = RADIAL_WIN_CX + (lx - keydown.0);
                         let rel_y = RADIAL_WIN_CX + (ly - keydown.1);
-                        let seg =
-                            radial_segment_at(rel_x, rel_y, RADIAL_WIN_CX, RADIAL_WIN_CX, n)
-                                .map(|s| s as i32)
-                                .unwrap_or(-1);
+                        let seg = radial_segment_at(rel_x, rel_y, RADIAL_WIN_CX, RADIAL_WIN_CX, n)
+                            .map(|s| s as i32)
+                            .unwrap_or(-1);
                         let prev = c.last_hover_seg.swap(seg, Ordering::Relaxed);
                         if seg != prev {
                             let h = c.handle.clone();
@@ -428,26 +421,26 @@ pub fn start_hotkey_listener(handle: AppHandle, state: Arc<AppState>) {
             });
         });
 
-        let kb_hook = match unsafe {
-            SetWindowsHookExW(WH_KEYBOARD_LL, Some(hotkey_callback), None, 0)
-        } {
-            Ok(h) => h,
-            Err(e) => {
-                error!("[Hotkeys] WH_KEYBOARD_LL failed: {:?}", e);
-                return;
-            }
-        };
+        let kb_hook =
+            match unsafe { SetWindowsHookExW(WH_KEYBOARD_LL, Some(hotkey_callback), None, 0) } {
+                Ok(h) => h,
+                Err(e) => {
+                    error!("[Hotkeys] WH_KEYBOARD_LL failed: {:?}", e);
+                    return;
+                }
+            };
 
-        let mouse_hook = match unsafe {
-            SetWindowsHookExW(WH_MOUSE_LL, Some(mouse_callback), None, 0)
-        } {
-            Ok(h) => h,
-            Err(e) => {
-                error!("[Hotkeys] WH_MOUSE_LL failed: {:?}", e);
-                unsafe { let _ = UnhookWindowsHookEx(kb_hook); }
-                return;
-            }
-        };
+        let mouse_hook =
+            match unsafe { SetWindowsHookExW(WH_MOUSE_LL, Some(mouse_callback), None, 0) } {
+                Ok(h) => h,
+                Err(e) => {
+                    error!("[Hotkeys] WH_MOUSE_LL failed: {:?}", e);
+                    unsafe {
+                        let _ = UnhookWindowsHookEx(kb_hook);
+                    }
+                    return;
+                }
+            };
 
         info!("[Hotkeys] WH_KEYBOARD_LL + WH_MOUSE_LL hooks installed");
 

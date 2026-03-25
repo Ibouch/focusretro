@@ -348,12 +348,12 @@ function App() {
 
   if (import.meta.env.VITE_UPDATER !== "false" && showConsentModal) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-950 flex items-center justify-center p-6">
-        <div className="max-w-sm w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <div className="flex min-h-screen items-center justify-center bg-white p-6 dark:bg-gray-950">
+        <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h2 className="mb-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
             {t("update.consent_title")}
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
+          <p className="mb-5 text-xs text-gray-500 dark:text-gray-400">
             {t("update.consent_body")}
           </p>
           <div className="flex gap-2">
@@ -362,7 +362,7 @@ function App() {
                 handleUpdateConsentChange(true);
                 setShowConsentModal(false);
               }}
-              className="flex-1 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
+              className="bg-brand-600 hover:bg-brand-500 flex-1 cursor-pointer rounded-lg px-3 py-2 text-xs font-medium text-white transition-colors"
             >
               {t("update.consent_yes")}
             </button>
@@ -371,7 +371,7 @@ function App() {
                 handleUpdateConsentChange(false);
                 setShowConsentModal(false);
               }}
-              className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+              className="flex-1 cursor-pointer rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               {t("update.consent_no")}
             </button>
@@ -383,18 +383,18 @@ function App() {
 
   if (showCloseModal) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-950 flex items-center justify-center p-6">
-        <div className="max-w-sm w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-5 shadow-sm">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <div className="flex min-h-screen items-center justify-center bg-white p-6 dark:bg-gray-950">
+        <div className="w-full max-w-sm rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <h2 className="mb-2 text-sm font-semibold text-gray-900 dark:text-gray-100">
             {t("close.title")}
           </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-5">
+          <p className="mb-5 text-xs text-gray-500 dark:text-gray-400">
             {t("close.body")}
           </p>
-          <div className="flex flex-col gap-2 mb-3">
+          <div className="mb-3 flex flex-col gap-2">
             <button
               onClick={() => handleCloseChoice(true)}
-              className="flex-1 px-3 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
+              className="bg-brand-600 hover:bg-brand-500 flex-1 cursor-pointer rounded-lg px-3 py-2 text-xs font-medium text-white transition-colors"
             >
               {closeOs === "macos"
                 ? t("close.hide_menubar")
@@ -402,12 +402,12 @@ function App() {
             </button>
             <button
               onClick={() => handleCloseChoice(false)}
-              className="flex-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+              className="flex-1 cursor-pointer rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             >
               {t("close.quit")}
             </button>
           </div>
-          <p className="text-[10px] text-gray-400 dark:text-gray-500 text-center">
+          <p className="text-center text-[10px] text-gray-400 dark:text-gray-500">
             {t("close.note")}
           </p>
         </div>
@@ -416,15 +416,15 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col">
+    <div className="flex min-h-screen flex-col bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
       {pendingUpdate && updateStatus === "idle" && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-brand-50 border border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 rounded-lg text-sm text-brand-700 dark:text-brand-200 flex items-center justify-between gap-2">
+        <div className="bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 text-brand-700 dark:text-brand-200 mx-4 mt-3 flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm">
           <span>
             {t("update.available", { version: pendingUpdate.version })}
           </span>
           <button
             onClick={handleInstall}
-            className="px-2 py-0.5 bg-brand-600 hover:bg-brand-500 text-white rounded text-xs font-medium shrink-0 cursor-pointer"
+            className="bg-brand-600 hover:bg-brand-500 shrink-0 cursor-pointer rounded px-2 py-0.5 text-xs font-medium text-white"
           >
             {t("update.install")}
           </button>
@@ -432,31 +432,31 @@ function App() {
       )}
 
       {updateStatus === "downloading" && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-brand-50 border border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 rounded-lg text-sm text-brand-600 dark:text-brand-300 animate-pulse">
+        <div className="bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800/50 text-brand-600 dark:text-brand-300 mx-4 mt-3 animate-pulse rounded-lg border px-3 py-2 text-sm">
           {t("update.downloading")}
         </div>
       )}
 
       {updateStatus === "done" && (
-        <div className="mx-4 mt-3 px-3 py-2 bg-emerald-50 border border-emerald-200 dark:bg-emerald-950/50 dark:border-emerald-800/50 rounded-lg text-sm text-emerald-700 dark:text-emerald-200 flex items-center justify-between gap-2">
+        <div className="mx-4 mt-3 flex items-center justify-between gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-800/50 dark:bg-emerald-950/50 dark:text-emerald-200">
           <span>{t("update.ready")}</span>
           <button
             onClick={relaunch}
-            className="px-2 py-0.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded text-xs font-medium shrink-0 cursor-pointer"
+            className="shrink-0 cursor-pointer rounded bg-emerald-700 px-2 py-0.5 text-xs font-medium text-white hover:bg-emerald-600"
           >
             {t("update.restart")}
           </button>
         </div>
       )}
 
-      <div className="flex border-b border-gray-200 dark:border-gray-800 mx-4 mt-3">
+      <div className="mx-4 mt-3 flex border-b border-gray-200 dark:border-gray-800">
         {visibleTabs.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-3 py-2 text-xs font-medium transition-colors cursor-pointer ${
+            className={`cursor-pointer px-3 py-2 text-xs font-medium transition-colors ${
               tab === t
-                ? "text-gray-900 dark:text-gray-100 border-b-2 border-brand-500"
+                ? "border-brand-500 border-b-2 text-gray-900 dark:text-gray-100"
                 : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
             }`}
           >
@@ -465,9 +465,9 @@ function App() {
         ))}
       </div>
 
-      <main className="flex-1 px-4 py-3 overflow-y-auto flex flex-col">
+      <main className="flex flex-1 flex-col overflow-y-auto px-4 py-3">
         {tab === "accounts" && (
-          <div className="flex flex-col flex-1">
+          <div className="flex flex-1 flex-col">
             <AccountList
               accounts={accounts}
               focusedName={focusedName}
@@ -476,28 +476,28 @@ function App() {
               onFocused={setFocusedName}
             />
             {hotkeys.length > 0 && (
-              <div className="mt-auto pt-4 flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400">
+              <div className="mt-auto flex items-center justify-between pt-4 text-[10px] text-gray-500 dark:text-gray-400">
                 <span className="flex flex-col items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px] whitespace-nowrap">
+                  <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] whitespace-nowrap text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
                     {hotkeyLabelFor("prev")}
                   </kbd>
                   {t("accounts.previous")}
                 </span>
                 <span className="flex flex-col items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px] whitespace-nowrap">
+                  <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] whitespace-nowrap text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
                     {hotkeyLabelFor("next")}
                   </kbd>
                   {t("accounts.next")}
                 </span>
                 <span className="flex flex-col items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px] whitespace-nowrap">
+                  <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] whitespace-nowrap text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
                     {hotkeyLabelFor("principal")}
                   </kbd>
                   {t("accounts.principal")}
                 </span>
                 {hotkeyLabelFor("radial") && (
                   <span className="flex flex-col items-center gap-1.5">
-                    <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded font-mono text-gray-700 dark:text-gray-200 text-[10px] whitespace-nowrap">
+                    <kbd className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] whitespace-nowrap text-gray-700 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200">
                       {hotkeyLabelFor("radial")}
                     </kbd>
                     {t("hotkeys.radial")}

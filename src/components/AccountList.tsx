@@ -280,17 +280,17 @@ function AccountList({
         }}
       >
         <div
-          className="w-[min(260px,90vw)] max-h-[70vh] overflow-y-auto px-3 py-2.5 bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+          className="max-h-[70vh] w-[min(260px,90vw)] overflow-y-auto rounded-lg border border-gray-200 bg-white px-3 py-2.5 shadow-xl dark:border-gray-700 dark:bg-gray-900"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <p className="text-[11px] font-medium text-gray-700 dark:text-gray-300">
               {editingAccount.character_name} — {t("accounts.customize")}
             </p>
             <button
               type="button"
               onClick={() => setEditingName(null)}
-              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 text-lg leading-none cursor-pointer"
+              className="cursor-pointer text-lg leading-none text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
               aria-label="Close"
             >
               ×
@@ -298,16 +298,16 @@ function AccountList({
           </div>
           <div className="space-y-2">
             <div>
-              <p className="text-[10px] text-gray-500 mb-1">
+              <p className="mb-1 text-[10px] text-gray-500">
                 {t("accounts.color")}
               </p>
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
                   onClick={() =>
                     handleColorChange(editingAccount.character_name, null)
                   }
-                  className={`w-5 h-5 rounded-full border-2 bg-gray-200 dark:bg-gray-700 cursor-pointer ${
+                  className={`h-5 w-5 cursor-pointer rounded-full border-2 bg-gray-200 dark:bg-gray-700 ${
                     (editingAccount.color ?? null) === null
                       ? "border-gray-900 dark:border-white"
                       : "border-transparent"
@@ -321,7 +321,7 @@ function AccountList({
                     onClick={() =>
                       handleColorChange(editingAccount.character_name, c)
                     }
-                    className={`w-5 h-5 rounded-full border-2 cursor-pointer ${
+                    className={`h-5 w-5 cursor-pointer rounded-full border-2 ${
                       editingAccount.color === c
                         ? "border-gray-900 dark:border-white"
                         : "border-transparent"
@@ -333,16 +333,16 @@ function AccountList({
               </div>
             </div>
             <div>
-              <p className="text-[10px] text-gray-500 mb-1">
+              <p className="mb-1 text-[10px] text-gray-500">
                 {t("accounts.icon")}
               </p>
-              <div className="flex gap-1 flex-wrap">
+              <div className="flex flex-wrap gap-1">
                 <button
                   type="button"
                   onClick={() =>
                     handleIconChange(editingAccount.character_name, null)
                   }
-                  className={`w-7 h-7 rounded border-2 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[9px] text-gray-500 shrink-0 cursor-pointer ${
+                  className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded border-2 bg-gray-100 text-[9px] text-gray-500 dark:bg-gray-800 ${
                     (editingAccount.icon_path ?? null) === null
                       ? "border-gray-900 dark:border-white"
                       : "border-transparent"
@@ -358,7 +358,7 @@ function AccountList({
                     onClick={() =>
                       handleIconChange(editingAccount.character_name, icon)
                     }
-                    className={`w-7 h-7 rounded border-2 overflow-hidden flex items-center justify-center bg-gray-100 dark:bg-gray-800 shrink-0 p-0 cursor-pointer ${
+                    className={`flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded border-2 bg-gray-100 p-0 dark:bg-gray-800 ${
                       editingAccount.icon_path === icon
                         ? "border-gray-900 dark:border-white"
                         : "border-transparent"
@@ -368,7 +368,7 @@ function AccountList({
                     <img
                       src={`/icons/${icon}.png`}
                       alt=""
-                      className="w-full h-full object-cover pointer-events-none select-none"
+                      className="pointer-events-none h-full w-full object-cover select-none"
                       draggable={false}
                     />
                   </button>
@@ -381,22 +381,22 @@ function AccountList({
     ) : null;
 
   return (
-    <div className="flex flex-col flex-1 min-h-0">
+    <div className="flex min-h-0 flex-1 flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          <h2 className="text-sm font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
             {t("accounts.title")}
           </h2>
           {accounts.length > 0 && (
-            <span className="text-[10px] font-mono bg-gray-100 dark:bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">
+            <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[10px] text-gray-500 dark:bg-gray-800">
               {accounts.length}
             </span>
           )}
         </div>
         <button
           onClick={onRefresh}
-          className="w-6 h-6 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-gray-800 dark:hover:text-gray-300"
           title={t("accounts.refresh")}
         >
           <svg
@@ -418,13 +418,13 @@ function AccountList({
 
       {/* Layout toolbar */}
       {accounts.length >= 2 && (
-        <div className="flex items-center gap-1 mb-2">
+        <div className="mb-2 flex items-center gap-1">
           {LAYOUTS.filter((l) => l.show(accounts.length)).map(
             ({ id, i18nKey }) => (
               <button
                 key={id}
                 onClick={() => applyLayout(id)}
-                className="w-7 h-7 flex items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                className="hover:text-brand-600 dark:hover:text-brand-400 flex h-7 w-7 cursor-pointer items-center justify-center rounded text-gray-400 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-800"
                 title={t(i18nKey)}
               >
                 <LayoutIcon type={id} />
@@ -436,16 +436,16 @@ function AccountList({
 
       {/* Empty state */}
       {accounts.length === 0 ? (
-        <div className="flex-1 min-h-0 flex flex-col items-center justify-center py-10">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center py-10">
           <img
             src="/no-accounts.png"
             alt=""
-            className="w-24 h-24 object-contain opacity-90"
+            className="h-24 w-24 object-contain opacity-90"
           />
-          <p className="text-sm text-center text-gray-600 dark:text-gray-400">
+          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
             {t("accounts.empty_title")}
           </p>
-          <p className="text-xs mt-1 text-center max-w-[200px] text-gray-500 dark:text-gray-500">
+          <p className="mt-1 max-w-[200px] text-center text-xs text-gray-500 dark:text-gray-500">
             {t("accounts.empty_desc")}
           </p>
         </div>
@@ -462,18 +462,18 @@ function AccountList({
                 onPointerDown={handlePointerDown(accountIdx)}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
-                className={`touch-none transition-[transform,opacity] duration-150 ease-out ${isDragging ? "opacity-60 scale-[1.02] z-10 relative" : ""}`}
+                className={`touch-none transition-[transform,opacity] duration-150 ease-out ${isDragging ? "relative z-10 scale-[1.02] opacity-60" : ""}`}
               >
                 <div
-                  className={`group relative flex items-center h-9 bg-gray-50 dark:bg-gray-900 rounded-lg border overflow-hidden transition-colors ${
+                  className={`group relative flex h-9 items-center overflow-hidden rounded-lg border bg-gray-50 transition-colors dark:bg-gray-900 ${
                     isDragging
-                      ? "border-brand-500 shadow-lg shadow-brand-500/10"
-                      : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700"
+                      ? "border-brand-500 shadow-brand-500/10 shadow-lg"
+                      : "border-gray-200 hover:border-gray-300 dark:border-gray-800 dark:hover:border-gray-700"
                   } cursor-grab active:cursor-grabbing`}
                 >
                   {/* Colored left accent bar */}
                   <div
-                    className="absolute left-0 top-0 bottom-0 w-[3px] shrink-0 dark:hidden"
+                    className="absolute top-0 bottom-0 left-0 w-[3px] shrink-0 dark:hidden"
                     style={{
                       backgroundColor:
                         account.character_name === focusedName
@@ -482,7 +482,7 @@ function AccountList({
                     }}
                   />
                   <div
-                    className="absolute left-0 top-0 bottom-0 w-[3px] shrink-0 hidden dark:block"
+                    className="absolute top-0 bottom-0 left-0 hidden w-[3px] shrink-0 dark:block"
                     style={{
                       backgroundColor:
                         account.character_name === focusedName
@@ -492,7 +492,7 @@ function AccountList({
                   />
 
                   {/* Drag handle */}
-                  <div className="flex items-center pl-3 pr-1.5 shrink-0">
+                  <div className="flex shrink-0 items-center pr-1.5 pl-3">
                     <svg
                       width="8"
                       height="10"
@@ -519,7 +519,7 @@ function AccountList({
                           : account.character_name,
                       );
                     }}
-                    className="w-6 h-6 rounded-full shrink-0 border overflow-hidden flex items-center justify-center mr-2 cursor-pointer"
+                    className="mr-2 flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-full border"
                     style={{
                       backgroundColor: account.icon_path
                         ? "transparent"
@@ -532,33 +532,33 @@ function AccountList({
                       <img
                         src={`/icons/${account.icon_path}.png`}
                         alt=""
-                        className="w-full h-full object-cover pointer-events-none"
+                        className="pointer-events-none h-full w-full object-cover"
                       />
                     ) : (
-                      <span className="text-[9px] font-bold text-white/80 leading-none">
+                      <span className="text-[9px] leading-none font-bold text-white/80">
                         {account.character_name[0]?.toUpperCase()}
                       </span>
                     )}
                   </button>
 
                   {/* Name */}
-                  <div className="flex-1 min-w-0">
-                    <span className="text-xs font-medium truncate block text-gray-800 dark:text-gray-200">
+                  <div className="min-w-0 flex-1">
+                    <span className="block truncate text-xs font-medium text-gray-800 dark:text-gray-200">
                       {account.character_name}
                     </span>
                   </div>
 
                   {/* Action buttons */}
-                  <div className="flex items-center gap-1 shrink-0 ml-1 pr-2">
+                  <div className="ml-1 flex shrink-0 items-center gap-1 pr-2">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleSetPrincipal(account.character_name);
                       }}
-                      className={`w-6 h-6 flex items-center justify-center transition-colors rounded cursor-pointer ${
+                      className={`flex h-6 w-6 cursor-pointer items-center justify-center rounded transition-colors ${
                         account.is_principal
                           ? "text-amber-500 dark:text-amber-400"
-                          : "text-gray-300 dark:text-gray-600 opacity-0 group-hover:opacity-100 hover:text-amber-500 dark:hover:text-amber-400"
+                          : "text-gray-300 opacity-0 group-hover:opacity-100 hover:text-amber-500 dark:text-gray-600 dark:hover:text-amber-400"
                       }`}
                       title={
                         account.is_principal
@@ -583,7 +583,7 @@ function AccountList({
                         focusAccount(account.character_name);
                         onFocused(account.character_name);
                       }}
-                      className="w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 hover:text-brand-600 dark:hover:text-brand-400 transition-colors rounded cursor-pointer"
+                      className="hover:text-brand-600 dark:hover:text-brand-400 flex h-6 w-6 cursor-pointer items-center justify-center rounded text-gray-400 opacity-0 transition-colors group-hover:opacity-100 dark:text-gray-500"
                       title={t("accounts.focus_window")}
                     >
                       <svg

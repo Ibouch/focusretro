@@ -152,7 +152,10 @@ impl WindowManager for MacWindowManager {
             for window in windows {
                 set_window_frame_ax(window.pid as i32, &window.title, l, b, w, h)?;
             }
-            info!("[MacWindowManager] Arranged {} windows: maximize", windows.len());
+            info!(
+                "[MacWindowManager] Arranged {} windows: maximize",
+                windows.len()
+            );
             return Ok(());
         }
 
@@ -316,7 +319,10 @@ fn set_window_frame_ax(
     unsafe {
         let app_element = AXUIElementCreateApplication(pid);
         if app_element.is_null() {
-            return Err(anyhow::anyhow!("Failed to create AXUIElement for pid {}", pid));
+            return Err(anyhow::anyhow!(
+                "Failed to create AXUIElement for pid {}",
+                pid
+            ));
         }
 
         let windows_attr = CFString::new("AXWindows");
@@ -370,12 +376,15 @@ fn set_window_frame_ax(
 
         // Set position/size while window element is still valid (before releasing the array that owns it).
         let pos = CGPoint { x: left, y: bottom };
-        let size = CGSize {
-            width,
-            height,
-        };
-        let pos_value = AXValueCreate(K_AX_VALUE_CG_POINT_TYPE, &pos as *const CGPoint as *const c_void);
-        let size_value = AXValueCreate(K_AX_VALUE_CG_SIZE_TYPE, &size as *const CGSize as *const c_void);
+        let size = CGSize { width, height };
+        let pos_value = AXValueCreate(
+            K_AX_VALUE_CG_POINT_TYPE,
+            &pos as *const CGPoint as *const c_void,
+        );
+        let size_value = AXValueCreate(
+            K_AX_VALUE_CG_SIZE_TYPE,
+            &size as *const CGSize as *const c_void,
+        );
 
         if pos_value.is_null() || size_value.is_null() {
             CFRelease(windows_value as *const c_void);
@@ -402,10 +411,16 @@ fn set_window_frame_ax(
         CFRelease(app_element as *const c_void);
 
         if pos_err != K_AX_SUCCESS {
-            return Err(anyhow::anyhow!("AXUIElementSetAttributeValue AXPosition failed: {}", pos_err));
+            return Err(anyhow::anyhow!(
+                "AXUIElementSetAttributeValue AXPosition failed: {}",
+                pos_err
+            ));
         }
         if size_err != K_AX_SUCCESS {
-            return Err(anyhow::anyhow!("AXUIElementSetAttributeValue AXSize failed: {}", size_err));
+            return Err(anyhow::anyhow!(
+                "AXUIElementSetAttributeValue AXSize failed: {}",
+                size_err
+            ));
         }
     }
     Ok(())
@@ -429,7 +444,10 @@ fn raise_window_ax(pid: i32, target_title: &str) -> anyhow::Result<()> {
     unsafe {
         let app_element = AXUIElementCreateApplication(pid);
         if app_element.is_null() {
-            return Err(anyhow::anyhow!("Failed to create AXUIElement for pid {}", pid));
+            return Err(anyhow::anyhow!(
+                "Failed to create AXUIElement for pid {}",
+                pid
+            ));
         }
 
         let windows_attr = CFString::new("AXWindows");

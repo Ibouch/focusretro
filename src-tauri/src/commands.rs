@@ -67,11 +67,9 @@ pub(crate) struct WheelPos {
 
 /// Compute cursor position in CSS-pixel coordinates relative to the radial overlay window.
 pub(crate) fn wheel_pos_payload(w: &tauri::WebviewWindow) -> WheelPos {
-    if let (Ok(cursor), Ok(win_pos), Ok(scale)) = (
-        w.cursor_position(),
-        w.outer_position(),
-        w.scale_factor(),
-    ) {
+    if let (Ok(cursor), Ok(win_pos), Ok(scale)) =
+        (w.cursor_position(), w.outer_position(), w.scale_factor())
+    {
         WheelPos {
             x: Some((cursor.x - win_pos.x as f64) / scale),
             y: Some((cursor.y - win_pos.y as f64) / scale),
@@ -107,7 +105,11 @@ pub fn get_autoswitch_state(state: tauri::State<'_, Arc<AppState>>) -> bool {
 }
 
 #[tauri::command]
-pub fn focus_account(name: String, app: tauri::AppHandle, state: tauri::State<'_, Arc<AppState>>) -> Result<(), String> {
+pub fn focus_account(
+    name: String,
+    app: tauri::AppHandle,
+    state: tauri::State<'_, Arc<AppState>>,
+) -> Result<(), String> {
     let wm = platform::create_window_manager();
     let windows = wm.list_dofus_windows();
     let win = windows
@@ -261,17 +263,16 @@ pub fn reorder_account(
         taskbar::reorder_taskbar_buttons(&windows, &cache);
         // Mark as applied so the next poll doesn't reorder a second time
         let ver = state.taskbar_order_version.load(Ordering::Relaxed);
-        state.taskbar_order_version_applied.store(ver, Ordering::Relaxed);
+        state
+            .taskbar_order_version_applied
+            .store(ver, Ordering::Relaxed);
     }
 
     state.get_account_views()
 }
 
 #[tauri::command]
-pub fn set_principal(
-    name: String,
-    state: tauri::State<'_, Arc<AppState>>,
-) -> Vec<AccountView> {
+pub fn set_principal(name: String, state: tauri::State<'_, Arc<AppState>>) -> Vec<AccountView> {
     state.set_principal(&name);
     state.get_account_views()
 }
@@ -443,10 +444,12 @@ pub fn hide_radial(app: tauri::AppHandle, state: tauri::State<'_, Arc<AppState>>
 
 #[tauri::command]
 pub fn get_available_layouts() -> Vec<String> {
-    vec!["maximize", "split-h", "split-v", "grid-2x2", "grid-3x2", "grid-4x2"]
-        .into_iter()
-        .map(String::from)
-        .collect()
+    vec![
+        "maximize", "split-h", "split-v", "grid-2x2", "grid-3x2", "grid-4x2",
+    ]
+    .into_iter()
+    .map(String::from)
+    .collect()
 }
 
 #[tauri::command]
@@ -485,16 +488,30 @@ pub fn apply_close(window: tauri::WebviewWindow, state: tauri::State<'_, Arc<App
 }
 
 #[tauri::command]
-pub fn apply_layout(layout: String, state: tauri::State<'_, Arc<AppState>>, app: tauri::AppHandle) -> Result<(), String> {
+pub fn apply_layout(
+    layout: String,
+    state: tauri::State<'_, Arc<AppState>>,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
     let wm = platform::create_window_manager();
     let live = wm.list_dofus_windows();
-    let ordered_names: Vec<String> = state.accounts.lock().unwrap()
-        .iter().map(|w| w.character_name.clone()).collect();
-    let windows: Vec<_> = ordered_names.iter()
-        .filter_map(|name| live.iter().find(|w| w.character_name.eq_ignore_ascii_case(name)))
+    let ordered_names: Vec<String> = state
+        .accounts
+        .lock()
+        .unwrap()
+        .iter()
+        .map(|w| w.character_name.clone())
+        .collect();
+    let windows: Vec<_> = ordered_names
+        .iter()
+        .filter_map(|name| {
+            live.iter()
+                .find(|w| w.character_name.eq_ignore_ascii_case(name))
+        })
         .cloned()
         .collect();
-    wm.arrange_windows(&windows, &layout).map_err(|e| e.to_string())?;
+    wm.arrange_windows(&windows, &layout)
+        .map_err(|e| e.to_string())?;
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.set_focus();
     }

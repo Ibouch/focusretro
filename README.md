@@ -83,6 +83,7 @@ VITE_UPDATER=false npx tauri build --config src-tauri/offline.conf.json -- --no-
 ```
 
 Key differences vs the standard build:
+
 - `offline.conf.json` sets `plugins.updater = null` and `bundle.createUpdaterArtifacts = false`
 - `--no-default-features` disables the `auto_update` Cargo feature (removes `tauri-plugin-updater`)
 - `VITE_UPDATER=false` hides update-related UI in the frontend
@@ -106,11 +107,11 @@ When you first launch, you'll be prompted to grant Accessibility permission. If 
 
 FocusRetro reads toast notifications from Dofus Retro using one of three modes, selected automatically at runtime:
 
-| Mode | When | How |
-|------|------|-----|
-| `event` | Win11 / Win10 with access granted | WinRT `UserNotificationListener` event-driven + 200ms poll backup |
-| `poll` | Access granted, events unavailable (unpackaged app) | WinRT `GetNotificationsAsync` polled every 100ms |
-| `poll-db` | Win10, access not granted | Polls `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` (SQLite) every 200ms — no permission required |
+| Mode      | When                                                | How                                                                                                                 |
+| --------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `event`   | Win11 / Win10 with access granted                   | WinRT `UserNotificationListener` event-driven + 200ms poll backup                                                   |
+| `poll`    | Access granted, events unavailable (unpackaged app) | WinRT `GetNotificationsAsync` polled every 100ms                                                                    |
+| `poll-db` | Win10, access not granted                           | Polls `%LOCALAPPDATA%\Microsoft\Windows\Notifications\wpndatabase.db` (SQLite) every 200ms — no permission required |
 
 On first launch on Windows 11 (or Windows 10 with a compatible build), you will be prompted to grant notification access. If you decline or the API is unavailable (Windows 10), the DB fallback kicks in automatically.
 
@@ -155,17 +156,17 @@ src/
 
 ## Supported notification formats
 
-| Event | Body pattern | Action |
-|-------|-------------|--------|
-| Turn | FR: `C'est à <name> de jouer` / EN: `<name> 's turn to play` / ES: `le toca jugar a <name>` | Focus the named character's window |
-| Group invite | FR: `<name> t'invite à rejoindre son groupe` / EN: `You are invited to join <name>'s group` / ES: `<name> te invita a unirte a su grupo` | Focus the receiver's window (inviter must be a known account) |
-| Trade | FR: `<name> te propose de faire un échange` / EN: `<name> offers a trade` / ES: `<name> te propone realizar un intercambio` | Focus the receiver's window (requester must be a known account) |
-| Private message | FR: `de <name> : <msg>` / EN: `from <name> : <msg>` / ES: `desde <name> : <msg>` | Store and display in Messages tab (no focus) |
+| Event           | Body pattern                                                                                                                             | Action                                                          |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Turn            | FR: `C'est à <name> de jouer` / EN: `<name> 's turn to play` / ES: `le toca jugar a <name>`                                              | Focus the named character's window                              |
+| Group invite    | FR: `<name> t'invite à rejoindre son groupe` / EN: `You are invited to join <name>'s group` / ES: `<name> te invita a unirte a su grupo` | Focus the receiver's window (inviter must be a known account)   |
+| Trade           | FR: `<name> te propose de faire un échange` / EN: `<name> offers a trade` / ES: `<name> te propone realizar un intercambio`              | Focus the receiver's window (requester must be a known account) |
+| Private message | FR: `de <name> : <msg>` / EN: `from <name> : <msg>` / ES: `desde <name> : <msg>`                                                         | Store and display in Messages tab (no focus)                    |
 
 ## Supported platforms
 
-| Platform | Status |
-|----------|--------|
+| Platform | Status    |
+| -------- | --------- |
 | macOS    | Supported |
 | Windows  | Supported |
 
@@ -173,10 +174,10 @@ src/
 
 Each release ships two variants per platform:
 
-| Variant | File suffix | Auto-updater |
-|---------|-------------|--------------|
-| Standard | _(none)_ | Yes — checks GitHub on launch |
-| Offline | `_offline` | No — zero outbound HTTP |
+| Variant  | File suffix | Auto-updater                  |
+| -------- | ----------- | ----------------------------- |
+| Standard | _(none)_    | Yes — checks GitHub on launch |
+| Offline  | `_offline`  | No — zero outbound HTTP       |
 
 The offline variant is built with `--no-default-features` (disables `tauri-plugin-updater`). It makes no network connections whatsoever. Both variants are attested by GitHub Actions.
 
@@ -210,6 +211,7 @@ gh attestation verify <file> --repo alacroix/focusretro
 ```
 
 Example:
+
 ```bash
 gh attestation verify Focus.Retro_<version>_aarch64.dmg --repo alacroix/focusretro
 ```

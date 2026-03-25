@@ -3,17 +3,19 @@ use log::info;
 use std::mem;
 use windows::core::BOOL;
 use windows::Win32::Foundation::{HWND, LPARAM, TRUE};
+use windows::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_TRANSITIONS_FORCEDISABLED};
+use windows::Win32::Graphics::Gdi::{
+    GetMonitorInfoA, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
+};
 use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-    SendInput, SetActiveWindow, SetFocus, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBD_EVENT_FLAGS,
-    KEYBDINPUT, KEYEVENTF_KEYUP, VK_RETURN,
+    SendInput, SetActiveWindow, SetFocus, INPUT, INPUT_0, INPUT_KEYBOARD, KEYBDINPUT,
+    KEYBD_EVENT_FLAGS, KEYEVENTF_KEYUP, VK_RETURN,
 };
-use windows::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_TRANSITIONS_FORCEDISABLED};
-use windows::Win32::Graphics::Gdi::{GetMonitorInfoA, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST};
 use windows::Win32::UI::WindowsAndMessaging::{
     BringWindowToTop, EnumWindows, GetForegroundWindow, GetWindowTextW, GetWindowThreadProcessId,
-    IsIconic, IsWindowVisible, IsZoomed, MSG, PeekMessageW, PM_NOREMOVE, SetForegroundWindow,
-    SetWindowPos, ShowWindow, SW_MAXIMIZE, SW_RESTORE, SWP_NOACTIVATE, SWP_NOZORDER,
+    IsIconic, IsWindowVisible, IsZoomed, PeekMessageW, SetForegroundWindow, SetWindowPos,
+    ShowWindow, MSG, PM_NOREMOVE, SWP_NOACTIVATE, SWP_NOZORDER, SW_MAXIMIZE, SW_RESTORE,
 };
 
 pub fn get_foreground_window_id() -> u64 {
@@ -39,7 +41,9 @@ unsafe extern "system" fn enum_windows_callback(hwnd: HWND, lparam: LPARAM) -> B
 }
 
 fn enum_all_windows() -> Vec<HWND> {
-    let mut data = EnumData { windows: Vec::new() };
+    let mut data = EnumData {
+        windows: Vec::new(),
+    };
     unsafe {
         let _ = EnumWindows(
             Some(enum_windows_callback),
@@ -121,16 +125,24 @@ impl WindowManager for WinWindowManager {
             let fg_tid = GetWindowThreadProcessId(GetForegroundWindow(), None);
             let target_tid = GetWindowThreadProcessId(hwnd, None);
 
-            if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, true); }
-            if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, true); }
+            if cur_tid != fg_tid {
+                let _ = AttachThreadInput(cur_tid, fg_tid, true);
+            }
+            if cur_tid != target_tid {
+                let _ = AttachThreadInput(cur_tid, target_tid, true);
+            }
 
             let _ = BringWindowToTop(hwnd);
             let _ = SetForegroundWindow(hwnd);
             let _ = SetActiveWindow(hwnd);
             let _ = SetFocus(Some(hwnd));
 
-            if cur_tid != target_tid { let _ = AttachThreadInput(cur_tid, target_tid, false); }
-            if cur_tid != fg_tid     { let _ = AttachThreadInput(cur_tid, fg_tid, false); }
+            if cur_tid != target_tid {
+                let _ = AttachThreadInput(cur_tid, target_tid, false);
+            }
+            if cur_tid != fg_tid {
+                let _ = AttachThreadInput(cur_tid, fg_tid, false);
+            }
 
             // Re-enable DWM transitions.
             let enable: u32 = 0;
@@ -154,7 +166,9 @@ impl WindowManager for WinWindowManager {
         if layout == "maximize" {
             for window in windows {
                 let hwnd = HWND(window.window_id as usize as *mut _);
-                unsafe { let _ = ShowWindow(hwnd, SW_MAXIMIZE); }
+                unsafe {
+                    let _ = ShowWindow(hwnd, SW_MAXIMIZE);
+                }
             }
             return Ok(());
         }
@@ -166,7 +180,9 @@ impl WindowManager for WinWindowManager {
             cbSize: std::mem::size_of::<MONITORINFO>() as u32,
             ..Default::default()
         };
-        unsafe { let _ = GetMonitorInfoA(monitor, &mut info); };
+        unsafe {
+            let _ = GetMonitorInfoA(monitor, &mut info);
+        };
 
         let l = info.rcWork.left;
         let t = info.rcWork.top;
@@ -176,50 +192,48 @@ impl WindowManager for WinWindowManager {
         // Windows 10/11 DWM adds ~8px invisible resize border on left/right/bottom.
         // Expand every slot by this amount so adjacent windows appear seamless.
         const B: i32 = 8;
-        let expand = |(x, y, cw, ch): (i32, i32, i32, i32)| {
-            (x - B, y, cw + B * 2, ch + B)
-        };
+        let expand = |(x, y, cw, ch): (i32, i32, i32, i32)| (x - B, y, cw + B * 2, ch + B);
 
         // Build (x, y, width, height) slots for each layout
         let slots: Vec<(i32, i32, i32, i32)> = match layout {
             "split-h" => vec![
-                expand((l,           t, w / 2,     h)),
-                expand((l + w / 2,   t, w - w / 2, h)),
+                expand((l, t, w / 2, h)),
+                expand((l + w / 2, t, w - w / 2, h)),
             ],
             "split-v" => vec![
-                expand((l, t,           w, h / 2)),
-                expand((l, t + h / 2,   w, h - h / 2)),
+                expand((l, t, w, h / 2)),
+                expand((l, t + h / 2, w, h - h / 2)),
             ],
             "grid-2x2" => vec![
-                expand((l,           t,           w / 2,     h / 2)),
-                expand((l + w / 2,   t,           w - w / 2, h / 2)),
-                expand((l,           t + h / 2,   w / 2,     h - h / 2)),
-                expand((l + w / 2,   t + h / 2,   w - w / 2, h - h / 2)),
+                expand((l, t, w / 2, h / 2)),
+                expand((l + w / 2, t, w - w / 2, h / 2)),
+                expand((l, t + h / 2, w / 2, h - h / 2)),
+                expand((l + w / 2, t + h / 2, w - w / 2, h - h / 2)),
             ],
             "grid-3x2" => {
                 let cw = w / 3;
                 let rh = h / 2;
                 vec![
-                    expand((l,          t,       cw,          rh)),
-                    expand((l + cw,     t,       cw,          rh)),
-                    expand((l + cw * 2, t,       w - cw * 2,  rh)),
-                    expand((l,          t + rh,  cw,          h - rh)),
-                    expand((l + cw,     t + rh,  cw,          h - rh)),
-                    expand((l + cw * 2, t + rh,  w - cw * 2,  h - rh)),
+                    expand((l, t, cw, rh)),
+                    expand((l + cw, t, cw, rh)),
+                    expand((l + cw * 2, t, w - cw * 2, rh)),
+                    expand((l, t + rh, cw, h - rh)),
+                    expand((l + cw, t + rh, cw, h - rh)),
+                    expand((l + cw * 2, t + rh, w - cw * 2, h - rh)),
                 ]
             }
             "grid-4x2" => {
                 let cw = w / 4;
                 let rh = h / 2;
                 vec![
-                    expand((l,          t,       cw,          rh)),
-                    expand((l + cw,     t,       cw,          rh)),
-                    expand((l + cw * 2, t,       cw,          rh)),
-                    expand((l + cw * 3, t,       w - cw * 3,  rh)),
-                    expand((l,          t + rh,  cw,          h - rh)),
-                    expand((l + cw,     t + rh,  cw,          h - rh)),
-                    expand((l + cw * 2, t + rh,  cw,          h - rh)),
-                    expand((l + cw * 3, t + rh,  w - cw * 3,  h - rh)),
+                    expand((l, t, cw, rh)),
+                    expand((l + cw, t, cw, rh)),
+                    expand((l + cw * 2, t, cw, rh)),
+                    expand((l + cw * 3, t, w - cw * 3, rh)),
+                    expand((l, t + rh, cw, h - rh)),
+                    expand((l + cw, t + rh, cw, h - rh)),
+                    expand((l + cw * 2, t + rh, cw, h - rh)),
+                    expand((l + cw * 3, t + rh, w - cw * 3, h - rh)),
                 ]
             }
             _ => return Err(anyhow::anyhow!("Unknown layout: {}", layout)),

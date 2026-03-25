@@ -44,22 +44,24 @@ function ToggleRow({
 }) {
   return (
     <div className="flex items-center justify-between py-2">
-      <div className="flex-1 mr-3">
+      <div className="mr-3 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{label}</span>
+          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+            {label}
+          </span>
           {warn && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
+            <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] text-amber-600 dark:bg-amber-900/50 dark:text-amber-400">
               {warnLabel}
             </span>
           )}
         </div>
         {description && (
-          <p className="text-[11px] text-gray-500 mt-0.5">{description}</p>
+          <p className="mt-0.5 text-[11px] text-gray-500">{description}</p>
         )}
       </div>
       <button
         onClick={onToggle}
-        className={`text-[11px] px-2.5 py-1 rounded-md transition-colors shrink-0 w-12 cursor-pointer ${
+        className={`w-12 shrink-0 cursor-pointer rounded-md px-2.5 py-1 text-[11px] transition-colors ${
           enabled
             ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-600/20 dark:text-emerald-400 dark:hover:bg-emerald-600/30"
             : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700"
@@ -72,20 +74,60 @@ function ToggleRow({
 }
 
 const JS_KEY_TO_MAC_KEYCODE: Record<string, string> = {
-  KeyA: "KeyA", KeyB: "KeyB", KeyC: "KeyC", KeyD: "KeyD", KeyE: "KeyE",
-  KeyF: "KeyF", KeyG: "KeyG", KeyH: "KeyH", KeyI: "KeyI", KeyJ: "KeyJ",
-  KeyK: "KeyK", KeyL: "KeyL", KeyM: "KeyM", KeyN: "KeyN", KeyO: "KeyO",
-  KeyP: "KeyP", KeyQ: "KeyQ", KeyR: "KeyR", KeyS: "KeyS", KeyT: "KeyT",
-  KeyU: "KeyU", KeyV: "KeyV", KeyW: "KeyW", KeyX: "KeyX", KeyY: "KeyY",
+  KeyA: "KeyA",
+  KeyB: "KeyB",
+  KeyC: "KeyC",
+  KeyD: "KeyD",
+  KeyE: "KeyE",
+  KeyF: "KeyF",
+  KeyG: "KeyG",
+  KeyH: "KeyH",
+  KeyI: "KeyI",
+  KeyJ: "KeyJ",
+  KeyK: "KeyK",
+  KeyL: "KeyL",
+  KeyM: "KeyM",
+  KeyN: "KeyN",
+  KeyO: "KeyO",
+  KeyP: "KeyP",
+  KeyQ: "KeyQ",
+  KeyR: "KeyR",
+  KeyS: "KeyS",
+  KeyT: "KeyT",
+  KeyU: "KeyU",
+  KeyV: "KeyV",
+  KeyW: "KeyW",
+  KeyX: "KeyX",
+  KeyY: "KeyY",
   KeyZ: "KeyZ",
-  Digit0: "Digit0", Digit1: "Digit1", Digit2: "Digit2", Digit3: "Digit3",
-  Digit4: "Digit4", Digit5: "Digit5", Digit6: "Digit6", Digit7: "Digit7",
-  Digit8: "Digit8", Digit9: "Digit9",
-  Space: "Space", Tab: "Tab",
-  ArrowLeft: "ArrowLeft", ArrowRight: "ArrowRight",
-  ArrowUp: "ArrowUp", ArrowDown: "ArrowDown",
-  F1: "F1", F2: "F2", F3: "F3", F4: "F4", F5: "F5", F6: "F6",
-  F7: "F7", F8: "F8", F9: "F9", F10: "F10", F11: "F11", F12: "F12",
+  Digit0: "Digit0",
+  Digit1: "Digit1",
+  Digit2: "Digit2",
+  Digit3: "Digit3",
+  Digit4: "Digit4",
+  Digit5: "Digit5",
+  Digit6: "Digit6",
+  Digit7: "Digit7",
+  Digit8: "Digit8",
+  Digit9: "Digit9",
+  Space: "Space",
+  Tab: "Tab",
+  ArrowLeft: "ArrowLeft",
+  ArrowRight: "ArrowRight",
+  ArrowUp: "ArrowUp",
+  ArrowDown: "ArrowDown",
+  F1: "F1",
+  F2: "F2",
+  F3: "F3",
+  F4: "F4",
+  F5: "F5",
+  F6: "F6",
+  F7: "F7",
+  F8: "F8",
+  F9: "F9",
+  F10: "F10",
+  F11: "F11",
+  F12: "F12",
 };
 
 const MOUSE_BUTTON_LABELS: Record<string, string> = {
@@ -100,9 +142,16 @@ function formatHotkeyLabel(hk: HotkeyBinding): string {
   if (hk.alt) parts.push("Alt");
   if (hk.shift) parts.push("Shift");
   const ARROW_LABELS: Record<string, string> = {
-    ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓",
+    ArrowLeft: "←",
+    ArrowRight: "→",
+    ArrowUp: "↑",
+    ArrowDown: "↓",
   };
-  parts.push(MOUSE_BUTTON_LABELS[hk.key] ?? ARROW_LABELS[hk.key] ?? hk.key.replace("Key", "").replace("Digit", ""));
+  parts.push(
+    MOUSE_BUTTON_LABELS[hk.key] ??
+      ARROW_LABELS[hk.key] ??
+      hk.key.replace("Key", "").replace("Digit", ""),
+  );
   return parts.join(" + ");
 }
 
@@ -127,20 +176,22 @@ function HotkeyRow({
 }) {
   return (
     <div className="flex items-center justify-between py-2">
-      <span className="text-xs text-gray-700 dark:text-gray-300">{actionLabel}</span>
+      <span className="text-xs text-gray-700 dark:text-gray-300">
+        {actionLabel}
+      </span>
       <div className="flex items-center gap-2">
         {recording ? (
-          <span className="text-[11px] text-brand-600 dark:text-brand-400 animate-pulse">
+          <span className="text-brand-600 dark:text-brand-400 animate-pulse text-[11px]">
             {pressKeyLabel}
           </span>
         ) : (
-          <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-[11px] text-gray-700 dark:text-gray-400 font-mono whitespace-nowrap">
+          <kbd className="rounded bg-gray-100 px-1.5 py-0.5 font-mono text-[11px] whitespace-nowrap text-gray-700 dark:bg-gray-800 dark:text-gray-400">
             {binding && binding.key ? formatHotkeyLabel(binding) : "—"}
           </kbd>
         )}
         <button
           onClick={() => onRecord(action)}
-          className={`text-[11px] px-2 py-1 rounded-md transition-colors cursor-pointer ${
+          className={`cursor-pointer rounded-md px-2 py-1 text-[11px] transition-colors ${
             recording
               ? "bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-400"
               : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700"
@@ -153,14 +204,29 @@ function HotkeyRow({
   );
 }
 
-function ThemeSelector({ theme, onChange }: { theme: string; onChange: (t: string) => void }) {
+function ThemeSelector({
+  theme,
+  onChange,
+}: {
+  theme: string;
+  onChange: (t: string) => void;
+}) {
   const { t } = useTranslation();
   const options = [
     {
       value: "system",
       label: t("settings.theme_system"),
       icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <rect x="2" y="3" width="20" height="14" rx="2" />
           <path d="M8 21h8M12 17v4" />
         </svg>
@@ -170,7 +236,16 @@ function ThemeSelector({ theme, onChange }: { theme: string; onChange: (t: strin
       value: "light",
       label: t("settings.theme_light"),
       icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <circle cx="12" cy="12" r="5" />
           <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
         </svg>
@@ -180,7 +255,16 @@ function ThemeSelector({ theme, onChange }: { theme: string; onChange: (t: strin
       value: "dark",
       label: t("settings.theme_dark"),
       icon: (
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
         </svg>
       ),
@@ -188,13 +272,13 @@ function ThemeSelector({ theme, onChange }: { theme: string; onChange: (t: strin
   ];
 
   return (
-    <div className="flex gap-1 mt-1">
+    <div className="mt-1 flex gap-1">
       {options.map((opt) => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
           title={opt.label}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] transition-colors cursor-pointer ${
+          className={`flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[11px] transition-colors ${
             theme === opt.value
               ? "bg-brand-50 text-brand-700 dark:bg-brand-600/20 dark:text-brand-400"
               : "bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-500 dark:hover:bg-gray-700"
@@ -209,9 +293,16 @@ function ThemeSelector({ theme, onChange }: { theme: string; onChange: (t: strin
 }
 
 const KONAMI = [
-  "ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown",
-  "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight",
-  "b", "a",
+  "ArrowUp",
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowLeft",
+  "ArrowRight",
+  "b",
+  "a",
 ];
 
 function Settings({
@@ -249,7 +340,9 @@ function Settings({
   const [language, setLang] = useState(i18n.language);
   const [version, setVersion] = useState("");
   const [unlocked, setUnlocked] = useState(false);
-  const [checkState, setCheckState] = useState<"idle" | "checking" | "up-to-date">("idle");
+  const [checkState, setCheckState] = useState<
+    "idle" | "checking" | "up-to-date"
+  >("idle");
   const checkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const konamiProgress = useState<number>(0);
 
@@ -291,11 +384,19 @@ function Settings({
   useEffect(() => {
     if (!recordingAction) return;
 
-    const save = (key: string, cmd: boolean, alt: boolean, shift: boolean, ctrl: boolean) => {
-      setHotkey(recordingAction, key, cmd, alt, shift, ctrl).then((newHotkeys) => {
-        setHotkeys(newHotkeys);
-        onHotkeysChange?.(newHotkeys);
-      });
+    const save = (
+      key: string,
+      cmd: boolean,
+      alt: boolean,
+      shift: boolean,
+      ctrl: boolean,
+    ) => {
+      setHotkey(recordingAction, key, cmd, alt, shift, ctrl).then(
+        (newHotkeys) => {
+          setHotkeys(newHotkeys);
+          onHotkeysChange?.(newHotkeys);
+        },
+      );
       setRecordingAction(null);
     };
 
@@ -308,7 +409,13 @@ function Settings({
       const code = e.code;
       if (!JS_KEY_TO_MAC_KEYCODE[code]) return;
 
-      save(JS_KEY_TO_MAC_KEYCODE[code], e.metaKey, e.altKey, e.shiftKey, e.ctrlKey);
+      save(
+        JS_KEY_TO_MAC_KEYCODE[code],
+        e.metaKey,
+        e.altKey,
+        e.shiftKey,
+        e.ctrlKey,
+      );
     };
 
     const mouseHandler = (e: MouseEvent) => {
@@ -316,7 +423,13 @@ function Settings({
       if (e.button < 3) return;
       e.preventDefault();
       e.stopPropagation();
-      save(e.button === 3 ? "Mouse4" : "Mouse5", e.metaKey, e.altKey, e.shiftKey, e.ctrlKey);
+      save(
+        e.button === 3 ? "Mouse4" : "Mouse5",
+        e.metaKey,
+        e.altKey,
+        e.shiftKey,
+        e.ctrlKey,
+      );
     };
 
     window.addEventListener("keydown", keyHandler, true);
@@ -342,7 +455,7 @@ function Settings({
 
   return (
     <div>
-      <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+      <h2 className="mb-2 text-sm font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
         {t("settings.title")}
       </h2>
 
@@ -376,7 +489,9 @@ function Settings({
             label={t("settings.taskbar_ungroup")}
             description={t("settings.taskbar_ungroup_desc")}
             enabled={taskbarUngroup}
-            onToggle={async () => onToggleTaskbarUngroup(await toggleTaskbarUngroup())}
+            onToggle={async () =>
+              onToggleTaskbarUngroup(await toggleTaskbarUngroup())
+            }
             onLabel={t("settings.on")}
             offLabel={t("settings.off")}
           />
@@ -403,10 +518,12 @@ function Settings({
 
       {unlocked && (
         <>
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-5 mb-2">
+          <h3 className="mt-5 mb-2 text-sm font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
             {t("settings.experimental")}
           </h3>
-          <p className="text-xs text-amber-600 dark:text-amber-400/80 mb-3">{t("settings.experimental_warning")}</p>
+          <p className="mb-3 text-xs text-amber-600 dark:text-amber-400/80">
+            {t("settings.experimental_warning")}
+          </p>
           <div className="divide-y divide-gray-200 dark:divide-gray-800/50">
             <ToggleRow
               label={t("settings.auto_accept")}
@@ -428,17 +545,19 @@ function Settings({
         </>
       )}
 
-      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mt-5 mb-3">
+      <h3 className="mt-5 mb-3 text-sm font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
         {t("settings.display")}
       </h3>
 
       <div className="divide-y divide-gray-200 dark:divide-gray-800/50">
         <div className="flex items-center justify-between py-2">
-          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{t("language.title")}</span>
+          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+            {t("language.title")}
+          </span>
           <select
             value={language}
             onChange={(e) => handleLanguageChange(e.target.value)}
-            className="text-xs bg-transparent text-gray-700 dark:text-gray-300 focus:outline-none cursor-pointer"
+            className="cursor-pointer bg-transparent text-xs text-gray-700 focus:outline-none dark:text-gray-300"
           >
             <option value="en">🇬🇧 {t("language.en")}</option>
             <option value="fr">🇫🇷 {t("language.fr")}</option>
@@ -446,20 +565,26 @@ function Settings({
           </select>
         </div>
         <div className="flex items-center justify-between py-2">
-          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">{t("settings.theme")}</span>
+          <span className="text-xs font-medium text-gray-800 dark:text-gray-200">
+            {t("settings.theme")}
+          </span>
           <ThemeSelector theme={theme} onChange={onThemeChange} />
         </div>
         <ToggleRow
           label={t("settings.close_to_tray")}
           enabled={closeTotray}
-          onToggle={async () => { const v = !closeTotray; setCloseTotray(v); await setCloseTotrayCmd(v).catch(() => setCloseTotray(!v)); }}
+          onToggle={async () => {
+            const v = !closeTotray;
+            setCloseTotray(v);
+            await setCloseTotrayCmd(v).catch(() => setCloseTotray(!v));
+          }}
           onLabel={t("settings.on")}
           offLabel={t("settings.off")}
         />
       </div>
 
-      <div className="flex items-center justify-between mt-5 mb-2">
-        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+      <div className="mt-5 mb-2 flex items-center justify-between">
+        <h3 className="text-sm font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
           {t("hotkeys.title")}
         </h3>
         <button
@@ -469,7 +594,7 @@ function Settings({
               onHotkeysChange?.(newHotkeys);
             });
           }}
-          className="text-[11px] text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors cursor-pointer"
+          className="cursor-pointer text-[11px] text-gray-400 transition-colors hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"
         >
           {t("hotkeys.reset")}
         </button>
@@ -494,8 +619,8 @@ function Settings({
       </div>
 
       <div className="mt-6 flex flex-col items-center gap-1 text-[11px] text-gray-400 dark:text-gray-600">
-        {import.meta.env.VITE_UPDATER !== "false" && (
-          checkState === "checking" ? (
+        {import.meta.env.VITE_UPDATER !== "false" &&
+          (checkState === "checking" ? (
             <span className="animate-pulse">{t("settings.checking")}</span>
           ) : checkState === "up-to-date" ? (
             <span>{t("settings.up_to_date")}</span>
@@ -510,23 +635,34 @@ function Settings({
                       setCheckState("idle");
                     } else {
                       setCheckState("up-to-date");
-                      checkTimerRef.current = setTimeout(() => setCheckState("idle"), 3000);
+                      checkTimerRef.current = setTimeout(
+                        () => setCheckState("idle"),
+                        3000,
+                      );
                     }
                   })
                   .catch(() => setCheckState("idle"));
               }}
-              className="text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400 transition-colors underline underline-offset-2 cursor-pointer"
+              className="cursor-pointer text-gray-400 underline underline-offset-2 transition-colors hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"
             >
               {t("settings.check_now")}
             </button>
-          )
-        )}
+          ))}
         <span className="flex items-center gap-1.5">
           FocusRetro v{version}
           {import.meta.env.VITE_UPDATER === "false" && (
             <>
               <span>— offline build</span>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
                 <line x1="2" y1="2" x2="22" y2="22" />
               </svg>

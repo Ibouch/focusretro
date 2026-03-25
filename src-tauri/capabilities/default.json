@@ -3,8 +3,5 @@
   "identifier": "default",
   "description": "Default capabilities for FocusRetro",
   "windows": ["main"],
-  "permissions": [
-    "core:default",
-    "process:default"
-  ]
+  "permissions": ["core:default", "process:default"]
 }

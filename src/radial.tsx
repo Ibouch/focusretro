@@ -6,7 +6,9 @@ import "./index.css";
 
 // Radial is display-only — all interaction is via Rust CGEventTap.
 // Ignoring cursor events prevents cursor flicker when hovering over the overlay.
-getCurrentWindow().setIgnoreCursorEvents(true).catch(() => {});
+getCurrentWindow()
+  .setIgnoreCursorEvents(true)
+  .catch(() => {});
 
 let _show: ((x: number, y: number) => void) | null = null;
 let _hide: (() => void) | null = null;
@@ -19,13 +21,21 @@ function RadialRoot() {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [hovered, setHovered] = useState(-1);
 
-  _show = (x, y) => { setHovered(-1); setPos({ x, y }); };
-  _hide = () => { setPos(null); setHovered(-1); };
+  _show = (x, y) => {
+    setHovered(-1);
+    setPos({ x, y });
+  };
+  _hide = () => {
+    setPos(null);
+    setHovered(-1);
+  };
   _hover = setHovered;
 
   return <RadialSelector pos={pos} hovered={hovered} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode><RadialRoot /></React.StrictMode>
+  <React.StrictMode>
+    <RadialRoot />
+  </React.StrictMode>,
 );

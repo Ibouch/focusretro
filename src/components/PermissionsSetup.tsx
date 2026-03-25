@@ -1,5 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { openSettings, requestScreenRecording, requestInputMonitoring } from "../lib/commands";
+import {
+  openSettings,
+  requestScreenRecording,
+  requestInputMonitoring,
+} from "../lib/commands";
 
 interface Props {
   accessibility: boolean;
@@ -12,7 +16,7 @@ function StatusBadge({ granted }: { granted: boolean }) {
   const { t } = useTranslation();
   return (
     <span
-      className={`text-[11px] px-2 py-0.5 rounded font-medium ${
+      className={`rounded px-2 py-0.5 text-[11px] font-medium ${
         granted
           ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-600/20 dark:text-emerald-400"
           : "bg-red-50 text-red-600 dark:bg-red-900/40 dark:text-red-400"
@@ -40,7 +44,7 @@ function PermissionCard({
 }) {
   return (
     <div
-      className={`mx-4 mt-3 p-4 rounded-lg border ${
+      className={`mx-4 mt-3 rounded-lg border p-4 ${
         granted
           ? "border-emerald-200 bg-emerald-50 dark:border-emerald-800/50 dark:bg-emerald-950/20"
           : "border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-950/20"
@@ -49,48 +53,64 @@ function PermissionCard({
       <div className="flex items-start gap-3">
         <div
           className={`mt-0.5 shrink-0 ${
-            granted ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
+            granted
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-amber-600 dark:text-amber-400"
           }`}
         >
           {icon}
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{name}</span>
+        <div className="min-w-0 flex-1">
+          <div className="mb-1 flex items-center gap-2">
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              {name}
+            </span>
             <StatusBadge granted={granted} />
           </div>
-          <p className="text-xs text-gray-500 leading-relaxed">{why}</p>
+          <p className="text-xs leading-relaxed text-gray-500">{why}</p>
           {note && (
-            <p className="text-[11px] text-gray-400 dark:text-gray-600 mt-1.5 leading-relaxed">
+            <p className="mt-1.5 text-[11px] leading-relaxed text-gray-400 dark:text-gray-600">
               {note}
             </p>
           )}
         </div>
       </div>
-      {!granted && (
-        <div className="flex gap-2 mt-3 flex-wrap">{actions}</div>
-      )}
+      {!granted && <div className="mt-3 flex flex-wrap gap-2">{actions}</div>}
     </div>
   );
 }
 
-function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onRecheck }: Props) {
+function PermissionsSetup({
+  accessibility,
+  screenRecording,
+  inputMonitoring,
+  onRecheck,
+}: Props) {
   const { t } = useTranslation();
   const allGranted = accessibility && screenRecording && inputMonitoring;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col">
+    <div className="flex min-h-screen flex-col bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100">
       <div className="px-4 pt-4">
         <h2 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
           {t("setup.title")}
         </h2>
-        <p className="text-xs text-gray-500 mt-0.5">{t("setup.subtitle")}</p>
+        <p className="mt-0.5 text-xs text-gray-500">{t("setup.subtitle")}</p>
       </div>
 
       <PermissionCard
         granted={accessibility}
         icon={
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <path d="M12 8v4M12 16h.01" />
           </svg>
@@ -102,7 +122,7 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
           <button
             type="button"
             onClick={() => openSettings("accessibility")}
-            className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors cursor-pointer"
+            className="cursor-pointer rounded-md bg-amber-100 px-3 py-1.5 text-xs text-amber-800 transition-colors hover:bg-amber-200 dark:bg-amber-800/40 dark:text-amber-200 dark:hover:bg-amber-700/50"
           >
             {t("setup.open_settings")}
           </button>
@@ -112,7 +132,16 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
       <PermissionCard
         granted={screenRecording}
         icon={
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <rect x="2" y="4" width="20" height="14" rx="2" />
             <path d="M8 20h8M12 18v2" />
           </svg>
@@ -124,14 +153,14 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
             <button
               type="button"
               onClick={() => requestScreenRecording()}
-              className="text-xs px-3 py-1.5 rounded-md bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 transition-colors cursor-pointer"
+              className="bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors"
             >
               {t("setup.request_permission")}
             </button>
             <button
               type="button"
               onClick={() => openSettings("screen_recording")}
-              className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors cursor-pointer"
+              className="cursor-pointer rounded-md bg-amber-100 px-3 py-1.5 text-xs text-amber-800 transition-colors hover:bg-amber-200 dark:bg-amber-800/40 dark:text-amber-200 dark:hover:bg-amber-700/50"
             >
               {t("setup.open_settings")}
             </button>
@@ -142,7 +171,16 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
       <PermissionCard
         granted={inputMonitoring}
         icon={
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
             <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
           </svg>
@@ -154,14 +192,14 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
             <button
               type="button"
               onClick={() => requestInputMonitoring()}
-              className="text-xs px-3 py-1.5 rounded-md bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 transition-colors cursor-pointer"
+              className="bg-brand-100 hover:bg-brand-200 text-brand-800 dark:bg-brand-700/50 dark:hover:bg-brand-600/60 dark:text-brand-200 cursor-pointer rounded-md px-3 py-1.5 text-xs transition-colors"
             >
               {t("setup.request_permission")}
             </button>
             <button
               type="button"
               onClick={() => openSettings("input_monitoring")}
-              className="text-xs px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-800/40 dark:hover:bg-amber-700/50 dark:text-amber-200 transition-colors cursor-pointer"
+              className="cursor-pointer rounded-md bg-amber-100 px-3 py-1.5 text-xs text-amber-800 transition-colors hover:bg-amber-200 dark:bg-amber-800/40 dark:text-amber-200 dark:hover:bg-amber-700/50"
             >
               {t("setup.open_settings")}
             </button>
@@ -169,11 +207,11 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
         }
       />
 
-      <div className="flex items-center justify-between mx-4 mt-6 pt-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="mx-4 mt-6 flex items-center justify-between border-t border-gray-200 pt-4 dark:border-gray-800">
         <button
           type="button"
           onClick={onRecheck}
-          className="text-xs px-3 py-1.5 rounded-md bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
+          className="cursor-pointer rounded-md bg-gray-100 px-3 py-1.5 text-xs text-gray-700 transition-colors hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
         >
           {t("setup.check_again")}
         </button>
@@ -181,10 +219,10 @@ function PermissionsSetup({ accessibility, screenRecording, inputMonitoring, onR
           type="button"
           onClick={onRecheck}
           disabled={!allGranted}
-          className={`text-xs px-4 py-1.5 rounded-md font-medium transition-colors ${
+          className={`rounded-md px-4 py-1.5 text-xs font-medium transition-colors ${
             allGranted
-              ? "bg-brand-600 hover:bg-brand-500 text-white cursor-pointer"
-              : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 cursor-not-allowed"
+              ? "bg-brand-600 hover:bg-brand-500 cursor-pointer text-white"
+              : "cursor-not-allowed bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600"
           }`}
         >
           {t("setup.continue")}

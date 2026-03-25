@@ -24,8 +24,7 @@ const FLAG_SHIFT: u64 = 0x00020000;
 const FLAG_CTRL: u64 = 0x00040000;
 
 use crate::radial::{
-    focus_selected_or_current, radial_segment_at, resolve_selection, RADIAL_WIN_CX,
-    RADIAL_WIN_SIZE,
+    focus_selected_or_current, radial_segment_at, resolve_selection, RADIAL_WIN_CX, RADIAL_WIN_SIZE,
 };
 
 #[repr(C)]
@@ -147,9 +146,11 @@ fn matches_binding(keycode: u16, flags: u64, binding: &HotkeyBinding) -> bool {
     let has_alt = flags & FLAG_ALT != 0;
     let has_shift = flags & FLAG_SHIFT != 0;
     let has_ctrl = flags & FLAG_CTRL != 0;
-    has_cmd == binding.cmd && has_alt == binding.alt && has_shift == binding.shift && has_ctrl == binding.ctrl
+    has_cmd == binding.cmd
+        && has_alt == binding.alt
+        && has_shift == binding.shift
+        && has_ctrl == binding.ctrl
 }
-
 
 extern "C" fn hotkey_callback(
     _proxy: *mut c_void,
@@ -180,7 +181,10 @@ extern "C" fn hotkey_callback(
                     let h = ctx.handle.clone();
                     let _ = h.clone().run_on_main_thread(move || {
                         if let Some(w) = h.get_webview_window("radial-overlay") {
-                            let _ = w.eval(&format!("window.__radialHover&&window.__radialHover({})", seg));
+                            let _ = w.eval(&format!(
+                                "window.__radialHover&&window.__radialHover({})",
+                                seg
+                            ));
                         }
                     });
                 }
@@ -193,18 +197,20 @@ extern "C" fn hotkey_callback(
     if event_type == K_CG_EVENT_KEY_UP as u32 {
         use std::sync::atomic::Ordering;
         if ctx.state.radial_open.load(Ordering::Relaxed) {
-            let keycode = unsafe { CGEventGetIntegerValueField(event, K_CG_KEYBOARD_EVENT_KEYCODE) } as u16;
+            let keycode =
+                unsafe { CGEventGetIntegerValueField(event, K_CG_KEYBOARD_EVENT_KEYCODE) } as u16;
             let hotkeys = ctx.state.get_hotkeys();
             for binding in &hotkeys {
                 if binding.action == "radial" && !binding.key.is_empty() {
                     if let Some(expected) = js_code_to_mac_keycode(&binding.key) {
                         if keycode == expected {
-                                        ctx.state.radial_open.store(false, Ordering::Relaxed);
+                            ctx.state.radial_open.store(false, Ordering::Relaxed);
                             // Get cursor position before entering main thread (event may be freed after)
                             let cursor_now = unsafe { CGEventGetLocation(event) };
                             let h = ctx.handle.clone();
                             let state_ref = ctx.state.clone();
-                            let selected = resolve_selection(&state_ref, cursor_now.x, cursor_now.y);
+                            let selected =
+                                resolve_selection(&state_ref, cursor_now.x, cursor_now.y);
                             let _ = h.clone().run_on_main_thread(move || {
                                 use tauri_nspanel::ManagerExt as NSPanelManagerExt;
 
@@ -256,7 +262,8 @@ extern "C" fn hotkey_callback(
                         // Position small window centered on cursor, then show — no cross-display spanning
                         let win_x = cursor.x - RADIAL_WIN_CX;
                         let win_y = cursor.y - RADIAL_WIN_CX;
-                        let _ = w.set_size(tauri::LogicalSize::new(RADIAL_WIN_SIZE, RADIAL_WIN_SIZE));
+                        let _ =
+                            w.set_size(tauri::LogicalSize::new(RADIAL_WIN_SIZE, RADIAL_WIN_SIZE));
                         let _ = w.set_position(tauri::LogicalPosition::new(win_x, win_y));
                         if let Ok(panel) = h.get_webview_panel("radial-overlay") {
                             panel.order_front_regardless();
@@ -266,7 +273,10 @@ extern "C" fn hotkey_callback(
                         // Store keydown cursor (screen logical) for segment detection on keyup
                         state_ref.set_radial_center(cursor.x, cursor.y);
                         let theme = state_ref.get_theme();
-                        let _ = w.eval(&format!("window.__radialShow({:.2},{:.2},'{}')", RADIAL_WIN_CX, RADIAL_WIN_CX, theme));
+                        let _ = w.eval(&format!(
+                            "window.__radialShow({:.2},{:.2},'{}')",
+                            RADIAL_WIN_CX, RADIAL_WIN_CX, theme
+                        ));
                     }
                 });
                 break;
@@ -320,30 +330,32 @@ pub fn start_hotkey_listener(handle: AppHandle, state: Arc<AppState>) {
         }
 
         unsafe {
-        let user_info = ctx_addr as *mut c_void;
-        let events_mask: u64 = (1 << K_CG_EVENT_MOUSE_MOVED) | (1 << K_CG_EVENT_KEY_DOWN) | (1 << K_CG_EVENT_KEY_UP);
+            let user_info = ctx_addr as *mut c_void;
+            let events_mask: u64 = (1 << K_CG_EVENT_MOUSE_MOVED)
+                | (1 << K_CG_EVENT_KEY_DOWN)
+                | (1 << K_CG_EVENT_KEY_UP);
 
-        let tap = CGEventTapCreate(
-            K_CG_SESSION_EVENT_TAP,
-            K_CG_HEAD_INSERT_EVENT_TAP,
-            K_CG_EVENT_TAP_OPTION_LISTEN_ONLY,
-            events_mask,
-            hotkey_callback,
-            user_info,
-        );
+            let tap = CGEventTapCreate(
+                K_CG_SESSION_EVENT_TAP,
+                K_CG_HEAD_INSERT_EVENT_TAP,
+                K_CG_EVENT_TAP_OPTION_LISTEN_ONLY,
+                events_mask,
+                hotkey_callback,
+                user_info,
+            );
 
-        if tap.is_null() {
-            error!("[Hotkeys] Failed to create CGEventTap — check Accessibility permission");
-            return;
-        }
+            if tap.is_null() {
+                error!("[Hotkeys] Failed to create CGEventTap — check Accessibility permission");
+                return;
+            }
 
-        let source = CFMachPortCreateRunLoopSource(std::ptr::null(), tap, 0);
-        let run_loop = CFRunLoopGetCurrent();
-        CFRunLoopAddSource(run_loop, source, kCFRunLoopCommonModes);
-        CGEventTapEnable(tap, true);
+            let source = CFMachPortCreateRunLoopSource(std::ptr::null(), tap, 0);
+            let run_loop = CFRunLoopGetCurrent();
+            CFRunLoopAddSource(run_loop, source, kCFRunLoopCommonModes);
+            CGEventTapEnable(tap, true);
 
-        info!("[Hotkeys] CGEventTap started — listening for global hotkeys");
-        CFRunLoopRun();
+            info!("[Hotkeys] CGEventTap started — listening for global hotkeys");
+            CFRunLoopRun();
         } // unsafe
     });
 }

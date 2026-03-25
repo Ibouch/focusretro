@@ -41,7 +41,11 @@ pub fn run() {
                     let state = window.app_handle().state::<Arc<AppState>>();
                     api.prevent_close();
                     if !state.is_close_behavior_prompted() {
-                        let os = if cfg!(target_os = "macos") { "macos" } else { "windows" };
+                        let os = if cfg!(target_os = "macos") {
+                            "macos"
+                        } else {
+                            "windows"
+                        };
                         let _ = window.emit("close-requested", os);
                     } else if state.is_close_to_tray() {
                         let _ = window.hide();
@@ -120,7 +124,11 @@ pub fn run() {
         .expect("error while building FocusRetro")
         .run(|app_handle, event| {
             #[cfg(target_os = "macos")]
-            if let tauri::RunEvent::Reopen { has_visible_windows, .. } = event {
+            if let tauri::RunEvent::Reopen {
+                has_visible_windows,
+                ..
+            } = event
+            {
                 if !has_visible_windows {
                     if let Some(window) = app_handle.get_webview_window("main") {
                         let _ = window.show();
@@ -158,22 +166,20 @@ fn start_hotkey_listener(app: &tauri::App) {
 }
 
 fn do_setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let config_path = app
-        .path()
-        .app_config_dir()?
-        .join("config.json");
+    let config_path = app.path().app_config_dir()?.join("config.json");
 
     crate::state::migrate_config_if_needed(&config_path);
 
     let app_state = Arc::new(AppState::new(config_path));
     app.manage(app_state);
 
-    app.handle().plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-        if let Some(window) = app.get_webview_window("main") {
-            let _ = window.show();
-            let _ = window.set_focus();
-        }
-    }))?;
+    app.handle()
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))?;
 
     setup_tray(app)?;
     start_hotkey_listener(app);
@@ -216,19 +222,17 @@ fn setup_radial_window(app: &tauri::App) {
 
 #[cfg(target_os = "macos")]
 fn setup_radial_panel(app: &tauri::App) {
-    use tauri_nspanel::WebviewWindowExt as NSPanelExt;
     use log::warn;
+    use tauri_nspanel::WebviewWindowExt as NSPanelExt;
     match app.get_webview_window("radial-overlay") {
         None => warn!("[Radial] radial-overlay window not found during setup"),
-        Some(overlay) => {
-            match overlay.to_panel() {
-                Err(e) => warn!("[Radial] to_panel() failed: {:?}", e),
-                Ok(panel) => {
-                    panel.set_level(200);
-                    panel.set_becomes_key_only_if_needed(true);
-                }
+        Some(overlay) => match overlay.to_panel() {
+            Err(e) => warn!("[Radial] to_panel() failed: {:?}", e),
+            Ok(panel) => {
+                panel.set_level(200);
+                panel.set_becomes_key_only_if_needed(true);
             }
-        }
+        },
     }
 }
 
@@ -373,4 +377,3 @@ fn build_tray_menu(
 
     Ok(menu)
 }
-
