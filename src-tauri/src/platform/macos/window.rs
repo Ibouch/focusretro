@@ -267,7 +267,7 @@ fn main_window_title_ax(pid: i32) -> Option<String> {
         if title_err != K_AX_SUCCESS || title_value.is_null() {
             return None;
         }
-        let cf_title = CFString::wrap_under_get_rule(title_value as *const _);
+        let cf_title = CFString::wrap_under_create_rule(title_value as *const _);
         Some(cf_title.to_string())
     }
 }
@@ -356,7 +356,7 @@ fn set_window_frame_ax(
             );
 
             if title_err == K_AX_SUCCESS && !title_value.is_null() {
-                let cf_title = CFString::wrap_under_get_rule(title_value as *const _);
+                let cf_title = CFString::wrap_under_create_rule(title_value as *const _);
                 if cf_title.to_string() == title {
                     win_element = elem;
                     break;
@@ -481,7 +481,7 @@ fn raise_window_ax(pid: i32, target_title: &str) -> anyhow::Result<()> {
             );
 
             if title_err == K_AX_SUCCESS && !title_value.is_null() {
-                let cf_title = CFString::wrap_under_get_rule(title_value as *const _);
+                let cf_title = CFString::wrap_under_create_rule(title_value as *const _);
                 let win_title = cf_title.to_string();
 
                 if win_title == target_title {

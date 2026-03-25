@@ -1,4 +1,5 @@
 use crate::platform::NotificationListener;
+use core_foundation::array::CFArrayRef;
 use core_foundation::base::TCFType;
 use core_foundation::runloop::*;
 use core_foundation::string::CFString;
@@ -34,12 +35,24 @@ extern "C" {
     ) -> AXError;
     fn AXUIElementCopyActionNames(
         element: AXUIElementRef,
-        action_names: *mut *mut c_void,
+        action_names: *mut CFArrayRef,
     ) -> AXError;
     fn AXUIElementPerformAction(element: AXUIElementRef, action: *const c_void) -> AXError;
     fn CFRelease(cf: *const c_void);
     fn CFArrayGetCount(array: *const c_void) -> isize;
     fn CFArrayGetValueAtIndex(array: *const c_void, idx: isize) -> *const c_void;
+}
+
+/// RAII guard that calls CFRelease on drop.
+/// Use for CF objects obtained via Copy rule (AXUIElementCopyAttributeValue,
+/// AXUIElementCopyActionNames, etc.) where no typed RAII wrapper is available.
+struct CfRelease(*const c_void);
+impl Drop for CfRelease {
+    fn drop(&mut self) {
+        if !self.0.is_null() {
+            unsafe { CFRelease(self.0) }
+        }
+    }
 }
 
 struct CallbackContext {
@@ -128,6 +141,7 @@ unsafe fn find_banner(element: AXUIElementRef) -> Option<AXUIElementRef> {
     if err != K_AX_SUCCESS || children_value.is_null() {
         return None;
     }
+    let _guard = CfRelease(children_value as *const c_void);
     let count = CFArrayGetCount(children_value as *const c_void);
     for i in 0..count {
         let child = CFArrayGetValueAtIndex(children_value as *const c_void, i) as AXUIElementRef;
@@ -142,14 +156,15 @@ unsafe fn find_banner(element: AXUIElementRef) -> Option<AXUIElementRef> {
 
 /// Check if an element supports a given action without performing it.
 unsafe fn has_action(element: AXUIElementRef, action_name: &str) -> bool {
-    let mut actions: *mut c_void = std::ptr::null_mut();
+    let mut actions: CFArrayRef = std::ptr::null();
     let err = AXUIElementCopyActionNames(element, &mut actions);
     if err != K_AX_SUCCESS || actions.is_null() {
         return false;
     }
-    let count = CFArrayGetCount(actions);
+    let _guard = CfRelease(actions as *const c_void);
+    let count = CFArrayGetCount(actions as *const c_void);
     for i in 0..count {
-        let name = CFArrayGetValueAtIndex(actions, i);
+        let name = CFArrayGetValueAtIndex(actions as *const c_void, i);
         if !name.is_null() {
             let cf_name = CFString::wrap_under_get_rule(name as *const _);
             if cf_name == action_name {
@@ -180,6 +195,7 @@ unsafe fn collect_text(element: AXUIElementRef) -> Vec<String> {
     );
 
     if err == K_AX_SUCCESS && !children_value.is_null() {
+        let _guard = CfRelease(children_value as *const c_void);
         let count = CFArrayGetCount(children_value as *const c_void);
         for i in 0..count {
             let child =
@@ -202,7 +218,7 @@ unsafe fn ax_copy_string(element: AXUIElementRef, attr_name: &str) -> Option<Str
         &mut value,
     );
     if err == K_AX_SUCCESS && !value.is_null() {
-        let cf_str = CFString::wrap_under_get_rule(value as *const _);
+        let cf_str = CFString::wrap_under_create_rule(value as *const _);
         Some(cf_str.to_string())
     } else {
         None
