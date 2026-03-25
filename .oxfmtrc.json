@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["dist", "src-tauri/target", "src-tauri/gen", "docs/style.css", "*.lock"],
+  "sortTailwindcss": {
+    "stylesheet": "src/index.css"
+  },
+  "sortImports": {
+    "newlinesBetween": true
+  }
+}
