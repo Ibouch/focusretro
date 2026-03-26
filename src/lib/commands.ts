@@ -209,8 +209,6 @@ export interface TraceEntry {
   event_type: string;
   character_name: string;
   t_notification_ms: number;
-  t_parsed_ms: number;
-  t_focus_triggered_ms: number;
   t_focus_done_ms: number;
 }
 

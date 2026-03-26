@@ -113,8 +113,6 @@ fn focus_character_with_fallback(
     handle: AppHandle,
     event_type: String,
     t_notification_ms: u64,
-    t_parsed_ms: u64,
-    t_focus_triggered_ms: u64,
 ) {
     #[cfg(target_os = "macos")]
     {
@@ -143,8 +141,6 @@ fn focus_character_with_fallback(
                             event_type: event_type_mac,
                             character_name: name.clone(),
                             t_notification_ms,
-                            t_parsed_ms,
-                            t_focus_triggered_ms,
                             t_focus_done_ms,
                         });
                         let _ = handle_mac.emit("trace-added", ());
@@ -162,7 +158,6 @@ fn focus_character_with_fallback(
                 }
             }
         });
-        return;
     }
 
     #[cfg(not(target_os = "macos"))]
@@ -183,8 +178,6 @@ fn focus_character_with_fallback(
                         event_type,
                         character_name: character_name.to_string(),
                         t_notification_ms,
-                        t_parsed_ms,
-                        t_focus_triggered_ms,
                         t_focus_done_ms,
                     });
                     let _ = handle.emit("trace-added", ());
@@ -234,8 +227,6 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
                     }
                 };
 
-                let t_parsed_ms = now_millis();
-
                 match event {
                     parser::GameEvent::Turn(turn) => {
                         if !callback_state.is_autoswitch_enabled() {
@@ -244,7 +235,6 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
                         }
                         info!("[Autoswitch] Turn detected for: {}", turn.character_name);
                         let _ = callback_handle.emit("turn-switched", &turn.character_name);
-                        let t_focus_triggered_ms = now_millis();
                         focus_character_with_fallback(
                             &turn.character_name,
                             false,
@@ -252,8 +242,6 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
                             callback_handle.clone(),
                             "turn".into(),
                             t_notification_ms,
-                            t_parsed_ms,
-                            t_focus_triggered_ms,
                         );
                         true
                     }
@@ -275,7 +263,6 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
                         );
                         let _ = callback_handle.emit("group-invite", &invite.receiver_name);
                         let accept = callback_state.is_auto_accept_enabled();
-                        let t_focus_triggered_ms = now_millis();
                         focus_character_with_fallback(
                             &invite.receiver_name,
                             accept,
@@ -283,8 +270,6 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
                             callback_handle.clone(),
                             "group_invite".into(),
                             t_notification_ms,
-                            t_parsed_ms,
-                            t_focus_triggered_ms,
                         );
                         true
                     }
@@ -306,7 +291,6 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
                         );
                         let _ = callback_handle.emit("trade-request", &trade.receiver_name);
                         let accept = callback_state.is_auto_accept_enabled();
-                        let t_focus_triggered_ms = now_millis();
                         focus_character_with_fallback(
                             &trade.receiver_name,
                             accept,
@@ -314,8 +298,6 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
                             callback_handle.clone(),
                             "trade".into(),
                             t_notification_ms,
-                            t_parsed_ms,
-                            t_focus_triggered_ms,
                         );
                         true
                     }

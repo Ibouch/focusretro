@@ -18,8 +18,6 @@ pub struct TraceEntry {
     pub event_type: String,
     pub character_name: String,
     pub t_notification_ms: u64,
-    pub t_parsed_ms: u64,
-    pub t_focus_triggered_ms: u64,
     pub t_focus_done_ms: u64,
 }
 

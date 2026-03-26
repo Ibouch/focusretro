@@ -181,7 +181,7 @@ extern "C" fn hotkey_callback(
                     let h = ctx.handle.clone();
                     let _ = h.clone().run_on_main_thread(move || {
                         if let Some(w) = h.get_webview_window("radial-overlay") {
-                            let _ = w.eval(&format!(
+                            let _ = w.eval(format!(
                                 "window.__radialHover&&window.__radialHover({})",
                                 seg
                             ));
@@ -273,7 +273,7 @@ extern "C" fn hotkey_callback(
                         // Store keydown cursor (screen logical) for segment detection on keyup
                         state_ref.set_radial_center(cursor.x, cursor.y);
                         let theme = state_ref.get_theme();
-                        let _ = w.eval(&format!(
+                        let _ = w.eval(format!(
                             "window.__radialShow({:.2},{:.2},'{}')",
                             RADIAL_WIN_CX, RADIAL_WIN_CX, theme
                         ));

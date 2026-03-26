@@ -357,7 +357,7 @@ fn set_window_frame_ax(
 
             if title_err == K_AX_SUCCESS && !title_value.is_null() {
                 let cf_title = CFString::wrap_under_create_rule(title_value as *const _);
-                if cf_title.to_string() == title {
+                if cf_title == title {
                     win_element = elem;
                     break;
                 }

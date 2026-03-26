@@ -23,7 +23,7 @@ pub fn radial_segment_at(
     let dx = cursor_x - center_x;
     let dy = cursor_y - center_y;
     let dist = (dx * dx + dy * dy).sqrt();
-    if dist < INNER_R || dist > OUTER_R {
+    if !(INNER_R..=OUTER_R).contains(&dist) {
         return None;
     }
     let mut angle = dy.atan2(dx) + std::f64::consts::PI / 2.0;
