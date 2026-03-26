@@ -25,7 +25,7 @@ struct HotkeyContext {
 
 thread_local! {
     static HOTKEY_CTX: std::cell::RefCell<Option<HotkeyContext>> =
-        std::cell::RefCell::new(None);
+        const { std::cell::RefCell::new(None) };
 }
 
 fn js_code_to_vk(code: &str) -> Option<u16> {
@@ -147,7 +147,7 @@ fn fire_action(action: &str, c: &HotkeyContext) {
                 // NO set_focus() — keep focus on game window
 
                 let theme = state_ref.get_theme();
-                let _ = w.eval(&format!(
+                let _ = w.eval(format!(
                     "window.__radialShow&&window.__radialShow({:.2},{:.2},'{}')",
                     RADIAL_WIN_CX, RADIAL_WIN_CX, theme
                 ));
@@ -331,7 +331,7 @@ unsafe extern "system" fn mouse_callback(ncode: i32, wparam: WPARAM, lparam: LPA
                             let h = c.handle.clone();
                             let _ = h.clone().run_on_main_thread(move || {
                                 if let Some(w) = h.get_webview_window("radial-overlay") {
-                                    let _ = w.eval(&format!(
+                                    let _ = w.eval(format!(
                                         "window.__radialHover&&window.__radialHover({})",
                                         seg
                                     ));

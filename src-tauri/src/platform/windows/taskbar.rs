@@ -77,7 +77,7 @@ pub(crate) unsafe fn rgba_to_hicon(rgba: &[u8], size: u32) -> anyhow::Result<HIC
     std::ptr::copy_nonoverlapping(bgra.as_ptr(), bits_ptr as *mut u8, bgra.len());
 
     // 1bpp all-zeros AND mask (size × size).
-    let mask_row_bytes = (size + 31) / 32 * 4;
+    let mask_row_bytes = size.div_ceil(32) * 4;
     let mask_data = vec![0u8; (mask_row_bytes * size) as usize];
     let hbm_mask: HBITMAP = CreateBitmap(
         size as i32,
