@@ -258,7 +258,7 @@ pub fn reorder_account(
     if state.is_taskbar_ungroup_enabled() {
         use crate::platform::windows::taskbar;
         use std::sync::atomic::Ordering;
-        let windows = state.accounts.lock().clone();
+        let windows = state.active_then_skipped_windows();
         let cache = state.taskbar_aumid_cache.lock();
         taskbar::reorder_taskbar_buttons(&windows, &cache);
         // Mark as applied so the next poll doesn't reorder a second time
@@ -284,6 +284,20 @@ pub fn set_account_skipped(
     state: tauri::State<'_, Arc<AppState>>,
 ) -> Vec<AccountView> {
     state.set_skipped(&name, skipped);
+
+    #[cfg(target_os = "windows")]
+    if state.is_taskbar_ungroup_enabled() {
+        use crate::platform::windows::taskbar;
+        use std::sync::atomic::Ordering;
+        let windows = state.active_then_skipped_windows();
+        let cache = state.taskbar_aumid_cache.lock();
+        taskbar::reorder_taskbar_buttons(&windows, &cache);
+        let ver = state.taskbar_order_version.load(Ordering::Relaxed);
+        state
+            .taskbar_order_version_applied
+            .store(ver, Ordering::Relaxed);
+    }
+
     state.get_account_views()
 }
 
@@ -509,12 +523,20 @@ pub fn apply_layout(
 ) -> Result<(), String> {
     let wm = platform::create_window_manager();
     let live = wm.list_dofus_windows();
+    let profiles = state.profiles.lock();
     let ordered_names: Vec<String> = state
         .accounts
         .lock()
         .iter()
+        .filter(|w| {
+            !profiles
+                .iter()
+                .find(|p| p.character_name.eq_ignore_ascii_case(&w.character_name))
+                .is_some_and(|p| p.is_skipped)
+        })
         .map(|w| w.character_name.clone())
         .collect();
+    drop(profiles);
     let windows: Vec<_> = ordered_names
         .iter()
         .filter_map(|name| {

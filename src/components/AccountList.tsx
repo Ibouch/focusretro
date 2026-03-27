@@ -399,9 +399,9 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
       </div>
 
       {/* Layout toolbar */}
-      {accounts.length >= 2 && (
+      {active.length >= 2 && (
         <div className="mb-2 flex items-center gap-1">
-          {LAYOUTS.filter((l) => l.show(accounts.length)).map(({ id, i18nKey }) => (
+          {LAYOUTS.filter((l) => l.show(active.length)).map(({ id, i18nKey }) => (
             <button
               key={id}
               onClick={() => applyLayout(id)}

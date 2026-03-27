@@ -38,6 +38,7 @@ fn refresh_accounts(handle: &AppHandle, state: &Arc<AppState>) {
         use std::sync::atomic::Ordering;
 
         let current_windows = state.accounts.lock().clone();
+        let active_then_skipped = state.active_then_skipped_windows();
         let mut cache = state.taskbar_aumid_cache.lock();
         let mut handles = state.taskbar_icon_handles.lock();
         if state.is_taskbar_ungroup_enabled() {
@@ -47,7 +48,7 @@ fn refresh_accounts(handle: &AppHandle, state: &Arc<AppState>) {
                 state
                     .taskbar_order_version_applied
                     .store(ver, Ordering::Relaxed);
-                taskbar::reorder_taskbar_buttons(&current_windows, &cache);
+                taskbar::reorder_taskbar_buttons(&active_then_skipped, &cache);
             }
         } else {
             taskbar::reset_taskbar_identities(&current_windows, &mut cache, &mut handles);
