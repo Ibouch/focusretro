@@ -812,8 +812,21 @@ impl AppState {
 
 #[cfg(test)]
 mod tests {
-    use super::migrate_config_if_needed;
+    use super::*;
     use std::fs;
+
+    fn make_state() -> AppState {
+        AppState::from_prefs(Preferences::default(), PathBuf::new())
+    }
+
+    fn make_window(name: &str, id: u64) -> crate::platform::GameWindow {
+        crate::platform::GameWindow {
+            character_name: name.into(),
+            window_id: id,
+            pid: 0,
+            title: format!("{} - Dofus Retro v1.0", name),
+        }
+    }
 
     #[test]
     fn migrate_does_nothing_when_old_path_absent() {
@@ -870,5 +883,84 @@ mod tests {
         assert!(old_path.exists());
         let contents = fs::read_to_string(&new_path).unwrap();
         assert!(contents.contains("true"));
+    }
+
+    // --- has_account ---
+
+    #[test]
+    fn has_account_case_insensitive() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Craette", 1)]);
+        assert!(state.has_account("Craette"));
+        assert!(state.has_account("CRAETTE"));
+        assert!(state.has_account("craette"));
+    }
+
+    #[test]
+    fn has_account_unknown_returns_false() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Craette", 1)]);
+        assert!(!state.has_account("Unknownchar"));
+    }
+
+    // --- add_message cap ---
+
+    #[test]
+    fn message_cap_drains_oldest_when_exceeded() {
+        let state = make_state();
+        for i in 0..501u64 {
+            state.add_message(StoredMessage {
+                receiver: "R".into(),
+                sender: "S".into(),
+                message: format!("msg {}", i),
+                timestamp: i,
+            });
+        }
+        let messages = state.get_messages();
+        // pushing the 501st triggers drain(0..100): 501 - 100 = 401
+        assert_eq!(messages.len(), 401);
+        // oldest 100 were dropped; first remaining is msg 100
+        assert_eq!(messages[0].message, "msg 100");
+    }
+
+    // --- update_accounts ---
+
+    #[test]
+    fn update_accounts_preserves_profile_order() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        // Re-detect in reverse order — profile order must win
+        state.update_accounts(vec![make_window("Bob", 2), make_window("Alice", 1)]);
+        let accounts = state.accounts.lock().clone();
+        assert_eq!(accounts[0].character_name, "Alice");
+        assert_eq!(accounts[1].character_name, "Bob");
+    }
+
+    #[test]
+    fn update_accounts_adds_new_window() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        state.update_accounts(vec![
+            make_window("Alice", 1),
+            make_window("Bob", 2),
+            make_window("Carol", 3),
+        ]);
+        let accounts = state.accounts.lock().clone();
+        assert_eq!(accounts.len(), 3);
+        assert_eq!(accounts[2].character_name, "Carol");
+    }
+
+    #[test]
+    fn update_accounts_closed_window_removed_from_accounts_but_profile_kept() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        // Bob closed
+        state.update_accounts(vec![make_window("Alice", 1)]);
+        let accounts = state.accounts.lock().clone();
+        assert_eq!(accounts.len(), 1);
+        assert_eq!(accounts[0].character_name, "Alice");
+        // Bob's profile is still there
+        let profiles = state.profiles.lock().clone();
+        assert!(profiles.iter().any(|p| p.character_name == "Bob"));
     }
 }

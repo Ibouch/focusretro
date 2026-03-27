@@ -206,6 +206,7 @@ fn focus_character_with_fallback(
     }
 }
 
+#[derive(Debug)]
 pub(crate) enum RouteAction {
     Focus {
         name: String,
@@ -351,4 +352,207 @@ fn start_notification_listener(handle: AppHandle, state: Arc<AppState>) {
             error!("[Autoswitch] Notification listener failed: {}", e);
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::parser::{
+        GameEvent, GroupInviteNotification, PrivateMessage, TradeRequest, TurnNotification,
+    };
+    use std::path::PathBuf;
+    use std::sync::atomic::Ordering;
+
+    fn make_state() -> AppState {
+        AppState::from_prefs(crate::state::Preferences::default(), PathBuf::new())
+    }
+
+    fn make_window(name: &str, id: u64) -> crate::platform::GameWindow {
+        crate::platform::GameWindow {
+            character_name: name.into(),
+            window_id: id,
+            pid: 0,
+            title: format!("{} - Dofus Retro v1.0", name),
+        }
+    }
+
+    fn turn(name: &str) -> GameEvent {
+        GameEvent::Turn(TurnNotification {
+            character_name: name.into(),
+        })
+    }
+
+    fn invite(receiver: &str, inviter: &str) -> GameEvent {
+        GameEvent::GroupInvite(GroupInviteNotification {
+            receiver_name: receiver.into(),
+            inviter_name: inviter.into(),
+        })
+    }
+
+    fn trade(receiver: &str, requester: &str) -> GameEvent {
+        GameEvent::Trade(TradeRequest {
+            receiver_name: receiver.into(),
+            requester_name: requester.into(),
+        })
+    }
+
+    fn pm(receiver: &str, sender: &str) -> GameEvent {
+        GameEvent::PrivateMessage(PrivateMessage {
+            receiver_name: receiver.into(),
+            sender_name: sender.into(),
+            message: "hello".into(),
+        })
+    }
+
+    // --- Turn ---
+
+    #[test]
+    fn turn_autoswitch_on_returns_focus() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Craette", 1)]);
+        match route_event(&turn("Craette"), &state) {
+            RouteAction::Focus {
+                name,
+                auto_accept,
+                event_type,
+            } => {
+                assert_eq!(name, "Craette");
+                assert!(!auto_accept);
+                assert_eq!(event_type, "turn");
+            }
+            other => panic!("expected Focus, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn turn_autoswitch_off_returns_ignore() {
+        let state = make_state();
+        state.autoswitch_enabled.store(false, Ordering::Relaxed);
+        assert!(matches!(
+            route_event(&turn("Craette"), &state),
+            RouteAction::Ignore
+        ));
+    }
+
+    // --- GroupInvite ---
+
+    #[test]
+    fn group_invite_known_inviter_returns_focus() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        match route_event(&invite("Bob", "Alice"), &state) {
+            RouteAction::Focus {
+                name,
+                auto_accept,
+                event_type,
+            } => {
+                assert_eq!(name, "Bob");
+                assert!(!auto_accept);
+                assert_eq!(event_type, "group_invite");
+            }
+            other => panic!("expected Focus, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn group_invite_known_inviter_auto_accept_on() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        state.auto_accept_enabled.store(true, Ordering::Relaxed);
+        match route_event(&invite("Bob", "Alice"), &state) {
+            RouteAction::Focus { auto_accept, .. } => assert!(auto_accept),
+            other => panic!("expected Focus, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn group_invite_unknown_inviter_returns_ignore() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Bob", 1)]);
+        assert!(matches!(
+            route_event(&invite("Bob", "Stranger"), &state),
+            RouteAction::Ignore
+        ));
+    }
+
+    #[test]
+    fn group_invite_toggle_off_returns_ignore() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        state.group_invite_enabled.store(false, Ordering::Relaxed);
+        assert!(matches!(
+            route_event(&invite("Bob", "Alice"), &state),
+            RouteAction::Ignore
+        ));
+    }
+
+    // --- Trade ---
+
+    #[test]
+    fn trade_known_requester_returns_focus() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        match route_event(&trade("Bob", "Alice"), &state) {
+            RouteAction::Focus {
+                name, event_type, ..
+            } => {
+                assert_eq!(name, "Bob");
+                assert_eq!(event_type, "trade");
+            }
+            other => panic!("expected Focus, got {:?}", other),
+        }
+    }
+
+    #[test]
+    fn trade_unknown_requester_returns_ignore() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Bob", 1)]);
+        assert!(matches!(
+            route_event(&trade("Bob", "Stranger"), &state),
+            RouteAction::Ignore
+        ));
+    }
+
+    #[test]
+    fn trade_toggle_off_returns_ignore() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        state.trade_enabled.store(false, Ordering::Relaxed);
+        assert!(matches!(
+            route_event(&trade("Bob", "Alice"), &state),
+            RouteAction::Ignore
+        ));
+    }
+
+    #[test]
+    fn trade_auto_accept_on() {
+        let state = make_state();
+        state.update_accounts(vec![make_window("Alice", 1), make_window("Bob", 2)]);
+        state.auto_accept_enabled.store(true, Ordering::Relaxed);
+        match route_event(&trade("Bob", "Alice"), &state) {
+            RouteAction::Focus { auto_accept, .. } => assert!(auto_accept),
+            other => panic!("expected Focus, got {:?}", other),
+        }
+    }
+
+    // --- PrivateMessage ---
+
+    #[test]
+    fn pm_enabled_returns_store_message() {
+        let state = make_state();
+        assert!(matches!(
+            route_event(&pm("Bob", "Alice"), &state),
+            RouteAction::StoreMessage(_)
+        ));
+    }
+
+    #[test]
+    fn pm_disabled_returns_ignore() {
+        let state = make_state();
+        state.pm_enabled.store(false, Ordering::Relaxed);
+        assert!(matches!(
+            route_event(&pm("Bob", "Alice"), &state),
+            RouteAction::Ignore
+        ));
+    }
 }

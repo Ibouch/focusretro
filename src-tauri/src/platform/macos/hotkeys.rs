@@ -359,3 +359,112 @@ pub fn start_hotkey_listener(handle: AppHandle, state: Arc<AppState>) {
         } // unsafe
     });
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::state::HotkeyBinding;
+
+    fn binding(key: &str, cmd: bool, alt: bool, shift: bool, ctrl: bool) -> HotkeyBinding {
+        HotkeyBinding {
+            action: "test".into(),
+            key: key.into(),
+            cmd,
+            alt,
+            shift,
+            ctrl,
+        }
+    }
+
+    // macOS virtual keycodes
+    const KC_F1: u16 = 0x7A;
+    const KC_F2: u16 = 0x78;
+    const KC_F3: u16 = 0x63;
+
+    #[test]
+    fn exact_match_no_modifiers() {
+        assert!(matches_binding(
+            KC_F1,
+            0,
+            &binding("F1", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn wrong_key_returns_false() {
+        assert!(!matches_binding(
+            KC_F2,
+            0,
+            &binding("F1", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn unknown_key_string_returns_false() {
+        assert!(!matches_binding(
+            KC_F1,
+            0,
+            &binding("Banana", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_mismatch_cmd_returns_false() {
+        assert!(!matches_binding(
+            KC_F1,
+            FLAG_CMD,
+            &binding("F1", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_match_cmd_returns_true() {
+        assert!(matches_binding(
+            KC_F1,
+            FLAG_CMD,
+            &binding("F1", true, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_match_alt_returns_true() {
+        assert!(matches_binding(
+            KC_F2,
+            FLAG_ALT,
+            &binding("F2", false, true, false, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_match_shift_returns_true() {
+        assert!(matches_binding(
+            KC_F3,
+            FLAG_SHIFT,
+            &binding("F3", false, false, true, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_match_ctrl_returns_true() {
+        assert!(matches_binding(
+            KC_F1,
+            FLAG_CTRL,
+            &binding("F1", false, false, false, true)
+        ));
+    }
+
+    #[test]
+    fn multiple_modifiers_must_all_match() {
+        let flags = FLAG_CMD | FLAG_SHIFT;
+        assert!(matches_binding(
+            KC_F1,
+            flags,
+            &binding("F1", true, false, true, false)
+        ));
+        assert!(!matches_binding(
+            KC_F1,
+            flags,
+            &binding("F1", true, false, false, false)
+        ));
+    }
+}

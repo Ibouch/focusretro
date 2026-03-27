@@ -457,3 +457,191 @@ pub fn start_hotkey_listener(handle: AppHandle, state: Arc<AppState>) {
         info!("[Hotkeys] Hooks uninstalled");
     });
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::state::HotkeyBinding;
+
+    fn binding(key: &str, cmd: bool, alt: bool, shift: bool, ctrl: bool) -> HotkeyBinding {
+        HotkeyBinding {
+            action: "test".into(),
+            key: key.into(),
+            cmd,
+            alt,
+            shift,
+            ctrl,
+        }
+    }
+
+    // Windows virtual key codes
+    const VK_F1: u16 = 0x70;
+    const VK_F2: u16 = 0x71;
+    const VK_F3: u16 = 0x72;
+
+    #[test]
+    fn exact_match_no_modifiers() {
+        assert!(matches_keyboard_binding(
+            VK_F1,
+            false,
+            false,
+            false,
+            false,
+            &binding("F1", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn wrong_key_returns_false() {
+        assert!(!matches_keyboard_binding(
+            VK_F2,
+            false,
+            false,
+            false,
+            false,
+            &binding("F1", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn unknown_key_string_returns_false() {
+        assert!(!matches_keyboard_binding(
+            VK_F1,
+            false,
+            false,
+            false,
+            false,
+            &binding("Banana", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_mismatch_shift_returns_false() {
+        assert!(!matches_keyboard_binding(
+            VK_F1,
+            true,
+            false,
+            false,
+            false,
+            &binding("F1", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_match_shift_returns_true() {
+        assert!(matches_keyboard_binding(
+            VK_F1,
+            true,
+            false,
+            false,
+            false,
+            &binding("F1", false, false, true, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_match_ctrl_returns_true() {
+        assert!(matches_keyboard_binding(
+            VK_F2,
+            false,
+            true,
+            false,
+            false,
+            &binding("F2", false, false, false, true)
+        ));
+    }
+
+    #[test]
+    fn modifier_match_alt_returns_true() {
+        assert!(matches_keyboard_binding(
+            VK_F3,
+            false,
+            false,
+            true,
+            false,
+            &binding("F3", false, true, false, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_mismatch_ctrl_returns_false() {
+        assert!(!matches_keyboard_binding(
+            VK_F1,
+            false,
+            true,
+            false,
+            false,
+            &binding("F1", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn modifier_mismatch_alt_returns_false() {
+        assert!(!matches_keyboard_binding(
+            VK_F1,
+            false,
+            false,
+            true,
+            false,
+            &binding("F1", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn multiple_modifiers_must_all_match() {
+        assert!(matches_keyboard_binding(
+            VK_F1,
+            true,
+            true,
+            false,
+            false,
+            &binding("F1", false, false, true, true)
+        ));
+        assert!(!matches_keyboard_binding(
+            VK_F1,
+            true,
+            false,
+            false,
+            false,
+            &binding("F1", false, false, true, true)
+        ));
+    }
+
+    // --- matches_mouse_binding ---
+
+    #[test]
+    fn mouse_exact_match() {
+        assert!(matches_mouse_binding(
+            "Mouse4",
+            false,
+            false,
+            false,
+            false,
+            &binding("Mouse4", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn mouse_wrong_button_returns_false() {
+        assert!(!matches_mouse_binding(
+            "Mouse5",
+            false,
+            false,
+            false,
+            false,
+            &binding("Mouse4", false, false, false, false)
+        ));
+    }
+
+    #[test]
+    fn mouse_modifier_mismatch_returns_false() {
+        assert!(!matches_mouse_binding(
+            "Mouse4",
+            true,
+            false,
+            false,
+            false,
+            &binding("Mouse4", false, false, false, false)
+        ));
+    }
+}
