@@ -14,6 +14,7 @@
   "accounts.focus_window": "Focus fenêtre",
   "accounts.color": "Couleur",
   "accounts.default_color": "Défaut",
+  "accounts.custom_color": "Couleur personnalisée",
   "accounts.icon": "Icône",
   "accounts.no_icon": "Aucune icône",
   "accounts.skip": "Exclure de la rotation",

@@ -12,16 +12,10 @@ import {
   updateAccountProfile,
 } from "../lib/commands";
 
-const PRESET_COLORS = [
-  "#ef4444",
-  "#f97316",
-  "#eab308",
-  "#22c55e",
-  "#06b6d4",
-  "#3b82f6",
-  "#8b5cf6",
-  "#ec4899",
-];
+const PRESET_COLORS = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6"];
+
+const isCustomColor = (color: string | null | undefined): boolean =>
+  color != null && !PRESET_COLORS.includes(color);
 
 const AVAILABLE_ICONS = [
   "10",
@@ -182,7 +176,6 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
   const listRef = useRef<HTMLUListElement>(null);
   const startYRef = useRef(0);
   const itemHeightRef = useRef(0);
-
   const handlePointerDown = useCallback(
     (idx: number) => (e: React.PointerEvent) => {
       if ((e.target as HTMLElement).closest("button")) return;
@@ -318,6 +311,32 @@ function AccountList({ accounts, focusedName, onRefresh, onUpdate, onFocused }: 
                     title={c}
                   />
                 ))}
+                <label
+                  className={`relative block h-5 w-5 cursor-pointer overflow-hidden rounded-full border-2 ${
+                    isCustomColor(editingAccount.color)
+                      ? "border-gray-900 dark:border-white"
+                      : "border-transparent"
+                  }`}
+                  style={
+                    isCustomColor(editingAccount.color)
+                      ? { backgroundColor: editingAccount.color as string }
+                      : {
+                          background: "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)",
+                          backgroundOrigin: "border-box",
+                        }
+                  }
+                  title={t("accounts.custom_color")}
+                  aria-label={t("accounts.custom_color")}
+                >
+                  <input
+                    type="color"
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    value={editingAccount.color ?? "#ef4444"}
+                    onChange={(e) =>
+                      handleColorChange(editingAccount.character_name, e.target.value)
+                    }
+                  />
+                </label>
               </div>
             </div>
             <div>
