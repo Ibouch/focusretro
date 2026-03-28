@@ -1,5 +1,4 @@
 use crate::platform::NotificationListener;
-use core_foundation::array::CFArrayRef;
 use core_foundation::base::TCFType;
 use core_foundation::runloop::*;
 use core_foundation::string::CFString;
@@ -33,18 +32,13 @@ extern "C" {
         attribute: *const c_void,
         value: *mut *mut c_void,
     ) -> AXError;
-    fn AXUIElementCopyActionNames(
-        element: AXUIElementRef,
-        action_names: *mut CFArrayRef,
-    ) -> AXError;
-    fn AXUIElementPerformAction(element: AXUIElementRef, action: *const c_void) -> AXError;
     fn CFRelease(cf: *const c_void);
     fn CFArrayGetCount(array: *const c_void) -> isize;
     fn CFArrayGetValueAtIndex(array: *const c_void, idx: isize) -> *const c_void;
 }
 
-/// RAII guard for CF objects obtained via Copy rule (AXUIElementCopyAttributeValue,
-/// AXUIElementCopyActionNames, etc.) where no typed RAII wrapper is available.
+/// RAII guard for CF objects obtained via Copy rule (e.g. AXUIElementCopyAttributeValue)
+/// where no typed RAII wrapper is available.
 fn cf_guard(ptr: *const c_void) -> impl Drop {
     crate::platform::OnDrop::new(move || {
         if !ptr.is_null() {
@@ -54,8 +48,6 @@ fn cf_guard(ptr: *const c_void) -> impl Drop {
 }
 
 struct CallbackContext {
-    /// Called with text segments. Returns `true` if this is a turn notification
-    /// and we should click the banner to focus the game window.
     on_notification: Box<dyn Fn(Vec<String>) -> bool + Send + 'static>,
 }
 
@@ -84,93 +76,7 @@ unsafe extern "C" fn ax_observer_callback(
     }
 
     let ctx = &*(context as *const CallbackContext);
-    let is_turn = (ctx.on_notification)(segments);
-
-    if is_turn {
-        click_notification_banner(element);
-    }
-}
-
-/// Click the notification banner body to focus the source app + dismiss the banner.
-/// This is equivalent to the user manually clicking the notification.
-unsafe fn click_notification_banner(element: AXUIElementRef) {
-    info!("[AXObserver] looking for AXNotificationCenterBanner to click...");
-
-    if let Some(banner) = find_banner(element) {
-        if has_action(banner, "AXPress") {
-            let press = CFString::new("AXPress");
-            let err =
-                AXUIElementPerformAction(banner, press.as_concrete_TypeRef() as *const c_void);
-            info!(
-                "[AXObserver] pressed AXNotificationCenterBanner, result: {}",
-                err
-            );
-            return;
-        }
-    }
-
-    // Fallback: try AXPress directly on the root element
-    if has_action(element, "AXPress") {
-        let press = CFString::new("AXPress");
-        let err = AXUIElementPerformAction(element, press.as_concrete_TypeRef() as *const c_void);
-        info!(
-            "[AXObserver] pressed root element as fallback, result: {}",
-            err
-        );
-    } else {
-        info!("[AXObserver] no pressable banner found, focus will rely on WindowManager fallback");
-    }
-}
-
-/// Recursively find the AXNotificationCenterBanner element in the AX tree.
-unsafe fn find_banner(element: AXUIElementRef) -> Option<AXUIElementRef> {
-    let subrole = ax_copy_string(element, "AXSubrole");
-    if subrole.as_deref() == Some("AXNotificationCenterBanner") {
-        return Some(element);
-    }
-
-    let children_attr = CFString::new("AXChildren");
-    let mut children_value: *mut c_void = std::ptr::null_mut();
-    let err = AXUIElementCopyAttributeValue(
-        element,
-        children_attr.as_concrete_TypeRef() as *const c_void,
-        &mut children_value,
-    );
-    if err != K_AX_SUCCESS || children_value.is_null() {
-        return None;
-    }
-    let _guard = cf_guard(children_value as *const c_void);
-    let count = CFArrayGetCount(children_value as *const c_void);
-    for i in 0..count {
-        let child = CFArrayGetValueAtIndex(children_value as *const c_void, i) as AXUIElementRef;
-        if !child.is_null() {
-            if let Some(banner) = find_banner(child) {
-                return Some(banner);
-            }
-        }
-    }
-    None
-}
-
-/// Check if an element supports a given action without performing it.
-unsafe fn has_action(element: AXUIElementRef, action_name: &str) -> bool {
-    let mut actions: CFArrayRef = std::ptr::null();
-    let err = AXUIElementCopyActionNames(element, &mut actions);
-    if err != K_AX_SUCCESS || actions.is_null() {
-        return false;
-    }
-    let _guard = cf_guard(actions as *const c_void);
-    let count = CFArrayGetCount(actions as *const c_void);
-    for i in 0..count {
-        let name = CFArrayGetValueAtIndex(actions as *const c_void, i);
-        if !name.is_null() {
-            let cf_name = CFString::wrap_under_get_rule(name as *const _);
-            if cf_name == action_name {
-                return true;
-            }
-        }
-    }
-    false
+    let _ = (ctx.on_notification)(segments);
 }
 
 unsafe fn collect_text(element: AXUIElementRef) -> Vec<String> {
