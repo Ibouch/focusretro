@@ -55,8 +55,8 @@ fn cf_guard(ptr: *const c_void) -> impl Drop {
 }
 
 struct CallbackContext {
-    /// Called with text segments. Returns `true` if this is a turn notification
-    /// and we should click the banner to dismiss it.
+    /// Called with text segments. Returns `true` if the notification requires
+    /// clicking the banner to dismiss it (turn, group invite, trade).
     on_notification: Box<dyn Fn(Vec<String>) -> bool + Send + 'static>,
 }
 
@@ -85,9 +85,9 @@ unsafe extern "C" fn ax_observer_callback(
     }
 
     let ctx = &*(context as *const CallbackContext);
-    let is_turn = (ctx.on_notification)(segments);
+    let should_click_banner = (ctx.on_notification)(segments);
 
-    if is_turn {
+    if should_click_banner {
         click_notification_banner(element);
     }
 }
